@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Виртуальное окружение
+venv/
+.venv/
+env/
+
+# База данных
+db.sqlite3
+db.sqlite3-journal
+
+# Статика, собранная collectstatic
+staticfiles/
+
+# Медиа
+media/
+
+# Логи
+logs/
+*.log
+
+# Переменные окружения
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Django
+local_settings.py

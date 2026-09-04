@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Афиша Искитима — скоро запуск: подпишитесь и получите афишу первым</title>
+    <meta name="description" content="Афиша Искитима скоро запустится. Подпишитесь сейчас — рассылка с событиями города придёт сразу после старта. Концерты, кино, выставки, спорт, детям.">
+
+    <meta name="geo.region" content="RU-NVS" />
+    <meta name="geo.placename" content="Искитим" />
+    <meta name="geo.position" content="54.6350;83.3047" />
+    <meta name="ICBM" content="54.6350, 83.3047" />
+
+    <link rel="canonical" href="https://iskitim-afisha.ru/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:title" content="Афиша Искитима: скоро запуск — подпишитесь на рассылку">
+    <meta property="og:description" content="Сервис Афиша Искитима готовится к запуску. Оставьте email — получите письма с событиями сразу после старта.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://iskitim-afisha.ru/">
+    <meta property="og:site_name" content="Афиша Искитима">
+    <meta property="og:image" content="{% static 'images/og-cover.png' %}">
+
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "Афиша Искитима",
+          "url": "https://iskitim-afisha.ru/",
+          "description": "Скоро запуск: подписка на рассылку событий Искитима."
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Когда запустится Афиша Искитима?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Сервис находится в финальной стадии подготовки. Точная дата запуска будет объявлена подписчикам рассылки в первую очередь."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Что я получу, если подпишусь сейчас?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Вы получите письма с афишей Искитима сразу после запуска сервиса. В рассылках будут концерты, кино, спектакли, выставки, спортивные события и детские программы."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Это бесплатно?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Да, подписка и рассылка полностью бесплатны. Никакого спама — только события города."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Что вы делаете с моим email?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Email используется только для отправки рассылки с афишей. Мы не передаём ваши данные третьим лицам. Отписаться можно в один клик — ссылка в каждом письме."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+    <!-- ===== HERO ===== -->
+    <main class="hero">
+        <div class="hero-content">
+            <div class="badge-launch">
+                🚀 Скоро запуск — сервис готовится к старту
+            </div>
+
+            <h1>Афиша <span class="accent">Искитима</span><br>в одном месте</h1>
+
+            <p class="lead">
+                Мы собираем события города, чтобы вы не пропустили ни одного концерта, премьеры, выставки или матча. Подпишитесь сейчас — первую рассылку получите сразу после запуска.
+            </p>
+
+            {% if total_count|default:0 > 0 %}
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-num">{{ total_count }}</div>
+                    <div class="stat-label">уже в списке</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="chips">
+                <span class="chip highlight">💌 Рассылка</span>
+                <span class="chip">🎵 Концерты</span>
+                <span class="chip">🎬 Кино</span>
+                <span class="chip">⚽ Спорт</span>
+                <span class="chip">🎈 Детям</span>
+            </div>
+
+            {% if messages %}
+            <div class="alerts">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <button class="cta-btn" onclick="openForm()">Хочу получать афишу</button>
+            <div class="hero-hint">
+                Бесплатно. Без спама. Отписка в один клик.<br>
+                Нажимая кнопку, вы соглашаетесь с
+                <a href="#" onclick="openModal(event)">политикой конфиденциальности</a>
+            </div>
+
+            <!-- Форма -->
+            <div class="form-wrap" id="formWrap">
+                <div class="form-card">
+                    <form method="post" action="{% url 'waiting_list:submit_interest' %}" id="interestForm">
+                        {% csrf_token %}
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label class="form-label" for="id_email">Email для рассылки</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="field-errors">
+                                {% for error in form.email.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Комментарий -->
+                        <div class="form-group">
+                            <label class="form-label" for="id_comment">Что вам интересно? <span style="text-transform:none; opacity:0.5;">по желанию</span></label>
+                            {{ form.comment }}
+                        </div>
+
+                        <!-- Капча -->
+                        <div class="form-group">
+                            <label class="form-label">Проверка</label>
+                            <div class="captcha-row">
+                                {{ form.captcha }}
+                            </div>
+                            {% if form.captcha.errors %}
+                            <div class="field-errors">
+                                {% for error in form.captcha.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="submit-btn">Подписаться на рассылку</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== РАССЫЛКА ===== -->
+    <section class="promo">
+        <div class="promo-inner">
+            <h2>Что придёт в рассылке</h2>
+            <p>
+                Сервис вот-вот запустится. Как только мы откроемся — вы получите первое письмо
+                с актуальной афишей. А дальше — регулярные выпуски с анонсами на неделю вперёд.
+            </p>
+
+            <div class="promo-list">
+                <div class="promo-item strong">Первые получат афишу сразу после запуска</div>
+                <div class="promo-item">Анонсы на выходные</div>
+                <div class="promo-item">Концерты, спектакли и гастроли</div>
+                <div class="promo-item">Кинопремьеры и спецпоказы</div>
+                <div class="promo-item">Выставки и мастер-классы</div>
+                <div class="promo-item">Детские события и спортивные матчи</div>
+            </div>
+
+            <button class="promo-cta" onclick="scrollToForm()">Подписаться на рассылку</button>
+        </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="faq-section">
+        <div class="faq-inner">
+            <h2>Частые вопросы</h2>
+
+            <div class="faq-item">
+                <div class="faq-q">Когда запустится Афиша Искитима?</div>
+                <div class="faq-a">Сервис находится в финальной стадии подготовки. Точная дата запуска будет объявлена подписчикам рассылки в первую очередь.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">Что я получу, если подпишусь сейчас?</div>
+                <div class="faq-a">Вы получите письма с афишей Искитима сразу после запуска сервиса. В рассылках будут концерты, кино, спектакли, выставки, спортивные события и детские программы.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">Это бесплатно?</div>
+                <div class="faq-a">Да, подписка и рассылка полностью бесплатны. Никакого спама — только события города.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">Что вы делаете с моим email?</div>
+                <div class="faq-a">Email используется только для отправки рассылки с афишей. Мы не передаём ваши данные третьим лицам. Отписаться можно в один клик — ссылка в каждом письме.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ФУТЕР ===== -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#" onclick="openModal(event)">Политика конфиденциальности</a>
+            <a href="#" onclick="openModal(event)">Согласие на обработку</a>
+            <a href="mailto:hello@iskitim-afisha.ru">Связаться</a>
+        </div>
+        <div>Афиша Искитима · Новосибирская область · 2026</div>
+    </footer>
+
+    <!-- ===== COOKIE-БАННЕР ===== -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-text">
+            Мы используем cookie для корректной работы сайта и сбора статистики.
+            Продолжая, вы соглашаетесь с <a href="#" onclick="openModal(event)">политикой конфиденциальности</a>.
+        </div>
+        <button class="cookie-btn" onclick="acceptCookies()">Понятно</button>
+    </div>
+
+    <!-- ===== МОДАЛКА ПОЛИТИКИ ===== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <h2>Политика конфиденциальности</h2>
+
+            <h3>1. Какие данные мы собираем</h3>
+            <p>
+                При подписке на рассылку мы сохраняем ваш email-адрес и, при желании,
+                ваш комментарий. Дополнительно фиксируется IP-адрес — исключительно
+                для защиты от спама и накруток.
+            </p>
+
+            <h3>2. Как мы используем данные</h3>
+            <ul>
+                <li>Email — для отправки рассылки с афишей событий Искитима.</li>
+                <li>Комментарий — для подбора контента и оценки интересов аудитории.</li>
+                <li>IP-адрес — для предотвращения автоматических регистраций.</li>
+            </ul>
+
+            <h3>3. Передача третьим лицам</h3>
+            <p>
+                Мы не передаём ваши данные третьим лицам и не продаём их.
+                Email хранится только на серверах проекта и используется для рассылки.
+            </p>
+
+            <h3>4. Cookie</h3>
+            <p>
+                Сайт использует cookie для запоминания вашего согласия с политикой
+                и корректной работы. Cookie не используются для отслеживания на других сайтах.
+            </p>
+
+            <h3>5. Отписка</h3>
+            <p>
+                В каждом письме есть ссылка для отписки — достаточно одного клика.
+                Также можно написать на hello@iskitim-afisha.ru, и мы удалим ваш email из базы.
+            </p>
+
+            <h3>6. Контакты</h3>
+            <p>
+                Вопросы о персональных данных — на
+                <a href="mailto:hello@iskitim-afisha.ru" style="color: var(--accent);">hello@iskitim-afisha.ru</a>.
+            </p>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
