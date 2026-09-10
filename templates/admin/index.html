@@ -1,0 +1,186 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="dashboard">
+
+    <h1 class="dashboard-title">Обзор сайта</h1>
+
+    {# ---------- СТАТИСТИКА СОБЫТИЙ ---------- #}
+    <div class="dashboard-stats">
+        <a href="{% url 'admin:events_event_changelist' %}?status__exact=published" class="stat-card stat-card--published">
+            <div class="stat-card__value">{{ dashboard.published|default:"0" }}</div>
+            <div class="stat-card__label">Опубликовано</div>
+        </a>
+        <a href="{% url 'admin:events_event_changelist' %}?status__exact=draft" class="stat-card stat-card--draft">
+            <div class="stat-card__value">{{ dashboard.drafts|default:"0" }}</div>
+            <div class="stat-card__label">Черновиков</div>
+        </a>
+        <a href="{% url 'admin:events_event_changelist' %}?status__exact=moderation" class="stat-card stat-card--moderation">
+            <div class="stat-card__value">{{ dashboard.moderation|default:"0" }}</div>
+            <div class="stat-card__label">На модерации</div>
+        </a>
+        <a href="{% url 'admin:events_event_changelist' %}" class="stat-card stat-card--total">
+            <div class="stat-card__value">{{ dashboard.total_events|default:"0" }}</div>
+            <div class="stat-card__label">Всего событий</div>
+        </a>
+    </div>
+
+    {# ---------- СТАТИСТИКА ПРОСМОТРОВ ---------- #}
+    <div class="dashboard-stats">
+        <div class="stat-card stat-card--views">
+            <div class="stat-card__value">{{ dashboard.total_views_7d|default:"0" }}</div>
+            <div class="stat-card__label">Просмотров за 7 дней</div>
+        </div>
+        <div class="stat-card stat-card--views">
+            <div class="stat-card__value">{{ dashboard.total_views_30d|default:"0" }}</div>
+            <div class="stat-card__label">Просмотров за 30 дней</div>
+        </div>
+        <div class="stat-card stat-card--views">
+            <div class="stat-card__value">{{ dashboard.total_views_all|default:"0" }}</div>
+            <div class="stat-card__label">Просмотров всего</div>
+        </div>
+    </div>
+
+    {# ---------- ТОП СОБЫТИЙ ЗА 7 ДНЕЙ ---------- #}
+    <div class="dashboard-section">
+        <h2 class="dashboard-section__title">🔥 Топ событий за 7 дней</h2>
+        {% if dashboard.top_events_7d %}
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Событие</th>
+                        <th>Просмотры</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in dashboard.top_events_7d %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'admin:events_event_change' item.event.id %}">
+                                    {{ item.event.title }}
+                                </a>
+                            </td>
+                            <td><strong>{{ item.views }}</strong></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="dashboard-empty">Данных пока нет.</p>
+        {% endif %}
+    </div>
+
+    {# ---------- ТОП КАТЕГОРИЙ ЗА 7 ДНЕЙ ---------- #}
+    <div class="dashboard-section">
+        <h2 class="dashboard-section__title">🏷 Топ категорий за 7 дней</h2>
+        {% if dashboard.top_categories_7d %}
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Категория</th>
+                        <th>Просмотры</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in dashboard.top_categories_7d %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'admin:events_category_change' item.category.id %}">
+                                    {{ item.category.name }}
+                                </a>
+                            </td>
+                            <td><strong>{{ item.views }}</strong></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="dashboard-empty">Данных пока нет.</p>
+        {% endif %}
+    </div>
+
+    {# ---------- БЛИЖАЙШИЕ 7 ДНЕЙ ---------- #}
+    <div class="dashboard-section">
+        <h2 class="dashboard-section__title">📅 Ближайшие 7 дней</h2>
+        {% if dashboard.upcoming %}
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Название</th>
+                        <th>Место</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in dashboard.upcoming %}
+                        <tr>
+                            <td>{{ event.start_date|date:"d.m.Y" }}{% if event.start_time %}, {{ event.start_time|time:"H:i" }}{% endif %}</td>
+                            <td><a href="{% url 'admin:events_event_change' event.id %}">{{ event.title }}</a></td>
+                            <td>{{ event.place.name }}</td>
+                            <td><a href="{% url 'admin:events_event_change' event.id %}" class="btn btn-sm btn-primary">Изменить</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="dashboard-empty">На ближайшую неделю событий нет.</p>
+        {% endif %}
+    </div>
+
+    {# ---------- ТОП ПО ПРОСМОТРАМ ЗА ВСЁ ВРЕМЯ ---------- #}
+    <div class="dashboard-section">
+        <h2 class="dashboard-section__title">📈 Топ по просмотрам (за всё время)</h2>
+        {% if dashboard.top_viewed %}
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Просмотры</th>
+                        <th>Дата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in dashboard.top_viewed %}
+                        <tr>
+                            <td><a href="{% url 'admin:events_event_change' event.id %}">{{ event.title }}</a></td>
+                            <td>{{ event.views_count }}</td>
+                            <td>{{ event.start_date|date:"d.m.Y" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="dashboard-empty">Просмотров пока нет.</p>
+        {% endif %}
+    </div>
+
+    {# ---------- КАТЕГОРИИ ---------- #}
+    <div class="dashboard-section">
+        <h2 class="dashboard-section__title">Категории</h2>
+        <div class="dashboard-categories">
+            {% for cat in dashboard.categories_stats %}
+                <a href="{% url 'admin:events_event_changelist' %}?category__id__exact={{ cat.id }}" class="dashboard-category">
+                    <span class="dashboard-category__name">{{ cat.name }}</span>
+                    <span class="dashboard-category__count">{{ cat.event_count }}</span>
+                </a>
+            {% empty %}
+                <p class="dashboard-empty">Категорий пока нет.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ---------- БЫСТРЫЕ ДЕЙСТВИЯ ---------- #}
+    <div class="dashboard-section">
+        <h2 class="dashboard-section__title">Быстрые действия</h2>
+        <div class="dashboard-actions">
+            <a href="{% url 'admin:events_event_add' %}" class="btn btn-primary">+ Добавить событие</a>
+            <a href="{% url 'admin:events_place_add' %}" class="btn btn-secondary">+ Добавить площадку</a>
+            <a href="{% url 'admin:events_category_add' %}" class="btn btn-secondary">+ Добавить категорию</a>
+            <a href="/" target="_blank" class="btn btn-info">Открыть сайт →</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

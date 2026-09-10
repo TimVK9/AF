@@ -1,0 +1,60 @@
+{% comment %}
+Шапка списка: заголовок «Афиша» + активные фильтры + счётчик.
+Показывает выбранную категорию, date_filter, диапазон и поиск.
+{% endcomment %}
+<div class="events-header">
+    <h1>
+        Афиша
+
+        {% comment %} Категория {% endcomment %}
+        {% if selected_category %}
+            {% for category in categories %}
+                {% if category.slug == selected_category %}
+                    <span class="events-header__category">· {{ category.name }}</span>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% comment %} Быстрый фильтр по дате {% endcomment %}
+        {% if date_filter %}
+            <span class="events-header__filter">
+                ·
+                {% if date_filter == 'today' %}Сегодня
+                {% elif date_filter == 'tomorrow' %}Завтра
+                {% elif date_filter == 'week' %}На неделе
+                {% elif date_filter == 'weekend' %}В выходные
+                {% elif date_filter == 'month' %}В этом месяце
+                {% elif date_filter == 'past' %}Прошедшие
+                {% else %}{{ date_filter }}
+                {% endif %}
+            </span>
+        {% endif %}
+
+        {% comment %} Диапазон дат (YYYY-MM-DD → DD.MM.YYYY) {% endcomment %}
+        {% if start_date and end_date %}
+            <span class="events-header__filter">
+                · {{ start_date|slice:"8:10" }}.{{ start_date|slice:"5:7" }}.{{ start_date|slice:"0:4" }} —
+                {{ end_date|slice:"8:10" }}.{{ end_date|slice:"5:7" }}.{{ end_date|slice:"0:4" }}
+            </span>
+        {% elif start_date %}
+            <span class="events-header__filter">
+                · с {{ start_date|slice:"8:10" }}.{{ start_date|slice:"5:7" }}.{{ start_date|slice:"0:4" }}
+            </span>
+        {% elif end_date %}
+            <span class="events-header__filter">
+                · по {{ end_date|slice:"8:10" }}.{{ end_date|slice:"5:7" }}.{{ end_date|slice:"0:4" }}
+            </span>
+        {% endif %}
+
+        {% comment %} Поисковый запрос {% endcomment %}
+        {% if search_query %}
+            <span class="events-header__search">
+                · "{{ search_query }}"
+            </span>
+        {% endif %}
+    </h1>
+
+    <span class="events-header__count">
+        {{ page_obj.paginator.count }} событий
+    </span>
+</div>

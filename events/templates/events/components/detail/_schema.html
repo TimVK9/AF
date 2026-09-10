@@ -1,0 +1,80 @@
+{% comment %}
+Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
+{% endcomment %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "{{ event.title|escapejs }}",
+    "description": "{{ event.description_short|default:event.title|truncatechars:180|escapejs }}",
+    "url": "{{ request.build_absolute_uri }}",
+    {% if event.main_image %}
+    "image": [
+        "{{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url }}"
+    ],
+    {% endif %}
+    "startDate": "{{ event.start_date|date:'c' }}{% if event.start_time %}T{{ event.start_time|time:'H:i:s' }}{% endif %}",
+    {% if event.end_date %}
+    "endDate": "{{ event.end_date|date:'c' }}{% if event.start_time %}T{{ event.start_time|time:'H:i:s' }}{% endif %}",
+    {% endif %}
+    "eventStatus": "{% if event.status == 'cancelled' %}https://schema.org/EventCancelled{% else %}https://schema.org/EventScheduled{% endif %}",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    {% if event.place %}
+    "location": {
+        "@type": "Place",
+        "name": "{{ event.place.name|escapejs }}",
+        {% if event.place.address %}
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ event.place.address.street|escapejs }}{% if event.place.address.house_number %}, {{ event.place.address.house_number }}{% endif %}",
+            "addressLocality": "{{ event.place.address.city|escapejs }}",
+            {% if event.place.address.region %}"addressRegion": "{{ event.place.address.region|escapejs }}",{% endif %}
+            {% if event.place.address.postal_code %}"postalCode": "{{ event.place.address.postal_code|escapejs }}",{% endif %}
+            "addressCountry": "{{ event.place.address.country|default:'RU'|escapejs }}"
+        },
+        {% endif %}
+        {% if event.place.address.latitude and event.place.address.longitude %}
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": {{ event.place.address.latitude }},
+            "longitude": {{ event.place.address.longitude }}
+        },
+        {% endif %}
+        "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'event_detail' event.slug %}"
+    },
+    {% endif %}
+    {% if event.category %}
+    "about": {
+        "@type": "Thing",
+        "name": "{{ event.category.name|escapejs }}"
+    },
+    {% endif %}
+    {% if event.is_free %}
+    "isAccessibleForFree": true,
+    "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RUB",
+        "availability": "https://schema.org/InStock",
+        "url": "{{ request.build_absolute_uri }}"
+    },
+    {% elif event.price %}
+    "offers": {
+        "@type": "Offer",
+        "price": "{{ event.price|floatformat:0 }}",
+        "priceCurrency": "RUB",
+        "availability": "https://schema.org/InStock",
+        "url": "{{ request.build_absolute_uri }}"
+    },
+    {% endif %}
+    "organizer": {
+        "@type": "Organization",
+        "name": "АФИША ИСКИТИМ",
+        "url": "{{ request.scheme }}://{{ request.get_host }}"
+    },
+    "performer": {
+        "@type": "PerformingGroup",
+        "name": "{{ event.title|escapejs }}"
+    }
+}
+</script>

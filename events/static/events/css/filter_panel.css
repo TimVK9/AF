@@ -1,0 +1,657 @@
+/* ========================================================= */
+/* ПАНЕЛЬ ФИЛЬТРАЦИИ                                          */
+/* ========================================================= */
+
+.filter-panel {
+    background: transparent;
+    border-bottom: none;
+    padding: 0;
+}
+
+.filter-panel__container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filter-panel__header {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.filter-panel__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.filter-panel__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-family: inherit;
+    padding: 0;
+}
+
+.filter-panel__close:hover {
+    background: rgba(20, 24, 26, 0.06);
+    color: var(--text-primary);
+}
+
+.filter-panel__close svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ========================================================= */
+/* ПОИСК                                                      */
+/* ========================================================= */
+.search-wrapper {
+    width: 100%;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-form:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--bg-secondary);
+}
+
+.search-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    padding: 8px 0;
+    outline: none;
+    font-family: inherit;
+    min-width: 0;
+}
+
+.search-input::placeholder {
+    color: var(--text-dark);
+}
+
+.search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.search-clear:hover {
+    background: rgba(20, 24, 26, 0.06);
+    color: var(--text-primary);
+}
+
+.search-clear svg {
+    width: 16px;
+    height: 16px;
+}
+
+.search-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+
+.search-btn:hover {
+    background: var(--accent-hover);
+}
+
+.search-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ========================================================= */
+/* КАТЕГОРИИ                                                  */
+/* ========================================================= */
+.categories-wrapper {
+    width: 100%;
+}
+
+.categories-scroll {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 2px 0;
+}
+
+.categories-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.category-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.category-btn:hover {
+    background: rgba(20, 24, 26, 0.06);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+.category-btn.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+
+/* ========================================================= */
+/* БЫСТРЫЕ ФИЛЬТРЫ                                            */
+/* ========================================================= */
+.filters-wrapper {
+    width: 100%;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.chip:hover {
+    background: rgba(20, 24, 26, 0.06);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+.chip.active {
+    background: rgba(15, 118, 110, 0.12);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.chip--past {
+    color: var(--text-dark);
+}
+
+.chip--past:hover {
+    color: var(--text-primary);
+    background: rgba(20, 24, 26, 0.06);
+    border-color: var(--border-light);
+}
+
+.chip--past.active {
+    background: rgba(107, 118, 122, 0.15);
+    color: var(--text-secondary);
+    border-color: var(--text-muted);
+}
+
+/* ========================================================= */
+/* КНОПКА «СБРОСИТЬ ФИЛЬТРЫ»                                  */
+/* ========================================================= */
+.filters-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    transition: background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.filters-reset svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}
+
+.filters-reset:hover {
+    color: #ffffff;
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* ========================================================= */
+/* ДИАПАЗОН ДАТ                                               */
+/* ========================================================= */
+.date-range-wrapper {
+    width: 100%;
+}
+
+.date-range-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.date-field {
+    flex: 1;
+    min-width: 130px;
+}
+
+.date-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-input-wrap:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--bg-secondary);
+}
+
+.date-input-wrap svg {
+    width: 15px;
+    height: 15px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.date-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    padding: 7px 0;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+    filter: none;
+    opacity: 0.55;
+    cursor: pointer;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+.date-separator {
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.apply-btn {
+    padding: 7px 16px;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.apply-btn:hover {
+    background: var(--accent-hover);
+}
+
+.clear-btn {
+    padding: 7px 16px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.clear-btn:hover {
+    color: #dc2626;
+    border-color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+}
+
+/* ========================================================= */
+/* ДЕСКТОПНАЯ ПАНЕЛЬ ФИЛЬТРА                                  */
+/* ========================================================= */
+
+.desktop-filter {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .desktop-filter {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        margin: 0 0 24px;
+    }
+
+    .desktop-filter .filter-panel__header {
+        display: none;
+    }
+
+    .desktop-filter .search-wrapper,
+    .desktop-filter .categories-wrapper,
+    .desktop-filter .filters-wrapper,
+    .desktop-filter .date-range-wrapper {
+        width: 100%;
+    }
+
+    /* Скрываем заголовок оверлея в десктопной панели */
+    .desktop-filter .filter-panel__header {
+        display: none !important;
+    }
+}
+
+/* ========================================================= */
+/* ОВЕРЛЕИ (мобильные)                                        */
+/* ========================================================= */
+
+.search-container {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .search-container.mobile-open {
+        display: block;
+        position: fixed;
+        top: var(--header-height-mobile);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 998;
+        background: var(--bg-primary);
+        overflow-y: auto;
+        padding: 0;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .search-container.mobile-open .filter-panel {
+        background: var(--bg-primary);
+        border-bottom: none;
+        padding: 0;
+        min-height: 100%;
+    }
+
+    .search-container.mobile-open .filter-panel__container {
+        padding: 16px 16px 100px;
+        gap: 16px;
+        max-width: 100%;
+    }
+
+    .filter-panel__header {
+        display: flex;
+    }
+
+    .search-form {
+        border-radius: var(--radius-sm);
+    }
+
+    .search-btn span {
+        display: none;
+    }
+
+    .search-btn {
+        padding: 8px 12px;
+    }
+
+    .filter-chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 2px 0;
+    }
+
+    .filter-chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .date-range-form {
+        gap: 6px;
+    }
+
+    .date-field {
+        min-width: 100px;
+    }
+
+    .date-input {
+        font-size: 0.75rem;
+        padding: 6px 0;
+    }
+
+    .date-separator {
+        display: none;
+    }
+
+    .apply-btn,
+    .clear-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    .filters-reset {
+        padding: 5px 10px;
+        font-size: 0.72rem;
+    }
+
+    .filters-reset svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* ========================================================= */
+/* АДАПТИВ                                                    */
+/* ========================================================= */
+
+@media (max-width: 1024px) {
+    .desktop-filter {
+        padding: 14px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-container.mobile-open .filter-panel__container {
+        padding: 12px 12px 80px;
+        gap: 10px;
+    }
+
+    .search-input {
+        font-size: 0.8rem;
+        padding: 6px 0;
+    }
+
+    .search-icon {
+        width: 16px;
+        height: 16px;
+        margin-left: 8px;
+    }
+
+    .category-btn {
+        padding: 4px 12px;
+        font-size: 0.7rem;
+    }
+
+    .chip {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+
+    .date-input-wrap {
+        padding: 0 8px;
+    }
+
+    .date-input-wrap svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .date-input {
+        font-size: 0.7rem;
+    }
+
+    .apply-btn,
+    .clear-btn {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+    }
+
+    .filters-reset span {
+        display: none;
+    }
+
+    .filters-reset {
+        padding: 6px 8px;
+        margin-left: auto;
+    }
+}
+
+/* ========================================================= */
+/* КРОССБРАУЗЕРНОСТЬ                                          */
+/* ========================================================= */
+
+.categories-scroll::-webkit-scrollbar,
+.filter-chips::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+@-moz-document url-prefix() {
+    .categories-scroll,
+    .filter-chips {
+        scrollbar-width: none;
+    }
+
+    .date-input {
+        -moz-appearance: textfield;
+    }
+}
+
+@supports (-webkit-touch-callout: none) {
+    .search-input {
+        font-size: 16px !important;
+    }
+}
+
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    .search-form {
+        display: -ms-flexbox;
+    }
+
+    .search-input {
+        -ms-flex: 1;
+    }
+
+    .categories-scroll {
+        display: -ms-flexbox;
+        overflow-x: auto;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+}

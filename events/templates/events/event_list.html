@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/event_list.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/filter_panel.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/card.css' %}">
+{% endblock %}
+
+{# ===================================================== #}
+{# ОВЕРЛЕЙ 1: ПОИСК (мобильные)                          #}
+{# ===================================================== #}
+{% block search %}
+    {% include "events/components/filter/_search.html" %}
+{% endblock %}
+
+{# ===================================================== #}
+{# ОВЕРЛЕЙ 2: ФИЛЬТР (мобильные)                         #}
+{# ===================================================== #}
+{% block filter %}
+    {% include "events/components/filter/_categories.html" with categories=categories %}
+    {% include "events/components/filter/_date_chips.html" %}
+{% endblock %}
+
+{# ===================================================== #}
+{# ОВЕРЛЕЙ 3: ДАТЫ (мобильные)                           #}
+{# ===================================================== #}
+{% block dates %}
+    {% include "events/components/filter/_date_range.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    {% include "includes/breadcrumbs.html" %}
+
+    {# ===================================================== #}
+    {# ПАНЕЛЬ ФИЛЬТРА (десктоп)                              #}
+    {# ===================================================== #}
+    <div class="desktop-filter">
+        {% include "events/components/filter/_search.html" %}
+        {% include "events/components/filter/_categories.html" with categories=categories %}
+        {% include "events/components/filter/_date_chips.html" %}
+        {% include "events/components/filter/_date_range.html" %}
+    </div>
+
+    {% include "events/components/list/_header.html" %}
+
+    {% if page_obj.paginator.count %}
+        {% include "events/components/list/_grid.html" %}
+        {% include "events/components/list/_pagination.html" %}
+    {% else %}
+        {% include "events/components/list/_empty.html" %}
+    {% endif %}
+
+</div>
+{% endblock %}

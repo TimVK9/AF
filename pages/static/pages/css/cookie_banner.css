@@ -1,0 +1,171 @@
+/* =========================================================
+   COOKIE-БАННЕР — простая версия
+   ========================================================= */
+
+.cookie-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+    background: #ffffff;
+    border-top: 1px solid rgba(20, 24, 26, 0.08);
+    box-shadow: 0 -8px 32px rgba(20, 24, 26, 0.10);
+    padding: 16px 24px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.cookie-banner[hidden] {
+    display: none;
+}
+
+.cookie-banner.is-visible {
+    transform: translateY(0);
+}
+
+.cookie-banner__container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.cookie-banner__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(15, 118, 110, 0.10);
+    color: #0f766e;
+    flex-shrink: 0;
+}
+
+.cookie-banner__icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.cookie-banner__text {
+    flex: 1;
+    min-width: 200px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #3d474b;
+    margin: 0;
+}
+
+.cookie-banner__text a {
+    color: #0f766e;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cookie-banner__text a:hover {
+    color: #0b5e57;
+}
+
+.cookie-banner__actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cookie-banner__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: inherit;
+    line-height: 1;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.cookie-banner__btn--primary {
+    background: #0f766e;
+    color: #ffffff;
+}
+
+.cookie-banner__btn--primary:hover {
+    background: #0b5e57;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+}
+
+.cookie-banner__btn--primary:active {
+    transform: translateY(0);
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .cookie-banner {
+        padding: 14px 16px;
+    }
+
+    .cookie-banner__container {
+        gap: 12px;
+    }
+
+    .cookie-banner__icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .cookie-banner__icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .cookie-banner__text {
+        font-size: 0.84rem;
+    }
+
+    .cookie-banner__btn {
+        padding: 9px 20px;
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 560px) {
+    .cookie-banner__container {
+        flex-wrap: wrap;
+    }
+
+    .cookie-banner__text {
+        flex: 1 1 100%;
+        order: 1;
+    }
+
+    .cookie-banner__icon {
+        order: 0;
+    }
+
+    .cookie-banner__actions {
+        order: 2;
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .cookie-banner__btn {
+        width: 100%;
+    }
+}
+
+@media print {
+    .cookie-banner {
+        display: none !important;
+    }
+}

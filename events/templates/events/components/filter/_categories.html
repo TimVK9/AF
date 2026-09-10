@@ -1,0 +1,35 @@
+{% load query_tags %}
+
+<div class="filter-panel">
+    <div class="filter-panel__container">
+
+        <div class="filter-panel__header">
+            <span class="filter-panel__title">Фильтр мероприятий</span>
+            <button type="button" class="filter-panel__close" onclick="closeOverlay('filterOverlay')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="categories-wrapper">
+            <div class="categories-scroll">
+
+                <a href="{% querystring category='' %}"
+                   class="category-btn {% if not selected_category %}active{% endif %}">
+                    <span>Все</span>
+                </a>
+
+                {% for category in categories %}
+                    <a href="{% querystring category=category.slug %}"
+                       class="category-btn {% if selected_category == category.slug %}active{% endif %}">
+                        <span>{{ category.name }}</span>
+                    </a>
+                {% endfor %}
+
+            </div>
+        </div>
+
+    </div>
+</div>

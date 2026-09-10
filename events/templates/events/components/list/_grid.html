@@ -1,0 +1,8 @@
+{% comment %}
+Сетка карточек. Каждая карточка — отдельный инклюд card.html.
+{% endcomment %}
+<div class="events-grid">
+    {% for event in page_obj.object_list %}
+        {% include "events/components/card.html" with event=event %}
+    {% endfor %}
+</div>

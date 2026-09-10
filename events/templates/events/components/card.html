@@ -1,0 +1,17 @@
+{% load static %}
+
+{% comment %}
+=========================================================
+КАРТОЧКА СОБЫТИЯ — сборка из инклюдов.
+Используется в: event_list.html, event_detail.html (похожие),
+а также везде, где нужна карточка.
+=========================================================
+{% endcomment %}
+
+<a href="{% url 'event_detail' event.slug %}" class="event-card">
+
+    {% include "events/components/card/_image.html" %}
+    {% include "events/components/card/_content.html" %}
+    {% include "events/components/card/_footer.html" %}
+
+</a>

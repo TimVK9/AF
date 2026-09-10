@@ -1,0 +1,277 @@
+/* =========================================================
+   ЮРИДИЧЕСКИЕ И ИНФОРМАЦИОННЫЕ СТРАНИЦЫ
+   ========================================================= */
+
+.legal-page {
+    padding-top: 24px;
+    padding-bottom: 64px;
+    max-width: 860px;
+}
+
+.legal-page__header {
+    margin: 0 0 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.legal-page__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: -0.4px;
+    line-height: 1.2;
+}
+
+.legal-page__meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.legal-page__content {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    word-wrap: break-word;
+}
+
+.legal-page__content h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 32px 0 12px;
+    letter-spacing: -0.2px;
+}
+
+.legal-page__content h2:first-child {
+    margin-top: 0;
+}
+
+.legal-page__content h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 22px 0 8px;
+}
+
+.legal-page__content p {
+    margin: 0 0 14px;
+}
+
+.legal-page__content ul,
+.legal-page__content ol {
+    margin: 0 0 16px;
+    padding-left: 22px;
+}
+
+.legal-page__content li {
+    margin-bottom: 6px;
+}
+
+.legal-page__content a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.legal-page__content a:hover {
+    color: var(--accent-hover);
+}
+
+.legal-page__content code {
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    color: var(--text-primary);
+}
+
+.legal-page__content strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.legal-page__content em {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.legal-page__content hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+}
+
+/* ---------- КНОПКА ---------- */
+.legal-page__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition);
+    text-decoration: none !important;
+}
+
+.legal-page__btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* ---------- БЛОК КНОПОК ДЕЙСТВИЙ ---------- */
+.legal-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0 28px;
+}
+
+.legal-page__btn--secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
+.legal-page__btn--secondary:hover {
+    background: rgba(20, 24, 26, 0.05);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+    transform: none;
+    box-shadow: none;
+}
+
+/* ---------- КАРТОЧКИ КОНТАКТОВ ---------- */
+.legal-page__contacts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 20px 0 32px;
+}
+
+.legal-page__contact-card {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 18px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all var(--transition);
+}
+
+.legal-page__contact-card:hover {
+    border-color: rgba(15, 118, 110, 0.3);
+    box-shadow: 0 4px 16px rgba(15, 118, 110, 0.08);
+}
+
+.legal-page__contact-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.legal-page__contact-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.legal-page__contact-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.legal-page__contact-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.legal-page__contact-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    word-break: break-word;
+}
+
+a.legal-page__contact-value {
+    color: var(--accent);
+}
+
+a.legal-page__contact-value:hover {
+    color: var(--accent-hover);
+}
+
+/* ---------- АДАПТИВ ---------- */
+@media (max-width: 768px) {
+    .legal-page {
+        padding-top: 16px;
+        padding-bottom: 48px;
+    }
+
+    .legal-page__header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+    }
+
+    .legal-page__title {
+        font-size: 1.5rem;
+    }
+
+    .legal-page__content {
+        font-size: 0.9rem;
+        line-height: 1.7;
+    }
+
+    .legal-page__content h2 {
+        font-size: 1.15rem;
+        margin-top: 26px;
+    }
+
+    .legal-page__content h3 {
+        font-size: 1rem;
+    }
+
+    .legal-page__contacts {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .legal-page__title {
+        font-size: 1.35rem;
+    }
+
+    .legal-page__content {
+        font-size: 0.88rem;
+    }
+
+    .legal-page__actions {
+        flex-direction: column;
+    }
+
+    .legal-page__actions .legal-page__btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

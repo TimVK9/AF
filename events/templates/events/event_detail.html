@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{% load thumbnail %}
+
+{% comment %}
+=========================================================
+СТРАНИЦА СОБЫТИЯ — сборка из инклюдов.
+=========================================================
+{% endcomment %}
+
+{% block title %}{{ event.title }} — АФИША ИСКИТИМ{% endblock %}
+
+{% block meta %}
+    {% include "events/components/detail/_meta.html" %}
+{% endblock %}
+
+{% block schema %}
+    {% include "events/components/detail/_schema.html" %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/card.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/event_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container event-detail">
+
+    {% include "events/components/detail/_breadcrumbs.html" %}
+
+    <div class="event-detail__grid">
+
+        {% comment %} ============ ЛЕВАЯ КОЛОНКА ============ {% endcomment %}
+        <div class="event-detail__main">
+            {% include "events/components/detail/_headline.html" %}
+            {% include "events/components/detail/_image.html" %}
+            {% include "events/components/detail/_description.html" %}
+            {% include "events/components/detail/_gallery.html" %}
+        </div>
+
+        {% comment %} ============ ПРАВАЯ КОЛОНКА (САЙДБАР) ============ {% endcomment %}
+        <aside class="event-detail__sidebar">
+            {% include "events/components/detail/_facts.html" %}
+            {% include "events/components/detail/_share.html" %}
+            {% include "events/components/detail/_contacts.html" %}
+            {% include "events/components/detail/_stats.html" %}
+        </aside>
+    </div>
+
+    {% include "events/components/detail/_similar.html" %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {% include "events/components/detail/_scripts.html" %}
+    {% include "events/components/detail/_gallery_scripts.html" %}
+{% endblock %}

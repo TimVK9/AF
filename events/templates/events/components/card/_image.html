@@ -1,0 +1,36 @@
+{% load thumbnail %}
+
+{% comment %}
+Изображение карточки.
+{% endcomment %}
+<div class="event-card__image-wrapper">
+
+    {% if event.main_image %}
+        {% thumbnail event.main_image "card" crop="smart" quality=85 as thumb %}
+        <img src="{{ thumb.url }}"
+             alt="{{ event.title }}"
+             class="event-card__image"
+             loading="lazy"
+             width="{{ thumb.width }}"
+             height="{{ thumb.height }}">
+    {% else %}
+        {% include "events/components/card/_placeholder.html" %}
+    {% endif %}
+
+    <div class="event-card__badges">
+        {% if event.is_free %}
+            <span class="badge badge--free">Бесплатно</span>
+        {% elif event.price %}
+            <span class="badge badge--price">{{ event.price }} ₽</span>
+        {% endif %}
+
+        <span class="badge badge--age">{{ event.age_restriction }}</span>
+    </div>
+
+    {% if event.status == 'cancelled' %}
+        <div class="event-card__status event-card__status--cancelled">
+            Отменено
+        </div>
+    {% endif %}
+
+</div>

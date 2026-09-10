@@ -1,0 +1,69 @@
+{% comment %}
+Универсальные хлебные крошки.
+Определяют свой путь по URL name и request.GET.
+{% endcomment %}
+
+{% if request.resolver_match %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+
+    {# Главная — всегда первая, кроме случая, когда мы уже на ней без фильтров #}
+    {% if request.resolver_match.url_name != "home" or request.GET %}
+        <a href="{% url 'home' %}">Афиша</a>
+        <span class="breadcrumbs__sep" aria-hidden="true">/</span>
+    {% endif %}
+
+    {# ---------- ГЛАВНАЯ (список событий) ---------- #}
+    {% if request.resolver_match.url_name == "home" %}
+
+        {% if request.GET.category %}
+            {% for category in categories %}
+                {% if category.slug == request.GET.category %}
+                    <span class="breadcrumbs__current">{{ category.name }}</span>
+                {% endif %}
+            {% endfor %}
+
+        {% elif request.GET.date_filter %}
+            <span class="breadcrumbs__current">
+                {% if request.GET.date_filter == 'today' %}Сегодня
+                {% elif request.GET.date_filter == 'tomorrow' %}Завтра
+                {% elif request.GET.date_filter == 'week' %}На неделе
+                {% elif request.GET.date_filter == 'weekend' %}В выходные
+                {% elif request.GET.date_filter == 'month' %}В этом месяце
+                {% elif request.GET.date_filter == 'past' %}Прошедшие
+                {% else %}{{ request.GET.date_filter }}
+                {% endif %}
+            </span>
+
+        {% elif request.GET.search %}
+            <span class="breadcrumbs__current">Поиск: «{{ request.GET.search }}»</span>
+
+        {% else %}
+            <span class="breadcrumbs__current">Все события</span>
+        {% endif %}
+
+    {# ---------- ДЕТАЛЬНАЯ СОБЫТИЯ ---------- #}
+    {% elif request.resolver_match.url_name == "event_detail" %}
+        {% if event.category %}
+            <a href="{% url 'home' %}?category={{ event.category.slug }}">
+                {{ event.category.name }}
+            </a>
+            <span class="breadcrumbs__sep" aria-hidden="true">/</span>
+        {% endif %}
+        <span class="breadcrumbs__current">{{ event.title }}</span>
+
+    {# ---------- ПРАВОВЫЕ И ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ---------- #}
+    {% else %}
+        <span class="breadcrumbs__current">
+            {% if request.resolver_match.url_name == 'privacy' %}Политика конфиденциальности
+            {% elif request.resolver_match.url_name == 'cookies' %}Использование cookies
+            {% elif request.resolver_match.url_name == 'terms' %}Пользовательское соглашение
+            {% elif request.resolver_match.url_name == 'about' %}О нас
+            {% elif request.resolver_match.url_name == 'contacts' %}Контакты
+            {% elif request.resolver_match.url_name == 'help' %}Помощь
+            {% else %}{{ request.resolver_match.url_name }}
+            {% endif %}
+        </span>
+    {% endif %}
+
+</nav>
+{% endif %}

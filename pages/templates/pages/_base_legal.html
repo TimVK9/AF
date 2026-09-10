@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'pages/css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container legal-page">
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+    <a href="{% url 'home' %}">Афиша</a>
+    <span class="breadcrumbs__sep" aria-hidden="true">/</span>
+    <span class="breadcrumbs__current">{% block legal_title %}{% endblock %}</span>
+</nav>
+
+    <div class="legal-page__header">
+        <h1 class="legal-page__title">{% block legal_title_h1 %}{% endblock %}</h1>
+        <p class="legal-page__meta">
+            Обновлено: {% now "d E Y" %}
+        </p>
+    </div>
+
+    <article class="legal-page__content">
+        {% block legal_content %}{% endblock %}
+    </article>
+
+</div>
+{% endblock %}

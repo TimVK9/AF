@@ -1,0 +1,111 @@
+{% extends "pages/_base_legal.html" %}
+
+{% block title %}Использование cookies — Афиша Искитим{% endblock %}
+{% block legal_title %}Использование cookies{% endblock %}
+{% block legal_title_h1 %}Использование cookies{% endblock %}
+
+{% block legal_content %}
+
+<p>
+    Сайт <strong>iskitim-afisha.ru</strong> использует минимально необходимый набор
+    файлов cookie для корректной работы. Мы <strong>не собираем</strong> ваши
+    персональные данные, не используем сторонние аналитические и рекламные
+    скрипты.
+</p>
+
+<h2>1. Что такое cookies</h2>
+
+<p>
+    Cookies — небольшие текстовые файлы, которые сохраняются в браузере при
+    посещении сайта. Они позволяют сайту «запоминать» действия и предпочтения
+    Пользователя на определённое время.
+</p>
+
+<h2>2. Какие cookies мы используем</h2>
+
+<p>
+    Сайт использует <strong>только необходимые cookies</strong>, без которых
+    корректная работа невозможна. Эти cookies не требуют согласия
+    Пользователя и устанавливаются всегда:
+</p>
+
+<ul>
+    <li><code>sessionid</code> — идентификатор сессии (для авторизации).</li>
+    <li><code>csrftoken</code> — защита от CSRF-атак.</li>
+    <li><code>django_language</code> — выбранный язык интерфейса.</li>
+    <li>
+        <code>cookie_consent_v1</code> — сохранённый выбор Пользователя
+        (хранится в <code>localStorage</code> браузера, не передаётся на сервер).
+    </li>
+</ul>
+
+<h2>3. Какие cookies мы НЕ используем</h2>
+
+<p>
+    На сайте <strong>отсутствуют</strong>:
+</p>
+
+<ul>
+    <li>аналитические cookies (Яндекс.Метрика, Google Analytics и другие);</li>
+    <li>маркетинговые cookies (рекламные пиксели, ретаргетинг);</li>
+    <li>социальные cookies (кнопки соцсетей с трекингом).</li>
+</ul>
+
+<p>
+    Это значит, что данные о ваших посещениях <strong>не передаются</strong>
+    третьим лицам.
+</p>
+
+<h2>4. Внутренняя статистика сайта</h2>
+
+<p>
+    Сайт ведёт <strong>обезличенный</strong> подсчёт просмотров страниц событий
+    средствами собственной серверной части. Счётчик увеличивается при открытии
+    страницы события и <strong>не связан</strong> с конкретным пользователем:
+    мы не сохраняем IP-адреса, данные браузера, файлы cookie, идентификаторы
+    или любые иные сведения, позволяющие идентифицировать Пользователя.
+</p>
+
+<p>
+    Такая статистика нужна исключительно для внутреннего анализа популярности
+    событий и <strong>не является обработкой персональных данных</strong>.
+</p>
+
+<h2>5. Управление cookies</h2>
+
+<p>
+    Вы можете в любой момент изменить настройки cookies в браузере или удалить
+    сохранённые данные. Инструкции для популярных браузеров:
+</p>
+
+<ul>
+    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener nofollow">Google Chrome</a></li>
+    <li><a href="https://support.mozilla.org/ru/kb/udalenie-kukov" target="_blank" rel="noopener nofollow">Mozilla Firefox</a></li>
+    <li><a href="https://support.microsoft.com/ru-ru/microsoft-edge" target="_blank" rel="noopener nofollow">Microsoft Edge</a></li>
+    <li><a href="https://yandex.ru/support/browser/ru/personal-settings/cookie.html" target="_blank" rel="noopener nofollow">Яндекс.Браузер</a></li>
+    <li><a href="https://help.opera.com/ru/latest/web-preferences/#cookies" target="_blank" rel="noopener nofollow">Opera</a></li>
+</ul>
+
+<p>
+    Отключение необходимых cookies может привести к неработоспособности
+    отдельных функций сайта.
+</p>
+
+<div class="legal-page__actions">
+    <button type="button"
+            class="legal-page__btn legal-page__btn--secondary"
+            onclick="if (confirm('Сбросить сохранённое уведомление о cookies и показать баннер заново?')) { window.resetCookieConsent(); }">
+        Сбросить уведомление
+    </button>
+</div>
+
+<h2>6. Изменения</h2>
+
+<p>
+    При подключении новых сервисов, которые используют cookies (например,
+    веб-аналитика), мы обновим этот документ и <strong>запросим отдельное
+    согласие</strong> Пользователя. До получения согласия такие cookies
+    устанавливаться не будут.
+</p>
+
+{% endblock %}

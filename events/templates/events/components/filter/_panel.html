@@ -1,0 +1,17 @@
+{# events/components/filter/_panel.html #}
+{% load static %}
+
+{% comment %}
+Обёртка панели фильтрации для десктопа.
+Собирает: поиск, категории, быстрые фильтры, диапазон дат.
+{% endcomment %}
+<div class="desktop-filter">
+    <div class="filter-panel">
+        <div class="filter-panel__container">
+            {% include "events/components/filter/_search.html" %}
+            {% include "events/components/filter/_categories.html" with categories=categories %}
+            {% include "events/components/filter/_date_chips.html" %}
+            {% include "events/components/filter/_date_range.html" %}
+        </div>
+    </div>
+</div>

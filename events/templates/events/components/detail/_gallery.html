@@ -1,0 +1,72 @@
+{% load thumbnail %}
+
+{% comment %}
+Галерея изображений события.
+{% endcomment %}
+{% if event.images.all %}
+<section class="event-detail__section event-detail__gallery">
+    <h2 class="event-detail__section-title">Фотографии</h2>
+
+    <div class="event-gallery" data-gallery>
+
+        {# ---------- Основное большое фото ---------- #}
+        <div class="event-gallery__main">
+            {% for img in event.images.all %}
+                {% thumbnail img.image "gallery" crop="smart" quality=85 as g_thumb %}
+                <img src="{{ g_thumb.url }}"
+                     alt="{{ img.caption|default:event.title }}"
+                     class="event-gallery__main-image {% if forloop.first %}is-active{% endif %}"
+                     data-gallery-main
+                     data-index="{{ forloop.counter0 }}"
+                     loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                     width="{{ g_thumb.width }}"
+                     height="{{ g_thumb.height }}">
+            {% endfor %}
+
+            {% if event.images.all|length > 1 %}
+                <button type="button"
+                        class="event-gallery__nav event-gallery__nav--prev"
+                        data-gallery-prev
+                        aria-label="Предыдущее фото">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+                <button type="button"
+                        class="event-gallery__nav event-gallery__nav--next"
+                        data-gallery-next
+                        aria-label="Следующее фото">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+
+                <div class="event-gallery__counter">
+                    <span data-gallery-current>1</span> / {{ event.images.all|length }}
+                </div>
+            {% endif %}
+        </div>
+
+        {# ---------- Миниатюры ---------- #}
+        {% if event.images.all|length > 1 %}
+            <div class="event-gallery__thumbs">
+                {% for img in event.images.all %}
+                    <button type="button"
+                            class="event-gallery__thumb {% if forloop.first %}is-active{% endif %}"
+                            data-gallery-thumb
+                            data-index="{{ forloop.counter0 }}"
+                            aria-label="Показать фото {{ forloop.counter }}">
+                        {% thumbnail img.image "gallery_thumb" crop="smart" quality=80 as gt %}
+                        <img src="{{ gt.url }}"
+                             alt="{{ img.caption|default:event.title }}"
+                             loading="lazy"
+                             width="{{ gt.width }}"
+                             height="{{ gt.height }}">
+                    </button>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endif %}

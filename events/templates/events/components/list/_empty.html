@@ -1,0 +1,40 @@
+{% comment %}
+Заглушка «Ничего не найдено». Текст зависит от активного фильтра:
+поиск, категория, date_filter, диапазон дат или общий случай.
+{% endcomment %}
+<div class="no-results">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+
+    <h3>Ничего не найдено</h3>
+
+    <p>
+        {% if search_query %}
+            По запросу "{{ search_query }}" ничего не найдено
+        {% elif selected_category %}
+            {% for category in categories %}
+                {% if category.slug == selected_category %}
+                    В категории "{{ category.name }}" нет событий
+                {% endif %}
+            {% endfor %}
+        {% elif date_filter %}
+            {% if date_filter == 'today' %}На сегодня нет событий
+            {% elif date_filter == 'tomorrow' %}На завтра нет событий
+            {% elif date_filter == 'week' %}На этой неделе нет событий
+            {% elif date_filter == 'weekend' %}В выходные нет событий
+            {% elif date_filter == 'month' %}В этом месяце нет событий
+            {% elif date_filter == 'past' %}Нет прошедших событий
+            {% else %}Нет событий
+            {% endif %}
+        {% elif start_date and end_date %}
+            С {{ start_date|slice:"8:10" }}.{{ start_date|slice:"5:7" }}.{{ start_date|slice:"0:4" }}
+            по {{ end_date|slice:"8:10" }}.{{ end_date|slice:"5:7" }}.{{ end_date|slice:"0:4" }} нет событий
+        {% else %}
+            Попробуйте изменить параметры поиска или фильтры
+        {% endif %}
+    </p>
+
+    <a href="{% url 'home' %}" class="reset-search-btn">Сбросить все фильтры</a>
+</div>

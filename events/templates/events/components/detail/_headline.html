@@ -1,0 +1,16 @@
+<div class="event-detail__headline">
+    <h1 class="event-detail__title">{{ event.title }}</h1>
+    <div class="event-detail__subtitle">
+        {% if event.category %}
+            <span>{{ event.category.name }}</span>
+        {% endif %}
+        {% if event.category and event.start_date %}
+            <span class="event-detail__subtitle-sep">·</span>
+        {% endif %}
+        <span>{{ event.start_date|date:"d E Y" }}{% if event.start_time %}, {{ event.start_time|time:"H:i" }}{% endif %}</span>
+        {% if event.place %}
+            <span class="event-detail__subtitle-sep">·</span>
+            <span>{{ event.place.name }}</span>
+        {% endif %}
+    </div>
+</div>

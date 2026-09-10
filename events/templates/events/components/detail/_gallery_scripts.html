@@ -1,0 +1,88 @@
+{% comment %}
+JS для галереи: переключение фото, миниатюры, стрелки, свайп.
+Без библиотек.
+{% endcomment %}
+<script>
+(function () {
+    'use strict';
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var galleries = document.querySelectorAll('[data-gallery]');
+        if (!galleries.length) return;
+
+        galleries.forEach(function (gallery) {
+            var mains = gallery.querySelectorAll('[data-gallery-main]');
+            var thumbs = gallery.querySelectorAll('[data-gallery-thumb]');
+            var prevBtn = gallery.querySelector('[data-gallery-prev]');
+            var nextBtn = gallery.querySelector('[data-gallery-next]');
+            var counter = gallery.querySelector('[data-gallery-current]');
+
+            if (!mains.length) return;
+
+            var current = 0;
+            var total = mains.length;
+
+            function show(index) {
+                if (index < 0) index = total - 1;
+                if (index >= total) index = 0;
+                current = index;
+
+                mains.forEach(function (img, i) {
+                    img.classList.toggle('is-active', i === current);
+                });
+
+                thumbs.forEach(function (t, i) {
+                    t.classList.toggle('is-active', i === current);
+                });
+
+                if (counter) {
+                    counter.textContent = String(current + 1);
+                }
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function () {
+                    show(current - 1);
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function () {
+                    show(current + 1);
+                });
+            }
+
+            thumbs.forEach(function (thumb) {
+                thumb.addEventListener('click', function () {
+                    var idx = parseInt(thumb.getAttribute('data-index'), 10) || 0;
+                    show(idx);
+                });
+            });
+
+            /* Свайп на мобильных */
+            var touchStartX = 0;
+            var touchEndX = 0;
+
+            gallery.addEventListener('touchstart', function (e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            gallery.addEventListener('touchend', function (e) {
+                touchEndX = e.changedTouches[0].screenX;
+                var diff = touchStartX - touchEndX;
+                if (Math.abs(diff) > 40) {
+                    if (diff > 0) show(current + 1);
+                    else show(current - 1);
+                }
+            }, { passive: true });
+
+            /* Клавиатура */
+            document.addEventListener('keydown', function (e) {
+                if (!gallery.offsetParent) return;
+                if (e.key === 'ArrowLeft') show(current - 1);
+                if (e.key === 'ArrowRight') show(current + 1);
+            });
+        });
+    });
+})();
+</script>

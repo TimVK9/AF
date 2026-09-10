@@ -1,0 +1,39 @@
+{% load query_tags %}
+
+<div class="filters-wrapper">
+    <div class="filter-row">
+
+        <div class="filter-chips">
+
+            <a href="{% querystring date_filter='today' %}"
+               class="chip {% if date_filter == 'today' %}active{% endif %}">Сегодня</a>
+
+            <a href="{% querystring date_filter='tomorrow' %}"
+               class="chip {% if date_filter == 'tomorrow' %}active{% endif %}">Завтра</a>
+
+            <a href="{% querystring date_filter='week' %}"
+               class="chip {% if date_filter == 'week' %}active{% endif %}">На неделе</a>
+
+            <a href="{% querystring date_filter='weekend' %}"
+               class="chip {% if date_filter == 'weekend' %}active{% endif %}">В выходные</a>
+
+            <a href="{% querystring date_filter='month' %}"
+               class="chip {% if date_filter == 'month' %}active{% endif %}">В этом месяце</a>
+
+            <a href="{% querystring date_filter='past' %}"
+               class="chip chip--past {% if date_filter == 'past' %}active{% endif %}">Прошедшие</a>
+
+        </div>
+
+        {% if selected_category or search_query or date_filter or start_date or end_date %}
+            <a href="{% url 'home' %}" class="filters-reset" aria-label="Сбросить все фильтры">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                <span>Сбросить</span>
+            </a>
+        {% endif %}
+
+    </div>
+</div>

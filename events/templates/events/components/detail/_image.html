@@ -1,0 +1,102 @@
+{% load thumbnail %}
+
+{% comment %}
+Изображение события.
+{% endcomment %}
+<div class="event-detail__image-wrapper">
+    {% if event.main_image %}
+        {% thumbnail event.main_image "detail" crop="smart" quality=85 as thumb %}
+        <img src="{{ thumb.url }}"
+             alt="{{ event.title }}"
+             class="event-detail__image"
+             loading="eager"
+             width="{{ thumb.width }}"
+             height="{{ thumb.height }}">
+    {% else %}
+        <div class="event-detail__image-placeholder" aria-hidden="true">
+            <div class="ph-sky"></div>
+            <div class="ph-glow"></div>
+            <svg class="ph-art"
+                 xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 400 250"
+                 preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="ed-beam-1" x1="0" y1="1" x2="0" y2="0">
+                        <stop offset="0%"   stop-color="#5eead4" stop-opacity="0.55"/>
+                        <stop offset="60%"  stop-color="#5eead4" stop-opacity="0.10"/>
+                        <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="ed-beam-2" x1="0" y1="1" x2="0" y2="0">
+                        <stop offset="0%"   stop-color="#a7f3d0" stop-opacity="0.45"/>
+                        <stop offset="60%"  stop-color="#a7f3d0" stop-opacity="0.08"/>
+                        <stop offset="100%" stop-color="#a7f3d0" stop-opacity="0"/>
+                    </linearGradient>
+                    <radialGradient id="ed-moon" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%"   stop-color="#ffffff"/>
+                        <stop offset="70%"  stop-color="#e6fffa"/>
+                        <stop offset="100%" stop-color="#99f6e4"/>
+                    </radialGradient>
+                    <radialGradient id="ed-moon-glow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%"   stop-color="#5eead4" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+
+                <g fill="#ffffff">
+                    <circle cx="42"  cy="34"  r="1"   opacity="0.9"/>
+                    <circle cx="88"  cy="22"  r="1.4" opacity="0.7"/>
+                    <circle cx="130" cy="48"  r="1"   opacity="0.5"/>
+                    <circle cx="175" cy="18"  r="1.2" opacity="0.8"/>
+                    <circle cx="222" cy="40"  r="1"   opacity="0.6"/>
+                    <circle cx="268" cy="26"  r="1.6" opacity="0.9"/>
+                    <circle cx="312" cy="52"  r="1"   opacity="0.5"/>
+                    <circle cx="355" cy="30"  r="1.3" opacity="0.7"/>
+                </g>
+
+                <circle cx="320" cy="62" r="30" fill="url(#ed-moon-glow)"/>
+                <circle cx="320" cy="62" r="14" fill="url(#ed-moon)"/>
+
+                <path d="M110 200 L40 30 L120 30 Z" fill="url(#ed-beam-1)"/>
+                <path d="M290 200 L360 30 L280 30 Z" fill="url(#ed-beam-2)"/>
+                <circle cx="110" cy="200" r="4" fill="#a7f3d0" opacity="0.9"/>
+                <circle cx="290" cy="200" r="4" fill="#a7f3d0" opacity="0.9"/>
+
+                <g fill="#04201c" opacity="0.9">
+                    <rect x="0"   y="180" width="22" height="70"/>
+                    <rect x="24"  y="168" width="18" height="82"/>
+                    <rect x="44"  y="192" width="26" height="58"/>
+                    <rect x="72"  y="176" width="20" height="74"/>
+                    <rect x="94"  y="186" width="16" height="64"/>
+                    <rect x="112" y="172" width="24" height="78"/>
+                    <rect x="138" y="190" width="18" height="60"/>
+                    <rect x="158" y="178" width="22" height="72"/>
+                    <rect x="182" y="186" width="18" height="64"/>
+                    <rect x="202" y="170" width="24" height="80"/>
+                    <rect x="228" y="188" width="18" height="62"/>
+                    <rect x="248" y="176" width="22" height="74"/>
+                    <rect x="272" y="184" width="18" height="66"/>
+                    <rect x="292" y="172" width="24" height="78"/>
+                    <rect x="318" y="188" width="18" height="62"/>
+                    <rect x="338" y="180" width="22" height="70"/>
+                    <rect x="362" y="190" width="20" height="60"/>
+                    <rect x="384" y="184" width="16" height="66"/>
+                </g>
+            </svg>
+        </div>
+    {% endif %}
+
+    <div class="event-detail__badges">
+        {% if event.is_free %}
+            <span class="badge badge--free">Бесплатно</span>
+        {% elif event.price %}
+            <span class="badge badge--price">{{ event.price }} ₽</span>
+        {% endif %}
+        <span class="badge badge--age">{{ event.age_restriction }}</span>
+    </div>
+
+    {% if event.status == 'cancelled' %}
+        <div class="event-card__status event-card__status--cancelled">
+            Отменено
+        </div>
+    {% endif %}
+</div>
