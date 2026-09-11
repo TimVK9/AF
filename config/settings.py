@@ -1,43 +1,87 @@
 """
-Django settings — базовый файл для разработки.
+Django settings — единый файл для dev и prod.
 
-ПРОДАКШЕН: используйте config/settings_prod.py
+Режим определяется переменной окружения DJANGO_DEBUG:
+  - DJANGO_DEBUG=True  (или не задана) → режим разработки
+  - DJANGO_DEBUG=False                  → продакшен
+
+Все значения читаются из .env в корне проекта (см. load_dotenv ниже).
 """
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Загружаем .env до всех os.environ.get(...)
+# .env читаем ДО любого os.environ.get(...)
 load_dotenv(BASE_DIR / ".env")
+
+
+# =========================================================
+# РЕЖИМ
+# =========================================================
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("1", "true", "yes", "on")
+IS_PROD = not DEBUG
 
 
 # =========================================================
 # БЕЗОПАСНОСТЬ
 # =========================================================
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-dev-key-change-me-in-production",
-)
+if IS_PROD:
+    # В проде SECRET_KEY обязателен, без фоллбэка.
+    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+else:
+    # В dev — мягкий фоллбэк, чтобы можно было запускать без .env.
+    SECRET_KEY = os.environ.get(
+        "DJANGO_SECRET_KEY",
+        "django-insecure-dev-key-change-me-in-production",
+    )
 
-DEBUG = True  # ← в этом файле всегда True, для продакшена — settings_prod.py
 
+# ALLOWED_HOSTS: в проде — из .env, в dev — локальные
+_default_hosts = "127.0.0.1,localhost"
 ALLOWED_HOSTS = [
     h.strip()
-    for h in os.environ.get(
-        "DJANGO_ALLOWED_HOSTS",
-        "127.0.0.1,localhost",
-    ).split(",")
+    for h in os.environ.get("DJANGO_ALLOWED_HOSTS", _default_hosts).split(",")
     if h.strip()
 ]
+
+# CSRF_TRUSTED_ORIGINS нужен за https-прокси (nginx) в проде.
+# В dev, если не задано, оставляем пустым.
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
+
+
+# =========================================================
+# HTTPS / COOKIES — включаем только в проде
+# =========================================================
+if IS_PROD:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False
+
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
 
 
 # =========================================================
 # ПРИЛОЖЕНИЯ
 # =========================================================
 INSTALLED_APPS = [
-        "jazzmin",              # перед django.contrib.admin
+    "jazzmin",              # перед django.contrib.admin
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -48,10 +92,10 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.sitemaps",
 
-    "easy_thumbnails",        
+    "easy_thumbnails",
 
     "events",
-     "pages", 
+    "pages",
 ]
 
 SITE_ID = 1
@@ -69,8 +113,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'pages.middleware.ComingSoonMiddleware',  # ← добавить
+
 ]
 
+SITE_COMING_SOON = True
 
 # =========================================================
 # URLS / WSGI
@@ -102,12 +149,16 @@ TEMPLATES = [
 
 
 # =========================================================
-# БАЗА ДАННЫХ (SQLite для разработки)
+# БАЗА ДАННЫХ — SQLite
 # =========================================================
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+        "OPTIONS": {
+            # Ждать до 20 сек при блокировке, а не падать сразу с "database is locked"
+            "timeout": 20,
+        },
     }
 }
 
@@ -142,15 +193,26 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# В разработке — обычная отдача файлов
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
+if IS_PROD:
+    # В проде — хешированные имена файлов (кеш браузера не залипает после деплоя)
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+        },
+    }
+else:
+    # В dev — обычная отдача без манифеста
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
 
 # =========================================================
@@ -159,7 +221,6 @@ STORAGES = {
 LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -173,12 +234,17 @@ SUBSCRIBE_COOLDOWN_SECONDS = int(
 
 
 # =========================================================
-# EMAIL (в разработке — в консоль)
+# EMAIL
 # =========================================================
-EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend",
-)
+# В dev — в консоль, в prod — реальный SMTP.
+if IS_PROD:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = os.environ.get(
+        "EMAIL_BACKEND",
+        "django.core.mail.backends.console.EmailBackend",
+    )
+
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
@@ -239,76 +305,49 @@ LOGGING = {
     },
 }
 
+if IS_PROD:
+    # В проде console уходит в journald — делаем его потише,
+    # подробности всё равно пишутся в файлы.
+    LOGGING["handlers"]["console"]["level"] = "WARNING"
+
+
 # =========================================================
 # JAZZMIN — основные настройки
 # =========================================================
 JAZZMIN_SETTINGS = {
-    # Заголовки
     "site_title": "Афиша Искитим — админка",
     "site_header": "Афиша Искитим",
     "site_brand": "АФИШАИСКИТИМ",
-    "site_logo": None,                    # можно указать путь к логотипу
+    "site_logo": None,
     "login_logo": None,
     "login_logo_dark": None,
     "site_logo_classes": "img-circle",
     "site_icon": None,
     "dashboard_callback": "events.admin.admin_dashboard_callback",
 
-    # Приветствие на странице логина
     "welcome_sign": "Добро пожаловать в панель управления",
     "copyright": "Афиша Искитим",
 
-    # Поиск в хедере
     "search_model": ["events.Event", "events.Place", "events.Category"],
 
-    # Аватар пользователя (поле в User) — у нас его нет, оставляем None
     "user_avatar": None,
 
-    # Верхнее меню
     "topmenu_links": [
-        {
-            "name": "На сайт",
-            "url": "/",
-            "new_window": True,
-            "icon": "fas fa-external-link-alt",
-        },
-        {
-            "name": "События",
-            "model": "events.Event",
-            "icon": "fas fa-calendar-alt",
-            "permissions": ["events.view_event"],
-        },
-        {
-            "name": "Площадки",
-            "model": "events.Place",
-            "icon": "fas fa-map-marker-alt",
-            "permissions": ["events.view_place"],
-        },
-        {
-            "name": "Помощь",
-            "url": "/admin/help/",
-            "new_window": True,
-            "icon": "fas fa-question-circle",
-        },
+        {"name": "На сайт", "url": "/", "new_window": True, "icon": "fas fa-external-link-alt"},
+        {"name": "События", "model": "events.Event", "icon": "fas fa-calendar-alt", "permissions": ["events.view_event"]},
+        {"name": "Площадки", "model": "events.Place", "icon": "fas fa-map-marker-alt", "permissions": ["events.view_place"]},
+        {"name": "Помощь", "url": "/admin/help/", "new_window": True, "icon": "fas fa-question-circle"},
     ],
 
-    # Правая часть хедера
     "usermenu_links": [
-        {
-            "name": "На сайт",
-            "url": "/",
-            "new_window": True,
-            "icon": "fas fa-external-link-alt",
-        },
+        {"name": "На сайт", "url": "/", "new_window": True, "icon": "fas fa-external-link-alt"},
     ],
 
-    # Сайдбар
     "show_sidebar": True,
     "navigation_expanded": True,
     "hide_apps": [],
     "hide_models": [],
 
-    # Кастомный порядок приложений и моделей в сайдбаре
     "order_with_respect_to": [
         "events",
         "events.Event",
@@ -322,15 +361,12 @@ JAZZMIN_SETTINGS = {
         "sitemaps",
     ],
 
-    # Иконки
     "icons": {
-        # Приложения
         "auth": "fas fa-users-cog",
         "events": "fas fa-calendar-alt",
         "sites": "fas fa-globe",
         "sitemaps": "fas fa-sitemap",
 
-        # Модели
         "auth.User": "fas fa-user",
         "auth.Group": "fas fa-users",
         "events.Event": "fas fa-calendar-alt",
@@ -342,65 +378,55 @@ JAZZMIN_SETTINGS = {
     "default_icon_parents": "fas fa-folder",
     "default_icon_children": "fas fa-circle",
 
-    # Модальные окна для связанных объектов (у нас не будем)
     "related_modal_active": False,
 
-    # Кастомные CSS и JS
     "custom_css": "admin/css/jazzmin_custom.css",
     "custom_js": "admin/js/jazzmin_custom.js",
 
-    # Шрифты
     "use_google_fonts_cdn": True,
     "show_ui_builder": False,
 
-    # Формат форм: "horizontal_tabs" — табы по fieldsets
     "changeform_format": "horizontal_tabs",
-
-    # Переопределяем формат для отдельных моделей
     "changeform_format_overrides": {
         "auth.user": "collapsible",
         "auth.group": "vertical_tabs",
         "events.Event": "horizontal_tabs",
     },
 
-    # Язык
     "language_chooser": False,
 }
 
+
 # =========================================================
-# JAZZMIN — UI-настройки (цвета, кнопки)
+# JAZZMIN — UI
 # =========================================================
 JAZZMIN_UI_TWEAKS = {
-    # Размеры шрифтов
     "navbar_small_text": False,
     "footer_small_text": False,
     "body_small_text": False,
     "brand_small_text": False,
 
-    # Цвета
-    "brand_colour": "navbar-success",       # изумрудный хедер
-    "accent": "accent-success",             # изумрудные акценты (галочки, radio)
-    "navbar": "navbar-dark",                # тёмный текст на светлом фоне (при navbar-success текст белый)
+    "brand_colour": "navbar-success",
+    "accent": "accent-success",
+    "navbar": "navbar-dark",
     "no_navbar_border": True,
-    "navbar_fixed": True,                   # хедер всегда сверху
+    "navbar_fixed": True,
 
     "layout_boxed": False,
     "footer_fixed": False,
-    "sidebar_fixed": True,                  # сайдбар зафиксирован
+    "sidebar_fixed": True,
 
-    "sidebar": "sidebar-dark-success",      # тёмно-изумрудный сайдбар
+    "sidebar": "sidebar-dark-success",
     "sidebar_nav_small_text": False,
     "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": True,       # отступы вложенных пунктов
+    "sidebar_nav_child_indent": True,
     "sidebar_nav_compact_style": False,
     "sidebar_nav_legacy_style": False,
     "sidebar_nav_flat_style": False,
 
-    # Тема
     "theme": "default",
-    "dark_mode_theme": "darkly",            # тема для тёмного режима
+    "dark_mode_theme": "darkly",
 
-    # Классы кнопок
     "button_classes": {
         "primary": "btn-primary",
         "secondary": "btn-secondary",
@@ -413,31 +439,19 @@ JAZZMIN_UI_TWEAKS = {
 
 
 # =========================================================
-# EASY-THUMBNAILS — оптимизация изображений
+# EASY-THUMBNAILS
 # =========================================================
 THUMBNAIL_ALIASES = {
     "": {
-        # Карточка события на главной
         "card": {"size": (600, 400), "crop": "smart", "quality": 85},
-
-        # Карточка 2x (для Retina)
         "card_2x": {"size": (1200, 800), "crop": "smart", "quality": 80},
-
-        # Главное фото на детальной
         "detail": {"size": (1200, 750), "crop": "smart", "quality": 85},
-
-        # Галерея — большое фото
         "gallery": {"size": (1200, 750), "crop": "smart", "quality": 85},
-
-        # Галерея — миниатюра
         "gallery_thumb": {"size": (200, 150), "crop": "smart", "quality": 80},
-
-        # Превью для админки
         "admin_thumb": {"size": (80, 60), "crop": "smart", "quality": 80},
     },
 }
 
-# Оптимизация размера файлов
 THUMBNAIL_OPTIMIZE = True
 THUMBNAIL_QUALITY = 85
 THUMBNAIL_PRESERVE_EXTENSIONS = ("png",)
