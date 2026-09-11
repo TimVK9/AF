@@ -9,30 +9,6 @@ JS страницы события:
 (function () {
     'use strict';
 
-    /* ----- 1. Кнопка «Поделиться в MAX» ----- */
-    document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.js-share-max');
-        if (!btn) return;
-
-        var title = btn.getAttribute('data-share-title') || document.title;
-        var text  = btn.getAttribute('data-share-text')  || title;
-        var url   = btn.getAttribute('data-share-url')   || window.location.href;
-
-        // Мобильные: системное меню «Поделиться»
-        if (navigator.share) {
-            navigator.share({ title: title, text: text, url: url })
-                .catch(function () { /* отмена — молчим */ });
-            return;
-        }
-
-        // Десктоп: копируем «Название — URL» в буфер
-        copyToClipboard(text).then(function (ok) {
-            showToast(ok
-                ? 'Ссылка скопирована — вставьте в MAX'
-                : 'Не удалось скопировать ссылку');
-        });
-    });
-
     /* ----- 2. Кнопка «Скопировать ссылку» ----- */
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.js-copy-btn');

@@ -9,7 +9,10 @@ from .servis_models import ServisModel
 from .place import Place
 from .category import Category
 from django.contrib.auth import get_user_model
+import random
 
+def random_int():
+        return random.randint(15, 45)
 User = get_user_model()
 
 class Event(ServisModel):
@@ -69,8 +72,11 @@ class Event(ServisModel):
     contact_email = models.EmailField(blank=True, verbose_name='Email для связи')
     contact_phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон для связи')
 
+    
+
+
     # Счётчики
-    views_count = models.PositiveIntegerField(default=0, verbose_name='Просмотры')
+    views_count = models.PositiveIntegerField(default=random_int, verbose_name='Просмотры')
     favorites_count = models.PositiveIntegerField(default=0, verbose_name='В избранном')
 
     class Meta:

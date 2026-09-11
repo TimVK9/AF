@@ -2,7 +2,6 @@
 Кнопки «Поделиться»: ВКонтакте, MAX, Скопировать.
 Логика:
   • ВК — стабильный веб-шер vk.com/share.php;
-  • MAX — navigator.share() на мобильных / копирование в буфер на десктопе;
   • Скопировать — универсальный фолбэк для Telegram, WhatsApp и др.
 JS — в _scripts.html.
 {% endcomment %}
@@ -40,23 +39,7 @@ JS — в _scripts.html.
                 <span class="event-share-btn__text">ВКонтакте</span>
             </a>
 
-            {# MAX #}
-            <button type="button"
-                    class="event-share-btn event-share-btn--max js-share-max"
-                    data-share-title="{{ event.title }}"
-                    data-share-text="{{ event.title }} — {{ request.build_absolute_uri }}"
-                    data-share-url="{{ request.build_absolute_uri }}"
-                    aria-label="Поделиться в MAX">
-                <span class="event-share-btn__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4.293 3.293A1 1 0 0 1 3 19.586V5a1 1 0 0 1 1-1z"/>
-                        <path d="M8 10h8"/>
-                        <path d="M8 13h5"/>
-                    </svg>
-                </span>
-                <span class="event-share-btn__text">MAX</span>
-            </button>
-
+            
             {# Скопировать #}
             <button type="button"
                     class="event-share-btn event-share-btn--copy js-copy-btn"
