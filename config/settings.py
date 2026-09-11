@@ -113,7 +113,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # 'pages.middleware.ComingSoonMiddleware',  # ← добавить
+    'pages.middleware.ComingSoonMiddleware',   # ← на месте
 
 ]
 
