@@ -1,20 +1,20 @@
 """
 Админка приложения events.
 
-Показывает:
+Регистрирует:
   • Event — список с фильтрами по статусу, категории, площадке;
   • Place — площадки;
   • Address — адреса;
   • Category — категории;
-  • EventImage — изображения галереи (инлайн в Event).
+  • EventImage — галерея (инлайн в Event + отдельная страница);
+  • ImportLog — журнал импортов.
 
-Без кастомных format_html на list_display — Django 5+/6 требует
-аргументы, а где они не нужны, проще mark_safe или обычный текст.
+Кнопка «Импортировать с kultisk.ru» рендерится через
+templates/admin/base_site.html, который подхватывается автоматически.
 """
 
 from django.contrib import admin
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 
 from .models import (
     Event,
@@ -22,11 +22,21 @@ from .models import (
     Place,
     Address,
     Category,
+    ImportLog,
 )
 
 
 # ======================================================================
-#  EVENT IMAGE (inline)
+#  БРЕНДИНГ АДМИНКИ
+# ======================================================================
+
+admin.site.site_header = 'АФИША ИСКИТИМ'
+admin.site.site_title = 'Афиша Искитим'
+admin.site.index_title = 'Управление афишей'
+
+
+# ======================================================================
+#  EVENT IMAGE (inline в Event)
 # ======================================================================
 
 class EventImageInline(admin.TabularInline):
@@ -133,8 +143,10 @@ class EventAdmin(admin.ModelAdmin):
         return {'slug': ('title',)}
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related('category', 'place')
+        return (
+            super().get_queryset(request)
+            .select_related('category', 'place')
+        )
 
 
 # ======================================================================
@@ -193,8 +205,7 @@ class PlaceAdmin(admin.ModelAdmin):
         return '—'
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related('address')
+        return super().get_queryset(request).select_related('address')
 
 
 # ======================================================================
@@ -284,8 +295,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 # ======================================================================
-#  EVENT IMAGE (отдельная страница — на случай, если нужно
-#  редактировать вне события)
+#  EVENT IMAGE (отдельная страница)
 # ======================================================================
 
 @admin.register(EventImage)
@@ -319,9 +329,74 @@ class EventImageAdmin(admin.ModelAdmin):
 
 
 # ======================================================================
-#  БРЕНДИНГ АДМИНКИ
+#  IMPORT LOG — только для просмотра
 # ======================================================================
 
-admin.site.site_header = 'АФИША ИСКИТИМ'
-admin.site.site_title = 'Афиша Искитим'
-admin.site.index_title = 'Управление афишей'
+@admin.register(ImportLog)
+class ImportLogAdmin(admin.ModelAdmin):
+    list_display = (
+        'started_at',
+        'source',
+        'status_display',
+        'created_by',
+        'events_created',
+        'events_skipped',
+        'rows_parsed',
+        'duration',
+    )
+    list_filter = ('source', 'status')
+    readonly_fields = (
+        'source',
+        'status',
+        'started_at',
+        'finished_at',
+        'created_by',
+        'events_created',
+        'events_skipped',
+        'rows_parsed',
+        'rows_skipped',
+        'log_output_pre',
+    )
+    fields = readonly_fields
+    list_per_page = 50
+
+    @admin.display(description='Статус', ordering='status')
+    def status_display(self, obj):
+        colors = {
+            'running': '#6b767a',
+            'success': '#0f766e',
+            'error':   '#dc2626',
+        }
+        color = colors.get(obj.status, '#14181a')
+        return format_html(
+            '<span style="color: {}; font-weight: 600;">{}</span>',
+            color,
+            obj.get_status_display(),
+        )
+
+    @admin.display(description='Длительность')
+    def duration(self, obj):
+        if not obj.finished_at:
+            return '—'
+        delta = obj.finished_at - obj.started_at
+        return f'{delta.total_seconds():.1f} с'
+
+    @admin.display(description='Вывод команды')
+    def log_output_pre(self, obj):
+        if not obj.log_output:
+            return '—'
+        return format_html(
+            '<pre style="max-height: 600px; overflow: auto; '
+            'background: #f7f9f8; padding: 12px; border-radius: 6px; '
+            'font-size: 12px; line-height: 1.5; white-space: pre-wrap;">{}</pre>',
+            obj.log_output,
+        )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser

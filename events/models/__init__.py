@@ -5,6 +5,7 @@ from .servis_models import Address, ServisModel
 from .models_analytics import PageView
 from .event_image import EventImage
 from .email_otp import EmailOTP
+from .import_log import ImportLog
 
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     'PageView',
     'EventImage',
     'EmailOTP',
+    'ImportLog',
 ]

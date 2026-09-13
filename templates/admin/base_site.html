@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | АФИША ИСКИТИМ — админка{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">АФИША ИСКИТИМ — админка</a>
+</h1>
+{% if user.is_staff or user.is_superuser %}
+<div style="margin-top: 10px;">
+    <a href="{% url 'run_import_kultisk' %}"
+       style="background: #0f766e; color: #ffffff; padding: 6px 14px;
+              border-radius: 6px; font-weight: 600; text-decoration: none;
+              font-size: 13px; display: inline-block;">
+        Импортировать с kultisk.ru
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
