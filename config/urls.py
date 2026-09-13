@@ -5,10 +5,21 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 
 from events import admin_views
 from events import views_auth
+from events.sitemaps import EventSitemap, StaticViewSitemap
+
+
+# ---------------------------------------------------------
+# Карты сайта
+# ---------------------------------------------------------
+sitemaps = {
+    'events': EventSitemap,
+    'static': StaticViewSitemap,
+}
 
 
 urlpatterns = [
@@ -26,6 +37,16 @@ urlpatterns = [
     # Админка
     # ---------------------------------------------------------
     path('admin/', admin.site.urls),
+
+    # ---------------------------------------------------------
+    # Sitemap
+    # ---------------------------------------------------------
+    path(
+        'sitemap.xml',
+        sitemap,
+        {'sitemaps': sitemaps},
+        name='django.contrib.sitemaps.views.sitemap',
+    ),
 
     # ---------------------------------------------------------
     # Своя авторизация с 2FA — в корне, без namespace
