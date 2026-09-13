@@ -7,13 +7,19 @@ Django settings — единый файл для dev и prod.
 
 Все значения читаются из .env в корне проекта (см. load_dotenv ниже).
 
-Письма об ошибках:
-  • в проде (DEBUG=False) — уходят на ADMINS и всем staff с email;
-  • в dev (DEBUG=True) — печатаются в консоль, потому что
-    EMAIL_BACKEND=console и фильтр require_debug_false отсекает
-    mail_admins.
-  • чтобы получать письма и в dev — убери фильтр require_debug_false
-    в handler'е mail_admins и настрой реальный SMTP.
+Уведомления об ошибках:
+  • 500 (Internal Server Error)  → письмо на ADMINS + всем staff с email.
+  • 404 (Not Found)              → письмо на ADMINS + staff.
+  • 403 (Forbidden, в т.ч. CSRF) → письмо на ADMINS + staff.
+  • 400 (Bad Request)            → письмо на ADMINS + staff.
+  • Любая ошибка через logger    → письмо на ADMINS + staff.
+
+В dev (DEBUG=True) письма НЕ уходят — печатаются в консоль.
+Чтобы получать письма и в dev: убери фильтр require_debug_false
+в handler'е mail_admins и настрой реальный SMTP в .env.
+
+ВАЖНО: письма о 404/403/400 могут быстро заспамить почту при атаках
+ботов. Если начнётся флуд — верни для них уровень ERROR (только 500).
 """
 import os
 from pathlib import Path
@@ -22,7 +28,6 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# .env читаем ДО любого os.environ.get(...)
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -37,17 +42,14 @@ IS_PROD = not DEBUG
 # БЕЗОПАСНОСТЬ
 # =========================================================
 if IS_PROD:
-    # В проде SECRET_KEY обязателен, без фоллбэка.
     SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 else:
-    # В dev — мягкий фоллбэк, чтобы можно было запускать без .env.
     SECRET_KEY = os.environ.get(
         "DJANGO_SECRET_KEY",
         "django-insecure-dev-key-change-me-in-production",
     )
 
 
-# ALLOWED_HOSTS: в проде — из .env, в dev — локальные
 _default_hosts = "127.0.0.1,localhost"
 ALLOWED_HOSTS = [
     h.strip()
@@ -55,7 +57,6 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-# CSRF_TRUSTED_ORIGINS нужен за https-прокси (nginx) в проде.
 CSRF_TRUSTED_ORIGINS = [
     o.strip()
     for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
@@ -64,7 +65,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 # =========================================================
-# HTTPS / COOKIES — включаем только в проде
+# HTTPS / COOKIES — только в проде
 # =========================================================
 if IS_PROD:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -238,8 +239,6 @@ SUBSCRIBE_COOLDOWN_SECONDS = int(
 # =========================================================
 # EMAIL
 # =========================================================
-# В dev — в консоль, в prod — реальный SMTP.
-# Если в .env явно задан EMAIL_BACKEND, он перебьёт дефолт.
 if IS_PROD:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 else:
@@ -260,15 +259,12 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "Афиша Искитим <hello@iskitim-afisha.ru>",
 )
 
-# Отправитель писем об ошибках (mail_admins).
-# Должен совпадать с EMAIL_HOST_USER, иначе Яндекс/SMTP отклонит.
-# Без кириллицы и угловых скобок — так надёжнее.
 SERVER_EMAIL = os.environ.get(
     "SERVER_EMAIL",
     "hello@iskitim-afisha.ru",
 )
 
-# Кому слать письма об ошибках (500).
+# Кому слать письма об ошибках.
 # Дополнительно письма уходят всем User с is_staff=True и заполненным email.
 ADMINS = [
     # ("Админ", "admin@iskitim-afisha.ru"),
@@ -288,17 +284,20 @@ LOGS_DIR.mkdir(exist_ok=True)
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+
     "formatters": {
         "verbose": {
             "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)d] %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
+
     "filters": {
         "require_debug_false": {
             "()": "django.utils.log.RequireDebugFalse",
         },
     },
+
     "handlers": {
         "console": {
             "level": "INFO",
@@ -315,7 +314,7 @@ LOGGING = {
             "encoding": "utf-8",
         },
         "error_file": {
-            "level": "ERROR",
+            "level": "WARNING",   # ← теперь пишем и WARNING, и ERROR
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOGS_DIR / "errors.log",
             "maxBytes": 10 * 1024 * 1024,
@@ -324,13 +323,43 @@ LOGGING = {
             "encoding": "utf-8",
         },
         "mail_admins": {
-            "level": "ERROR",
+            "level": "WARNING",   # ← теперь ловим WARNING (404/403/400) и ERROR (500)
             "filters": ["require_debug_false"],
             "class": "django.utils.log.AdminEmailHandler",
             "include_html": True,
         },
     },
+
     "loggers": {
+        # django.request — сюда Django пишет 4xx и 5xx
+        "django.request": {
+            "handlers": ["console", "error_file", "mail_admins"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        # django.security — CSRF, SuspiciousOperation и т.п.
+        "django.security": {
+            "handlers": ["console", "error_file", "mail_admins"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        # Ошибки внутри шаблонов (не всегда попадают в request)
+        "django.template": {
+            "handlers": ["console", "error_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        # Ошибки на уровне БД (например, "database is locked")
+        "django.db.backends": {
+            "handlers": ["console", "error_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        # Прикладные логгеры
         "waiting_list": {
             "handlers": ["console", "file"],
             "level": "INFO",
@@ -341,16 +370,15 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
+
+        # Общий django-логгер — чтобы не сыпалось мимо
         "django": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
-        "django.request": {
-            "handlers": ["console", "error_file", "mail_admins"],
-            "level": "ERROR",
-            "propagate": False,
-        },
+
+        # Root — всё, что не поймано выше
         "": {
             "handlers": ["console", "error_file"],
             "level": "WARNING",
