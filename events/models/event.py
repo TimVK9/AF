@@ -1,13 +1,11 @@
 """
-Модель события.
+Основная модель события.
 
-Ключевое:
-  • views_count убран — просмотры считаются в EventView.
-  • schedule_type оставлен, но используется опционально.
-  • description_short — необязательное.
-  • status FINISHED ставится management-командой update_event_statuses.
-  • slug генерируется в save(), при изменении title — slug не меняется.
+Ключевая особенность: событие может длиться несколько дней.
+Интервал события — [start_date; end_date].
+Если end_date пустой — считаем событие однодневным.
 """
+
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -79,13 +77,9 @@ class Event(TimestampedModel):
     )
     description_short = models.CharField(
         max_length=500,
-        blank=True,
-        default='',
         verbose_name='Краткое описание',
     )
     description = models.TextField(
-        blank=True,
-        default='',
         verbose_name='Полное описание',
     )
     schedule_type = models.CharField(
@@ -164,31 +158,49 @@ class Event(TimestampedModel):
     )
 
     # ==================================================================
-    #  Контакты
+    #  Организатор
     # ==================================================================
-    contact_email = models.EmailField(
+    organizer_name = models.CharField(
+        max_length=255,
         blank=True,
-        verbose_name='Email для связи',
+        verbose_name='Организатор',
+        help_text='Название организации или имя. Необязательно.',
     )
-    contact_phone = models.CharField(
+    organizer_email = models.EmailField(
+        blank=True,
+        verbose_name='Email организатора',
+    )
+    organizer_phone = models.CharField(
         max_length=30,
         blank=True,
-        verbose_name='Телефон для связи',
+        verbose_name='Телефон организатора',
+    )
+    organizer_vk = models.URLField(
+        blank=True,
+        verbose_name='ВКонтакте организатора',
+        help_text='Полная ссылка, например https://vk.com/club12345',
     )
 
-    class Meta(TimestampedModel.Meta):
+    # ==================================================================
+    #  Счётчики
+    # ==================================================================
+    views_count = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name='Просмотры',
+    )
+    favorites_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='В избранном',
+    )
+
+    class Meta:
+        ordering = ['start_date', 'start_time']
         verbose_name = 'Событие'
         verbose_name_plural = 'События'
-        ordering = ['start_date', 'start_time']
         indexes = [
             models.Index(fields=['status', 'start_date']),
             models.Index(fields=['start_date', 'end_date']),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                fields=['title', 'start_date'],
-                name='uniq_event_title_start_date',
-            ),
         ]
 
     def __str__(self):
@@ -205,23 +217,14 @@ class Event(TimestampedModel):
                 'end_date': 'Дата окончания не может быть раньше даты начала.',
             })
 
-        same_day = (
-            self.end_date is None
-            or self.end_date == self.start_date
-        )
         if (
-            same_day
-            and self.start_time
+            self.start_time
             and self.end_time
+            and self.start_date == self.end_date
             and self.end_time < self.start_time
         ):
             raise ValidationError({
                 'end_time': 'Время окончания не может быть раньше времени начала.',
-            })
-
-        if self.end_time and not self.start_time:
-            raise ValidationError({
-                'end_time': 'Укажите время начала, прежде чем задавать время окончания.',
             })
 
         if self.is_free and self.price:
@@ -229,19 +232,19 @@ class Event(TimestampedModel):
                 'price': 'У бесплатного события не может быть цены.',
             })
 
+        if self.organizer_vk and not self.organizer_vk.startswith(('http://', 'https://')):
+            raise ValidationError({
+                'organizer_vk': 'Ссылка должна начинаться с http:// или https://',
+            })
+
     # ==================================================================
-    #  Сохранение
+    #  Автогенерация slug
     # ==================================================================
     def save(self, *args, **kwargs):
         if not self.slug:
             base = slugify(self.title)[:200] or 'event'
             slug = base
-            while (
-                Event.all_objects
-                .filter(slug=slug)
-                .exclude(pk=self.pk)
-                .exists()
-            ):
+            while Event.all_objects.filter(slug=slug).exclude(pk=self.pk).exists():
                 slug = f"{base}-{get_random_string(4).lower()}"
             self.slug = slug
 
@@ -251,27 +254,23 @@ class Event(TimestampedModel):
         super().save(*args, **kwargs)
 
     # ==================================================================
-    #  Дополнительные свойства
+    #  Свойства
     # ==================================================================
-
     @property
-    def is_multiday(self):
-        return (
-            self.end_date
-            and self.end_date != self.start_date
+    def has_organizer_contacts(self):
+        return bool(
+            self.organizer_email
+            or self.organizer_phone
+            or self.organizer_vk
         )
 
     @property
-    def is_cancelled(self):
-        return self.status == self.Status.CANCELLED
-
-    @property
-    def is_past(self):
-        from django.utils import timezone
-        today = timezone.localdate()
-        end = self.end_date or self.start_date
-        return end < today
-
-    def get_absolute_url(self):
-        from django.urls import reverse
-        return reverse('events:event_detail', kwargs={'slug': self.slug})
+    def vk_short_url(self):
+        if not self.organizer_vk:
+            return ''
+        return (
+            self.organizer_vk
+            .replace('https://vk.com/', '')
+            .replace('http://vk.com/', '')
+            .rstrip('/')
+        )

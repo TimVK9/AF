@@ -75,8 +75,13 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
     {% endif %}
     "organizer": {
         "@type": "Organization",
-        "name": "АФИША ИСКИТИМ",
-        "url": "{{ request.scheme }}://{{ request.get_host }}"
+        "name": "{{ event.organizer_name|default:'АФИША ИСКИТИМ'|escapejs }}",
+        {% if event.organizer_vk %}"url": "{{ event.organizer_vk|escapejs }}",{% else %}"url": "{{ request.scheme }}://{{ request.get_host }}",{% endif %}
+        {% if event.organizer_email %}"email": "{{ event.organizer_email|escapejs }}",{% endif %}
+        {% if event.organizer_phone %}"telephone": "{{ event.organizer_phone|escapejs }}",{% endif %}
+        "sameAs": [
+            {% if event.organizer_vk %}"{{ event.organizer_vk|escapejs }}"{% endif %}
+        ]
     },
     "performer": {
         "@type": "PerformingGroup",

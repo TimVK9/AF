@@ -1,6 +1,6 @@
 {% comment %}
-Контент карточки: категория, дата (или диапазон),
-заголовок, краткое описание, место проведения.
+Контент карточки: категория, дата, заголовок, краткое описание,
+место проведения, организатор.
 {% endcomment %}
 <div class="event-card__content">
 
@@ -45,5 +45,17 @@
         </svg>
         {{ event.place.name }}
     </div>
+
+{% if event.organizer_name %}
+    <div class="event-card__organizer">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="event-card__organizer-name">
+            Организатор: {{ event.organizer_name }}
+        </span>
+    </div>
+{% endif %}
 
 </div>

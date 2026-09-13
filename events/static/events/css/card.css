@@ -95,7 +95,27 @@
     z-index: 1;
     pointer-events: none;
 }
+.event-card__organizer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    min-width: 0;              /* важно, чтобы flex-child мог сжиматься */
+}
 
+.event-card__organizer .icon {
+    flex-shrink: 0;            /* иконка не сжимается */
+}
+
+.event-card__organizer-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 /* SVG-слой — растянут на всю область без сохранения пропорций */
 .event-card__placeholder-art {
     position: absolute;

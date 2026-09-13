@@ -51,7 +51,6 @@
     <form method="post" enctype="multipart/form-data" class="event-form" novalidate id="eventForm">
         {% csrf_token %}
 
-        {# ============ ОБЩИЕ ОШИБКИ ФОРМЫ ============ #}
         {% if form.non_field_errors %}
             <div class="form-errors">
                 {% for error in form.non_field_errors %}
@@ -181,6 +180,46 @@
                     </div>
                 </section>
 
+                {# ---------- Организатор ---------- #}
+                <section class="form-section">
+                    <h2 class="form-section__title">Организатор</h2>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.organizer_name.id_for_label }}">
+                            {{ form.organizer_name.label }}
+                        </label>
+                        {{ form.organizer_name }}
+                        {% if form.organizer_name.help_text %}<span class="form-help">{{ form.organizer_name.help_text }}</span>{% endif %}
+                        {% if form.organizer_name.errors %}<span class="form-error">{{ form.organizer_name.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row form-row--two">
+                        <div>
+                            <label class="form-label" for="{{ form.organizer_email.id_for_label }}">
+                                {{ form.organizer_email.label }}
+                            </label>
+                            {{ form.organizer_email }}
+                            {% if form.organizer_email.errors %}<span class="form-error">{{ form.organizer_email.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="{{ form.organizer_phone.id_for_label }}">
+                                {{ form.organizer_phone.label }}
+                            </label>
+                            {{ form.organizer_phone }}
+                            {% if form.organizer_phone.errors %}<span class="form-error">{{ form.organizer_phone.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.organizer_vk.id_for_label }}">
+                            {{ form.organizer_vk.label }}
+                        </label>
+                        {{ form.organizer_vk }}
+                        {% if form.organizer_vk.help_text %}<span class="form-help">{{ form.organizer_vk.help_text }}</span>{% endif %}
+                        {% if form.organizer_vk.errors %}<span class="form-error">{{ form.organizer_vk.errors.0 }}</span>{% endif %}
+                    </div>
+                </section>
+
                 {# ---------- Галерея ---------- #}
                 <section class="form-section">
                     <h2 class="form-section__title">Галерея</h2>
@@ -279,22 +318,6 @@
                     </div>
                 </div>
 
-                <div class="form-sidebar-block">
-                    <h3 class="form-sidebar-block__title">Контакты</h3>
-
-                    <div class="form-row">
-                        <label class="form-label" for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }}</label>
-                        {{ form.contact_email }}
-                        {% if form.contact_email.errors %}<span class="form-error">{{ form.contact_email.errors.0 }}</span>{% endif %}
-                    </div>
-
-                    <div class="form-row">
-                        <label class="form-label" for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }}</label>
-                        {{ form.contact_phone }}
-                        {% if form.contact_phone.errors %}<span class="form-error">{{ form.contact_phone.errors.0 }}</span>{% endif %}
-                    </div>
-                </div>
-
                 {# ---------- Действия ---------- #}
                 <div class="form-sidebar-actions">
                     <button type="submit" class="form-btn form-btn--primary">{{ submit_label }}</button>
@@ -311,7 +334,6 @@
 (function () {
     'use strict';
 
-    /* Автоподстановка даты окончания = дате начала при потере фокуса */
     var startDate = document.getElementById('id_start_date');
     var endDate = document.getElementById('id_end_date');
     var isFree = document.getElementById('id_is_free');
@@ -325,7 +347,6 @@
         });
     }
 
-    /* Блокировка цены при is_free */
     function syncPrice() {
         if (!isFree || !price) return;
         if (isFree.checked) {
@@ -340,7 +361,6 @@
         syncPrice();
     }
 
-    /* Ctrl+S — сохранить форму */
     document.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
             e.preventDefault();
@@ -349,7 +369,6 @@
         }
     });
 
-    /* Предупреждение при уходе с несохранёнными изменениями */
     var form = document.getElementById('eventForm');
     var dirty = false;
 

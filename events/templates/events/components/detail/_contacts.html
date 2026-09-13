@@ -1,103 +1,42 @@
-{% comment %}
-Контакты на странице события.
+{% if event.has_organizer_contacts %}
+<div class="event-detail__contacts">
+    <h3 class="event-detail__contacts-title">
+        {% if event.organizer_name %}
+            Контакты организатора
+        {% else %}
+            Контакты
+        {% endif %}
+    </h3>
 
-Логика:
-  • если у события указаны свои контакты (email / телефон / сайт / ВК) —
-    показываем их;
-  • если у события контактов нет — показываем контакты площадки;
-  • если и там пусто — блок не рендерится.
-
-Проверка «есть ли у события свои контакты»:
-  event.contact_email, event.contact_phone,
-  event.contact_website, event.contact_vk (если такие поля есть в модели).
-
-Если полей contact_website / contact_vk у Event нет —
-используй только event.contact_email и event.contact_phone,
-тогда блок появится, если есть хоть что-то из них.
-{% endcomment %}
-
-{% with ev=event pl=event.place %}
-    {# Собираем данные, которые будем показывать #}
-    {% if ev.contact_email or ev.contact_phone %}
-        {# --- Контакты события --- #}
-        <div class="event-detail__contacts">
-            <h3 class="event-detail__contacts-title">Контакты</h3>
-
-            {% if ev.contact_phone %}
-                <a href="tel:{{ ev.contact_phone }}"
-                   class="event-detail__contact">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                    {{ ev.contact_phone }}
-                </a>
-            {% endif %}
-
-            {% if ev.contact_email %}
-                <a href="mailto:{{ ev.contact_email }}"
-                   class="event-detail__contact">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                        <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    {{ ev.contact_email }}
-                </a>
-            {% endif %}
-        </div>
-
-    {% elif pl.phone or pl.email or pl.website or pl.vk_url %}
-        {# --- Контакты площадки --- #}
-        <div class="event-detail__contacts">
-            <h3 class="event-detail__contacts-title">
-                Контакты площадки
-            </h3>
-
-            {% if pl.phone %}
-                <a href="tel:{{ pl.phone }}"
-                   class="event-detail__contact">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                    {{ pl.phone }}
-                </a>
-            {% endif %}
-
-            {% if pl.email %}
-                <a href="mailto:{{ pl.email }}"
-                   class="event-detail__contact">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                        <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    {{ pl.email }}
-                </a>
-            {% endif %}
-
-            {% if pl.website %}
-                <a href="{{ pl.website }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="event-detail__contact">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="2" y1="12" x2="22" y2="12"/>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
-                    {{ pl.website|cut:"https://"|cut:"http://"|truncatechars:40 }}
-                </a>
-            {% endif %}
-
-            {% if pl.vk_url %}
-                <a href="{{ pl.vk_url }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="event-detail__contact">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M13.162 18.994c.609 0 .858-.406.851-.915-.031-1.917.714-2.949 2.059-1.604 1.488 1.488 1.796 2.519 3.603 2.519h3.2c.808 0 1.126-.26 1.126-.668 0-.863-1.421-2.386-2.625-3.504-1.686-1.565-1.765-1.602-.313-3.486 1.801-2.339 4.157-5.336 2.073-5.336h-3.981c-.772 0-.828.435-1.103 1.083-.995 2.347-2.886 5.387-3.604 4.922-.751-.485-.407-2.406-.35-5.261.015-.754.011-1.271-1.141-1.539-.629-.145-1.241-.205-1.809-.205-2.273 0-3.841.953-2.95 1.119 1.571.293 1.42 3.692 1.054 5.16-.638 2.556-3.036-2.024-4.035-4.305-.241-.548-.315-.974-1.175-.974H2.204c-.492 0-.787.16-.787.516 0 .602 2.96 6.72 5.786 9.77 2.756 2.975 5.48 2.708 7.959 2.708z"/>
-                    </svg>
-                    ВКонтакте
-                </a>
-            {% endif %}
-        </div>
+    {% if event.organizer_vk %}
+        <a href="{{ event.organizer_vk }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="event-detail__contact event-detail__contact--vk">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M13.162 18.994c.609 0 .858-.406.851-.915-.031-1.917.714-2.949 2.059-1.604 1.488 1.488 1.796 2.519 3.603 2.519h3.2c.808 0 1.126-.26 1.126-.668 0-.863-1.421-2.386-2.625-3.504-1.686-1.565-1.765-1.602-.313-3.486 1.801-2.339 4.157-5.336 2.073-5.336h-3.981c-.772 0-.828.435-1.103 1.083-.995 2.347-2.886 5.387-3.604 4.922-.751-.485-.407-2.406-.35-5.261.015-.754.011-1.271-1.141-1.539-.629-.145-1.241-.205-1.809-.205-2.273 0-3.841.953-2.95 1.119 1.571.293 1.42 3.692 1.054 5.16-.638 2.556-3.036-2.024-4.035-4.305-.241-.548-.315-.974-1.175-.974H2.204c-.492 0-.787.16-.787.516 0 .602 2.96 6.72 5.786 9.77 2.756 2.975 5.48 2.708 7.959 2.708z"/>
+            </svg>
+            ВКонтакте
+        </a>
     {% endif %}
-{% endwith %}
+
+    {% if event.organizer_phone %}
+        <a href="tel:{{ event.organizer_phone }}" class="event-detail__contact">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            {{ event.organizer_phone }}
+        </a>
+    {% endif %}
+
+    {% if event.organizer_email %}
+        <a href="mailto:{{ event.organizer_email }}" class="event-detail__contact">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            {{ event.organizer_email }}
+        </a>
+    {% endif %}
+</div>
+{% endif %}

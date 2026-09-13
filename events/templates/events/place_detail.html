@@ -212,10 +212,43 @@
             {# ---------- Прошедшие события ---------- #}
             {% if past_events %}
                 <section class="place-detail__section">
-                    <h2 class="place-detail__section-title">Прошедшие события</h2>
-                    <div class="events-grid events-grid--similar">
+                    <h2 class="place-detail__section-title">
+                        Прошедшие события
+                        <span class="place-detail__count">{{ past_events|length }}</span>
+                    </h2>
+
+                    <div class="place-schedule place-schedule--past">
                         {% for event in past_events %}
-                            {% include "events/components/card.html" with event=event %}
+                            <a href="{% url 'events:event_detail' event.slug %}"
+                               class="place-schedule__event place-schedule__event--past">
+
+                                <span class="place-schedule__date-badge">
+                                    <span class="place-schedule__date-day">{{ event.start_date|date:"d" }}</span>
+                                    <span class="place-schedule__date-month">{{ event.start_date|date:"M" }}</span>
+                                </span>
+
+                                <span class="place-schedule__event-body">
+                                    <span class="place-schedule__event-title">
+                                        {{ event.title }}
+                                    </span>
+                                    <span class="place-schedule__event-note">
+                                        {% if event.end_date and event.end_date != event.start_date %}
+                                            с {{ event.start_date|date:"d.m.Y" }} по {{ event.end_date|date:"d.m.Y" }}
+                                        {% else %}
+                                            {{ event.start_date|date:"d.m.Y" }}
+                                        {% endif %}
+                                        {% if event.start_time %}
+                                            · {{ event.start_time|time:"H:i" }}
+                                        {% endif %}
+                                    </span>
+                                </span>
+
+                                {% if event.category %}
+                                    <span class="place-schedule__category">
+                                        {{ event.category.name }}
+                                    </span>
+                                {% endif %}
+                            </a>
                         {% endfor %}
                     </div>
                 </section>

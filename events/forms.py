@@ -1,55 +1,11 @@
-from decimal import Decimal
-
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
 
 from .models import Event, EventImage
 
 
 class EventForm(forms.ModelForm):
-    """
-    Форма создания/редактирования события.
-
-    slug генерируется автоматически в Event.save() — в форме его нет.
-    views_count / favorites_count не редактируются вручную.
-    """
-
-    start_date = forms.DateField(
-        widget=forms.DateInput(
-            format='%Y-%m-%d',
-            attrs={'class': 'form-input', 'type': 'date'},
-        ),
-        input_formats=['%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'],
-        localize=False,
-    )
-    end_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(
-            format='%Y-%m-%d',
-            attrs={'class': 'form-input', 'type': 'date'},
-        ),
-        input_formats=['%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'],
-        localize=False,
-    )
-    start_time = forms.TimeField(
-        required=False,
-        widget=forms.TimeInput(
-            format='%H:%M',
-            attrs={'class': 'form-input', 'type': 'time'},
-        ),
-        input_formats=['%H:%M', '%H:%M:%S'],
-        localize=False,
-    )
-    end_time = forms.TimeField(
-        required=False,
-        widget=forms.TimeInput(
-            format='%H:%M',
-            attrs={'class': 'form-input', 'type': 'time'},
-        ),
-        input_formats=['%H:%M', '%H:%M:%S'],
-        localize=False,
-    )
+    """Форма создания/редактирования события."""
 
     class Meta:
         model = Event
@@ -69,8 +25,10 @@ class EventForm(forms.ModelForm):
             'is_free',
             'price',
             'main_image',
-            'contact_email',
-            'contact_phone',
+            'organizer_name',
+            'organizer_email',
+            'organizer_phone',
+            'organizer_vk',
         ]
         widgets = {
             'title': forms.TextInput(attrs={
@@ -93,6 +51,22 @@ class EventForm(forms.ModelForm):
             'schedule_type': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'age_restriction': forms.Select(attrs={'class': 'form-select'}),
+            'start_date': forms.DateInput(attrs={
+                'class': 'form-input',
+                'type': 'date',
+            }),
+            'end_date': forms.DateInput(attrs={
+                'class': 'form-input',
+                'type': 'date',
+            }),
+            'start_time': forms.TimeInput(attrs={
+                'class': 'form-input',
+                'type': 'time',
+            }),
+            'end_time': forms.TimeInput(attrs={
+                'class': 'form-input',
+                'type': 'time',
+            }),
             'is_free': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
             'price': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -105,14 +79,23 @@ class EventForm(forms.ModelForm):
                 'class': 'form-file',
                 'accept': 'image/*',
             }),
-            'contact_email': forms.EmailInput(attrs={
+            'organizer_name': forms.TextInput(attrs={
                 'class': 'form-input',
-                'placeholder': 'email@example.com',
+                'placeholder': 'Например: ДК «Молодость»',
             }),
-            'contact_phone': forms.TextInput(attrs={
+            'organizer_email': forms.EmailInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'org@example.com',
+            }),
+            'organizer_phone': forms.TextInput(attrs={
                 'class': 'form-input',
                 'placeholder': '+7 (999) 123-45-67',
                 'inputmode': 'tel',
+            }),
+            'organizer_vk': forms.URLInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'https://vk.com/club12345',
+                'inputmode': 'url',
             }),
         }
         labels = {
@@ -131,8 +114,10 @@ class EventForm(forms.ModelForm):
             'is_free': 'Бесплатное событие',
             'price': 'Цена, ₽',
             'main_image': 'Главное изображение',
-            'contact_email': 'Email для связи',
-            'contact_phone': 'Телефон для связи',
+            'organizer_name': 'Организатор',
+            'organizer_email': 'Email организатора',
+            'organizer_phone': 'Телефон организатора',
+            'organizer_vk': 'ВКонтакте',
         }
         help_texts = {
             'title': 'От 5 до 200 символов. По нему генерируется URL.',
@@ -150,8 +135,10 @@ class EventForm(forms.ModelForm):
             'is_free': 'Если отмечено — цена сбрасывается.',
             'price': 'В рублях. Можно оставить пустым, если цена «уточняется».',
             'main_image': 'JPEG/PNG, желательно 1200×630 или больше. Если не задано — используется фото площадки.',
-            'contact_email': 'Необязательно. Появится на странице события.',
-            'contact_phone': 'Необязательно. Появится на странице события.',
+            'organizer_name': 'Название организации или имя — появится в карточке события.',
+            'organizer_email': 'Необязательно. Показывается на странице события.',
+            'organizer_phone': 'Необязательно. Показывается на странице события.',
+            'organizer_vk': 'Полная ссылка на страницу или сообщество, например https://vk.com/club12345.',
         }
 
     def clean_title(self):

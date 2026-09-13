@@ -1,97 +1,96 @@
 """
-Обезличенная внутренняя статистика.
+Функции обезличенной статистики просмотров.
 
-Инкремент через UPSERT — `bulk_create(ignore_conflicts=True)`.
-Никаких ПДн.
+Использует модели EventView / PlaceView / CategoryView / SiteView
+из events.models.analytics.
+
+Принцип: НЕ сохраняем ПДн. Только «сколько раз за день посмотрели объект X».
+Никаких IP, User-Agent, cookies, session_id.
 """
+from datetime import timedelta
+
 from django.db.models import F, Sum
-from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .models import EventView, PlaceView, CategoryView, SiteView
 
 
-def track_view(kind: str, object_id: int = None) -> None:
-    """
-    Увеличивает счётчик просмотров за сегодня.
+# Соответствие kind → (модель, поле-внешний ключ)
+_MODEL_MAP = {
+    'event': (EventView, 'event_id'),
+    'place': (PlaceView, 'place_id'),
+    'category': (CategoryView, 'category_id'),
+}
 
-    kind:
-      • 'event'    — object_id = pk события;
-      • 'place'    — object_id = pk площадки;
-      • 'category' — object_id = pk категории;
-      • 'home'     — object_id игнорируется;
-      • 'search'   — object_id игнорируется.
+
+def track_view(kind, object_id=0):
+    """
+    Увеличивает счётчик просмотров на 1 за сегодня.
+
+    kind: 'event' | 'place' | 'category' | 'home' | 'search'
+    object_id: id объекта; для 'home' и 'search' не используется.
     """
     today = timezone.localdate()
 
-    if kind == 'event':
-        _bump(EventView, event_id=object_id, date=today)
-    elif kind == 'place':
-        _bump(PlaceView, place_id=object_id, date=today)
-    elif kind == 'category':
-        _bump(CategoryView, category_id=object_id, date=today)
-    elif kind == 'home':
-        _bump(SiteView, kind=SiteView.Kind.HOME, date=today)
-    elif kind == 'search':
-        _bump(SiteView, kind=SiteView.Kind.SEARCH, date=today)
-    else:
-        raise ValueError(f'Неизвестный kind: {kind!r}')
-
-
-def _bump(model, date, **kwargs):
-    """Атомарный UPSERT: инкремент или создание записи с count=1."""
-    # Попытка инкремента
-    updated = model.objects.filter(date=date, **kwargs).update(
-        count=F('count') + 1
-    )
-    if updated:
+    # --- event / place / category ---
+    if kind in _MODEL_MAP:
+        model, field = _MODEL_MAP[kind]
+        filters = {field: object_id, 'date': today}
+        updated = model.objects.filter(**filters).update(count=F('count') + 1)
+        if not updated:
+            try:
+                model.objects.create(**filters, count=1)
+            except Exception:
+                # Гонка — кто-то успел создать. Просто инкрементим.
+                model.objects.filter(**filters).update(count=F('count') + 1)
         return
 
-    # Создание — с игнором конфликтов, если параллельный запрос успел
-    created = model.objects.bulk_create(
-        [model(date=date, count=1, **kwargs)],
-        ignore_conflicts=True,
-    )
-    if not created:
-        # Гонка — запись уже есть, инкрементим
-        model.objects.filter(date=date, **kwargs).update(
-            count=F('count') + 1
-        )
+    # --- home / search ---
+    if kind in ('home', 'search'):
+        filters = {'kind': kind, 'date': today}
+        updated = SiteView.objects.filter(**filters).update(count=F('count') + 1)
+        if not updated:
+            try:
+                SiteView.objects.create(**filters, count=1)
+            except Exception:
+                SiteView.objects.filter(**filters).update(count=F('count') + 1)
+        return
 
 
-# ======================================================================
-#  Аналитика: топы и сводки
-# ======================================================================
-
-def get_event_total_views(event_id: int, days: int = None) -> int:
-    """Суммарные просмотры события. days=None — за всё время."""
+def get_event_total_views(event_id, days=None):
+    """
+    Сумма всех просмотров события.
+    Если days указан — только за последние N дней.
+    """
     qs = EventView.objects.filter(event_id=event_id)
     if days:
-        since = timezone.localdate() - timezone.timedelta(days=days)
+        since = timezone.localdate() - timedelta(days=days)
         qs = qs.filter(date__gte=since)
     return qs.aggregate(total=Sum('count'))['total'] or 0
 
 
-def get_top_events(days: int = 7, limit: int = 10):
-    """Топ-N событий по просмотрам за последние `days` дней."""
-    since = timezone.localdate() - timezone.timedelta(days=days)
-    return (
-        EventView.objects
-        .filter(date__gte=since)
-        .values('event_id')
-        .annotate(total=Sum('count'))
-        .order_by('-total')[:limit]
-    )
+def get_place_total_views(place_id, days=None):
+    """Сумма просмотров площадки."""
+    qs = PlaceView.objects.filter(place_id=place_id)
+    if days:
+        since = timezone.localdate() - timedelta(days=days)
+        qs = qs.filter(date__gte=since)
+    return qs.aggregate(total=Sum('count'))['total'] or 0
 
 
-def get_daily_views(model, days: int = 30, **filters):
-    """Список (дата, сумма) за последние `days` дней."""
-    since = timezone.localdate() - timezone.timedelta(days=days)
-    rows = (
-        model.objects
-        .filter(date__gte=since, **filters)
-        .values('date')
-        .annotate(total=Sum('count'))
-        .order_by('date')
-    )
-    return [(row['date'], row['total']) for row in rows]
+def get_category_total_views(category_id, days=None):
+    """Сумма просмотров категории."""
+    qs = CategoryView.objects.filter(category_id=category_id)
+    if days:
+        since = timezone.localdate() - timedelta(days=days)
+        qs = qs.filter(date__gte=since)
+    return qs.aggregate(total=Sum('count'))['total'] or 0
+
+
+def get_site_total_views(kind, days=None):
+    """Сумма просмотров главной или поиска."""
+    qs = SiteView.objects.filter(kind=kind)
+    if days:
+        since = timezone.localdate() - timedelta(days=days)
+        qs = qs.filter(date__gte=since)
+    return qs.aggregate(total=Sum('count'))['total'] or 0

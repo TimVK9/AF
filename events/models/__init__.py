@@ -5,7 +5,7 @@ from .event import Event
 from .event_image import EventImage
 from .analytics import EventView, PlaceView, CategoryView, SiteView
 from .email_otp import EmailOTP
-from .import_log import ImportLog          # ← добавить
+from .import_log import ImportLog
 
 
 __all__ = [
@@ -20,5 +20,5 @@ __all__ = [
     'CategoryView',
     'SiteView',
     'EmailOTP',
-    'ImportLog',                            # ← добавить
+    'ImportLog',
 ]

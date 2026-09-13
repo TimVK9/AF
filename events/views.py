@@ -134,26 +134,27 @@ class EventList(ListView):
             queryset = queryset.filter(start_date__lte=end_date_obj)
 
         # ------------------------------------------------------------------
+        # Аннотация один раз — до сортировки
+        # ------------------------------------------------------------------
+        queryset = (
+            queryset
+            .annotate(views_total=Coalesce(Sum('views__count'), Value(0)))
+            .select_related('category', 'place')
+        )
+
+        # ------------------------------------------------------------------
         # Сортировка
         # ------------------------------------------------------------------
         sort = self.request.GET.get('sort', 'date')
 
         if date_filter == 'past':
             if sort == 'popular':
-                queryset = (
-                    queryset
-                    .annotate(views_total=Sum('views__count'))
-                    .order_by('-views_total', '-start_date')
-                )
+                queryset = queryset.order_by('-views_total', '-start_date')
             else:
                 queryset = queryset.order_by('-start_date', '-start_time')
         else:
             if sort == 'popular':
-                queryset = (
-                    queryset
-                    .annotate(views_total=Sum('views__count'))
-                    .order_by('-views_total', '-start_date')
-                )
+                queryset = queryset.order_by('-views_total', '-start_date')
             elif sort == 'price_asc':
                 queryset = queryset.order_by(
                     Case(
@@ -169,12 +170,8 @@ class EventList(ListView):
             else:
                 queryset = queryset.order_by('start_date', 'start_time')
 
-        return (
-            queryset
-            .annotate(views_total=Sum('views__count'))
-            .select_related('category', 'place')
-            .distinct()
-)
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -296,7 +293,6 @@ class EventManageListView(StaffRequiredMixin, ListView):
         qs = (
             Event.all_objects
             .select_related('category', 'place')
-            .annotate(views_total_sum=Sum('views__count'))
         )
 
         search = self.request.GET.get('search', '').strip()

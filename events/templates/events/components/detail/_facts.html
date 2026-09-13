@@ -1,6 +1,6 @@
 {% comment %}
-Список фактов о событии: дата, время, место, цена, возраст, дата публикации.
-Каждый факт — иконка + label + value.
+Список фактов о событии: дата, время, место, организатор,
+цена, возраст. Просмотры и дата публикации — в блоке статистики.
 {% endcomment %}
 <ul class="event-detail__facts">
 
@@ -44,22 +44,41 @@
     </li>
     {% endif %}
 
-    {# Место #}
-    {% if event.place %}
+{# Место #}
+{% if event.place %}
+<li class="event-detail__fact">
+    <span class="event-detail__fact-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+        </svg>
+    </span>
+    <div class="event-detail__fact-body">
+        <span class="event-detail__fact-label">Место</span>
+        <a href="{% url 'events:place_detail' event.place.slug %}"
+           class="event-detail__fact-value event-detail__fact-value--link">
+            {{ event.place.name }}
+        </a>
+        {% if event.place.short_address %}
+            <span class="event-detail__fact-sub">{{ event.place.short_address }}</span>
+        {% endif %}
+    </div>
+</li>
+{% endif %}
+
+    {# Организатор #}
+    {% if event.organizer_name %}
     <li class="event-detail__fact">
         <span class="event-detail__fact-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
             </svg>
         </span>
         <div class="event-detail__fact-body">
-            <span class="event-detail__fact-label">Место</span>
-<a href="{% url 'events:place_detail' event.place.slug %}" class="event-detail__fact-link">
-    {{ event.place.name }}
-</a>            {% if event.place.address %}
-                <span class="event-detail__fact-sub">{{ event.place.address.short_address }}</span>
-            {% endif %}
+            <span class="event-detail__fact-label">Организатор</span>
+            <span class="event-detail__fact-value">{{ event.organizer_name }}</span>
+           
         </div>
     </li>
     {% endif %}
@@ -83,37 +102,23 @@
                 {% elif event.price %}
                     {{ event.price }} ₽
                 {% else %}
-                    Уточняется
+                    Уточняйте у организатора
                 {% endif %}
             </span>
         </div>
     </li>
 
-    {# Возраст #}
-    <li class="event-detail__fact">
-        <span class="event-detail__fact-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-            </svg>
-        </span>
-        <div class="event-detail__fact-body">
-            <span class="event-detail__fact-label">Возраст</span>
-            <span class="event-detail__fact-value">{{ event.age_restriction }}</span>
-        </div>
-    </li>
-
-    {# Дата публикации #}
-    <li class="event-detail__fact">
-        <span class="event-detail__fact-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-        </span>
-        <div class="event-detail__fact-body">
-            <span class="event-detail__fact-label">Опубликовано</span>
-            <span class="event-detail__fact-value">{{ event.created_at|date:"d E Y" }}</span>
-        </div>
-    </li>
-</ul>
+{# Возраст #}
+<li class="event-detail__fact">
+    <span class="event-detail__fact-icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="2"/>
+    <circle cx="12" cy="9" r="2.5"/>
+    <path d="M8 17c0-2 2-3 4-3s4 1 4 3"/>
+</svg>
+    </span>
+    <div class="event-detail__fact-body">
+        <span class="event-detail__fact-label">Возраст</span>
+        <span class="event-detail__fact-value">{{ event.age_restriction }}</span>
+    </div>
+</li>
