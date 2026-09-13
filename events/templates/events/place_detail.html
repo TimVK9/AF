@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+{% load static %}
+{% load placeholders %}
+
+{% block title %}{{ place.name }} — АФИША ИСКИТИМ{% endblock %}
+
+{% block meta %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="АФИША ИСКИТИМ">
+    <meta property="og:title" content="{{ place.name }}">
+    <meta property="og:description" content="{{ place.description|default:place.name|truncatechars:180 }}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    {% if place.main_image %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="{{ place.name }}">
+    {% else %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+    {% endif %}
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ place.name }}">
+    <meta name="twitter:description" content="{{ place.description|default:place.name|truncatechars:180 }}">
+    {% if place.main_image %}
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}">
+    {% else %}
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+    {% endif %}
+
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "name": "{{ place.name|escapejs }}",
+    "url": "{{ request.build_absolute_uri }}",
+    {% if place.description %}
+    "description": "{{ place.description|truncatechars:250|escapejs }}",
+    {% endif %}
+    {% if place.main_image %}
+    "image": ["{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}"],
+    {% endif %}
+    {% if place.short_address %}
+    "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "{{ place.street|escapejs }}{% if place.house_number %}, {{ place.house_number }}{% endif %}",
+        "addressLocality": "{{ place.city|escapejs }}",
+        {% if place.postal_code %}"postalCode": "{{ place.postal_code|escapejs }}",{% endif %}
+        "addressCountry": "RU"
+    },
+    {% endif %}
+    {% if place.latitude and place.longitude %}
+    "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": {{ place.latitude }},
+        "longitude": {{ place.longitude }}
+    },
+    {% endif %}
+    {% if place.phone %}
+    "telephone": "{{ place.phone|escapejs }}",
+    {% endif %}
+    "sameAs": [
+        {% if place.website %}"{{ place.website }}",{% endif %}
+        {% if place.vk_url %}"{{ place.vk_url }}"{% endif %}
+    ]
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/card.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/place_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container place-detail">
+
+    {# ============ ХЛЕБНЫЕ КРОШКИ ============ #}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'events:home' %}">Афиша</a>
+        <span class="breadcrumbs__sep" aria-hidden="true">/</span>
+        <span class="breadcrumbs__current">{{ place.name }}</span>
+    </nav>
+
+    <div class="place-detail__grid">
+
+        {# ============ ЛЕВАЯ КОЛОНКА ============ #}
+        <div class="place-detail__main">
+
+            {# ---------- Заголовок ---------- #}
+            <div class="place-detail__headline">
+                <h1 class="place-detail__title">{{ place.name }}</h1>
+                {% if place.short_address %}
+                    <div class="place-detail__subtitle">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span>{{ place.short_address }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# ---------- Изображение ---------- #}
+            <div class="place-detail__image-wrapper">
+                {% if place.main_image %}
+                    <img src="{{ place.main_image.url }}"
+                         alt="{{ place.name }}"
+                         class="place-detail__image"
+                         loading="eager">
+                {% else %}
+                    <img src="{% random_placeholder place.pk %}"
+                         alt="{{ place.name }}"
+                         class="place-detail__image"
+                         loading="eager"
+                         width="1200"
+                         height="675">
+                {% endif %}
+            </div>
+
+            {# ---------- Описание ---------- #}
+            {% if place.description %}
+                <section class="place-detail__section">
+                    <h2 class="place-detail__section-title">Описание</h2>
+                    <div class="place-detail__description">
+                        {{ place.description|linebreaks }}
+                    </div>
+                </section>
+            {% endif %}
+
+            {# ---------- Расписание по дням ---------- #}
+            <section class="place-detail__section">
+                <h2 class="place-detail__section-title">
+                    Расписание
+                    {% if total_upcoming %}
+                        <span class="place-detail__count">{{ total_upcoming }}</span>
+                    {% endif %}
+                </h2>
+
+                {% if schedule %}
+                    <div class="place-schedule">
+                        {% for day in schedule %}
+                            <div class="place-schedule__day {% if day.is_today %}place-schedule__day--today{% endif %}">
+
+                                <div class="place-schedule__header">
+                                    <div class="place-schedule__date">
+                                        <span class="place-schedule__label">{{ day.label }}</span>
+                                        <span class="place-schedule__weekday">{{ day.weekday }}</span>
+                                    </div>
+                                    <span class="place-schedule__count">{{ day.events|length }}</span>
+                                </div>
+
+                                <div class="place-schedule__events">
+                                    {% for event in day.events %}
+                                        <a href="{% url 'events:event_detail' event.slug %}"
+                                           class="place-schedule__event">
+
+                                            {% if event.start_time %}
+                                                <span class="place-schedule__time">
+                                                    {{ event.start_time|time:"H:i" }}
+                                                </span>
+                                            {% else %}
+                                                <span class="place-schedule__time place-schedule__time--empty">
+                                                    —:—
+                                                </span>
+                                            {% endif %}
+
+                                            <span class="place-schedule__event-body">
+                                                <span class="place-schedule__event-title">
+                                                    {{ event.title }}
+                                                </span>
+                                                <span class="place-schedule__event-note">
+                                                    {% if event.end_date and event.end_date != event.start_date %}
+                                                        с {{ event.start_date|date:"d.m" }} по {{ event.end_date|date:"d.m.Y" }}
+                                                    {% else %}
+                                                        {{ event.start_date|date:"d.m.Y" }}
+                                                    {% endif %}
+                                                </span>
+                                            </span>
+
+                                            {% if event.category %}
+                                                <span class="place-schedule__category">
+                                                    {{ event.category.name }}
+                                                </span>
+                                            {% endif %}
+
+                                            {% if event.is_free %}
+                                                <span class="place-schedule__badge place-schedule__badge--free">Бесплатно</span>
+                                            {% elif event.price %}
+                                                <span class="place-schedule__badge">{{ event.price }} ₽</span>
+                                            {% endif %}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="place-detail__empty">
+                        Пока нет предстоящих событий на этой площадке.
+                    </p>
+                {% endif %}
+            </section>
+
+            {# ---------- Прошедшие события ---------- #}
+            {% if past_events %}
+                <section class="place-detail__section">
+                    <h2 class="place-detail__section-title">Прошедшие события</h2>
+                    <div class="events-grid events-grid--similar">
+                        {% for event in past_events %}
+                            {% include "events/components/card.html" with event=event %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+        </div>
+
+        {# ============ САЙДБАР ============ #}
+        <aside class="place-detail__sidebar">
+
+            {# ---------- Адрес ---------- #}
+            {% if place.full_address %}
+                <div class="place-detail__info-block">
+                    <h3 class="place-detail__info-title">Адрес</h3>
+                    <div class="place-detail__info-text">
+                        {{ place.full_address }}
+                    </div>
+                    {% if place.landmark %}
+                        <div class="place-detail__info-sub">
+                            Ориентир: {{ place.landmark }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {# ---------- Карта ---------- #}
+            {% if place.latitude and place.longitude %}
+                <div class="place-detail__map-wrapper">
+                    <a href="https://yandex.ru/maps/?pt={{ place.longitude }},{{ place.latitude }}&z=17&l=map"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="place-detail__map-link">
+                        <div class="place-detail__map-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <span>Открыть на карте</span>
+                        </div>
+                    </a>
+                </div>
+            {% endif %}
+
+            {# ---------- Контакты ---------- #}
+            {% if place.phone or place.email or place.website or place.vk_url %}
+                <div class="place-detail__info-block">
+                    <h3 class="place-detail__info-title">Контакты</h3>
+
+                    <div class="place-detail__contacts">
+                        {% if place.phone %}
+                            <a href="tel:{{ place.phone }}" class="place-detail__contact">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                </svg>
+                                {{ place.phone }}
+                            </a>
+                        {% endif %}
+
+                        {% if place.email %}
+                            <a href="mailto:{{ place.email }}" class="place-detail__contact">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                                {{ place.email }}
+                            </a>
+                        {% endif %}
+
+                        {% if place.website %}
+                            <a href="{{ place.website }}" target="_blank" rel="noopener noreferrer" class="place-detail__contact">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="2" y1="12" x2="22" y2="12"/>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                </svg>
+                                Сайт
+                            </a>
+                        {% endif %}
+
+                        {% if place.vk_url %}
+                            <a href="{{ place.vk_url }}" target="_blank" rel="noopener noreferrer" class="place-detail__contact">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                    <path d="M13.162 18.994c.609 0 .858-.406.851-.915-.031-1.917.714-2.949 2.059-1.604 1.488 1.488 1.796 2.519 3.603 2.519h3.2c.808 0 1.126-.26 1.126-.668 0-.863-1.421-2.386-2.625-3.504-1.686-1.565-1.765-1.602-.313-3.486 1.801-2.339 4.157-5.336 2.073-5.336h-3.981c-.772 0-.828.435-1.103 1.083-.995 2.347-2.886 5.387-3.604 4.922-.751-.485-.407-2.406-.35-5.261.015-.754.011-1.271-1.141-1.539-.629-.145-1.241-.205-1.809-.205-2.273 0-3.841.953-2.95 1.119 1.571.293 1.42 3.692 1.054 5.16-.638 2.556-3.036-2.024-4.035-4.305-.241-.548-.315-.974-1.175-.974H2.204c-.492 0-.787.16-.787.516 0 .602 2.96 6.72 5.786 9.77 2.756 2.975 5.48 2.708 7.959 2.708z"/>
+                                </svg>
+                                ВКонтакте
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </aside>
+    </div>
+
+</div>
+{% endblock %}

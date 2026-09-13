@@ -1,3 +1,4 @@
+"""Одноразовый код подтверждения входа."""
 import random
 from datetime import timedelta
 
@@ -7,12 +8,7 @@ from django.utils import timezone
 
 
 class EmailOTP(models.Model):
-    """
-    Одноразовый код подтверждения входа, отправляемый на email.
-
-    • Хранит только код, привязку к пользователю и время жизни.
-    • Никаких IP / User-Agent — только минимум для безопасности.
-    """
+    """Код подтверждения входа по email."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -38,12 +34,7 @@ class EmailOTP(models.Model):
 
     @classmethod
     def issue(cls, user, lifetime_minutes=10):
-        """
-        Создаёт новый код для пользователя.
-        Все старые неиспользованные коды помечает использованными.
-        """
         cls.objects.filter(user=user, is_used=False).update(is_used=True)
-
         code = f'{random.randint(0, 999999):06d}'
         return cls.objects.create(
             user=user,
@@ -56,4 +47,8 @@ class EmailOTP(models.Model):
         return timezone.now() > self.expires_at
 
     def matches(self, raw_code):
-        return not self.is_expired and not self.is_used and self.code == (raw_code or '').strip()
+        return (
+            not self.is_expired
+            and not self.is_used
+            and self.code == (raw_code or '').strip()
+        )

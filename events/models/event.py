@@ -1,11 +1,13 @@
 """
-Основная модель события.
+Модель события.
 
-Ключевая особенность: событие может длиться несколько дней.
-Интервал события — [start_date; end_date].
-Если end_date пустой — считаем событие однодневным.
+Ключевое:
+  • views_count убран — просмотры считаются в EventView.
+  • schedule_type оставлен, но используется опционально.
+  • description_short — необязательное.
+  • status FINISHED ставится management-командой update_event_statuses.
+  • slug генерируется в save(), при изменении title — slug не меняется.
 """
-
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -14,12 +16,12 @@ from django.db import models
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
 
-from .servis_models import ServisModel
+from .servis_models import TimestampedModel
 from .place import Place
 from .category import Category
 
 
-class Event(ServisModel):
+class Event(TimestampedModel):
     """Основная модель события."""
 
     # ==================================================================
@@ -77,9 +79,13 @@ class Event(ServisModel):
     )
     description_short = models.CharField(
         max_length=500,
+        blank=True,
+        default='',
         verbose_name='Краткое описание',
     )
     description = models.TextField(
+        blank=True,
+        default='',
         verbose_name='Полное описание',
     )
     schedule_type = models.CharField(
@@ -109,8 +115,6 @@ class Event(ServisModel):
 
     # ==================================================================
     #  Время проведения
-    #  Интервал [start_date; end_date]. Если end_date пусто — событие
-    #  считается однодневным (в ORM используем Coalesce).
     # ==================================================================
     start_date = models.DateField(
         db_index=True,
@@ -160,7 +164,7 @@ class Event(ServisModel):
     )
 
     # ==================================================================
-    #  Контакты для связи
+    #  Контакты
     # ==================================================================
     contact_email = models.EmailField(
         blank=True,
@@ -172,28 +176,19 @@ class Event(ServisModel):
         verbose_name='Телефон для связи',
     )
 
-    # ==================================================================
-    #  Счётчики
-    # ==================================================================
-    views_count = models.PositiveIntegerField(
-        default=0,
-        db_index=True,
-        verbose_name='Просмотры',
-    )
-    favorites_count = models.PositiveIntegerField(
-        default=0,
-        verbose_name='В избранном',
-    )
-
-    class Meta:
-        ordering = ['start_date', 'start_time']
+    class Meta(TimestampedModel.Meta):
         verbose_name = 'Событие'
         verbose_name_plural = 'События'
+        ordering = ['start_date', 'start_time']
         indexes = [
-            # Ускоряет фильтр «опубликованные + по дате»
             models.Index(fields=['status', 'start_date']),
-            # Ускоряет быстрые фильтры по диапазону
             models.Index(fields=['start_date', 'end_date']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'start_date'],
+                name='uniq_event_title_start_date',
+            ),
         ]
 
     def __str__(self):
@@ -203,45 +198,46 @@ class Event(ServisModel):
     #  Валидация
     # ==================================================================
     def clean(self):
-        """
-        Проверяет целостность интервала и взаимоисключение цены/бесплатности.
-        """
         super().clean()
 
-        # Дата окончания не может быть раньше даты начала
         if self.end_date and self.start_date and self.end_date < self.start_date:
             raise ValidationError({
                 'end_date': 'Дата окончания не может быть раньше даты начала.',
             })
 
-        # Время окончания не может быть раньше времени начала
-        # (проверяем только если обе даты совпадают и оба времени заданы)
+        same_day = (
+            self.end_date is None
+            or self.end_date == self.start_date
+        )
         if (
-            self.start_time
+            same_day
+            and self.start_time
             and self.end_time
-            and self.start_date == self.end_date
             and self.end_time < self.start_time
         ):
             raise ValidationError({
                 'end_time': 'Время окончания не может быть раньше времени начала.',
             })
 
-        # Бесплатное событие не может иметь цену
+        if self.end_time and not self.start_time:
+            raise ValidationError({
+                'end_time': 'Укажите время начала, прежде чем задавать время окончания.',
+            })
+
         if self.is_free and self.price:
             raise ValidationError({
                 'price': 'У бесплатного события не может быть цены.',
             })
 
     # ==================================================================
-    #  Автогенерация slug с защитой от коллизий
+    #  Сохранение
     # ==================================================================
     def save(self, *args, **kwargs):
         if not self.slug:
             base = slugify(self.title)[:200] or 'event'
             slug = base
-            # Если slug занят другим объектом — добавляем случайный суффикс
             while (
-                Event.objects
+                Event.all_objects
                 .filter(slug=slug)
                 .exclude(pk=self.pk)
                 .exists()
@@ -249,8 +245,33 @@ class Event(ServisModel):
                 slug = f"{base}-{get_random_string(4).lower()}"
             self.slug = slug
 
-        # Если is_free=True — обнуляем price, чтобы не было противоречий
         if self.is_free:
             self.price = None
 
         super().save(*args, **kwargs)
+
+    # ==================================================================
+    #  Дополнительные свойства
+    # ==================================================================
+
+    @property
+    def is_multiday(self):
+        return (
+            self.end_date
+            and self.end_date != self.start_date
+        )
+
+    @property
+    def is_cancelled(self):
+        return self.status == self.Status.CANCELLED
+
+    @property
+    def is_past(self):
+        from django.utils import timezone
+        today = timezone.localdate()
+        end = self.end_date or self.start_date
+        return end < today
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('events:event_detail', kwargs={'slug': self.slug})

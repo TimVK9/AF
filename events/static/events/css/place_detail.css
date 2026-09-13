@@ -1,0 +1,565 @@
+/* =========================================================
+   СТРАНИЦА ПЛОЩАДКИ
+   ========================================================= */
+
+.place-detail {
+    padding-top: 24px;
+    padding-bottom: 80px;
+}
+
+.place-detail__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 40px;
+    align-items: start;
+}
+
+.place-detail__main {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    min-width: 0;
+}
+
+/* ===== ЗАГОЛОВОК ===== */
+.place-detail__headline {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.place-detail__title {
+    font-size: 1.85rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.4px;
+    color: var(--text-primary);
+    margin: 0;
+    word-wrap: break-word;
+}
+
+.place-detail__subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.place-detail__subtitle svg {
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* ===== ИЗОБРАЖЕНИЕ ===== */
+.place-detail__image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    box-shadow: 0 4px 16px rgba(20, 24, 26, 0.06);
+}
+
+.place-detail__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ===== СЕКЦИИ ===== */
+.place-detail__section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+}
+
+.place-detail__section-title {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 14px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 18px;
+    letter-spacing: -0.2px;
+}
+
+.place-detail__section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 18px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.place-detail__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.place-detail__description {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    word-wrap: break-word;
+}
+
+.place-detail__description p {
+    margin: 0 0 14px;
+}
+
+.place-detail__description p:last-child {
+    margin-bottom: 0;
+}
+
+.place-detail__empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+    padding: 8px 0;
+}
+
+/* ===== СЕТКА СХОЖИХ КАРТОЧЕК ===== */
+.events-grid--similar {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 4px;
+}
+
+/* ===== САЙДБАР ===== */
+.place-detail__sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.place-detail__info-block {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: 0 2px 12px rgba(20, 24, 26, 0.04);
+}
+
+.place-detail__info-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+}
+
+.place-detail__info-text {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.place-detail__info-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    line-height: 1.45;
+}
+
+/* ===== КОНТАКТЫ ===== */
+.place-detail__contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.place-detail__contact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    word-break: break-word;
+}
+
+.place-detail__contact svg {
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.place-detail__contact:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
+}
+
+/* ===== КАРТА ===== */
+.place-detail__map-wrapper {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.place-detail__map-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.place-detail__map-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 32px 16px;
+    background:
+        repeating-linear-gradient(
+            45deg,
+            var(--bg-tertiary),
+            var(--bg-tertiary) 10px,
+            var(--bg-secondary) 10px,
+            var(--bg-secondary) 20px
+        );
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: color 0.2s, background 0.2s;
+}
+
+.place-detail__map-placeholder svg {
+    color: var(--accent);
+}
+
+.place-detail__map-link:hover .place-detail__map-placeholder {
+    color: var(--accent);
+    background:
+        repeating-linear-gradient(
+            45deg,
+            var(--accent-light),
+            var(--accent-light) 10px,
+            var(--bg-secondary) 10px,
+            var(--bg-secondary) 20px
+        );
+}
+/* =========================================================
+   РАСПИСАНИЕ ПО ДНЯМ
+   ========================================================= */
+
+.place-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.place-schedule__day {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.place-schedule__day--today .place-schedule__header {
+    border-bottom-color: var(--accent);
+}
+
+.place-schedule__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+}
+
+.place-schedule__date {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.place-schedule__label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+}
+
+.place-schedule__day--today .place-schedule__label {
+    color: var(--accent);
+}
+
+.place-schedule__weekday {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.place-schedule__count {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 2px 8px;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+}
+
+.place-schedule__day--today .place-schedule__count {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+/* ===== СОБЫТИЯ ВНУТРИ ДНЯ ===== */
+.place-schedule__events {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.place-schedule__event {
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr) auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.place-schedule__event:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent);
+}
+
+.place-schedule__event:active {
+    transform: translateY(1px);
+}
+
+/* Время */
+.place-schedule__time {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+}
+
+.place-schedule__time--empty {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+/* Тело события */
+.place-schedule__event-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.place-schedule__event-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.place-schedule__event:hover .place-schedule__event-title {
+    color: var(--accent);
+}
+
+.place-schedule__event-note {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+/* Категория */
+.place-schedule__category {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid rgba(15, 118, 110, 0.22);
+    border-radius: 8px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+/* Бейдж цены */
+.place-schedule__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.place-schedule__badge--free {
+    background: rgba(15, 118, 110, 0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ===== АДАПТИВ ===== */
+@media (max-width: 768px) {
+    .place-schedule {
+        gap: 20px;
+    }
+
+    .place-schedule__label {
+        font-size: 0.95rem;
+    }
+
+    .place-schedule__event {
+        grid-template-columns: 52px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    .place-schedule__category {
+        display: none;
+    }
+
+    .place-schedule__event-title {
+        font-size: 0.88rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .place-schedule__event {
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px;
+        position: relative;
+    }
+
+    .place-schedule__badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 0.65rem;
+        padding: 2px 6px;
+    }
+
+    .place-schedule__label {
+        font-size: 0.9rem;
+    }
+
+    .place-schedule__weekday {
+        font-size: 0.75rem;
+    }
+}
+/* ===== АДАПТИВ ===== */
+@media (max-width: 1024px) {
+    .place-detail__grid {
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 28px;
+    }
+
+    .place-detail__title {
+        font-size: 1.55rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .place-detail__grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .place-detail__sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .place-detail {
+        padding-top: 20px;
+        padding-bottom: 56px;
+    }
+
+    .place-detail__title {
+        font-size: 1.35rem;
+    }
+
+    .place-detail__section {
+        padding: 20px;
+        border-radius: var(--radius);
+    }
+
+    .place-detail__section-title {
+        font-size: 1.05rem;
+        margin-bottom: 14px;
+    }
+
+    .place-detail__info-block {
+        padding: 18px;
+        border-radius: var(--radius);
+    }
+
+    .events-grid--similar {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .events-grid--similar {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .place-detail__title {
+        font-size: 1.2rem;
+    }
+
+    .place-detail__description {
+        font-size: 0.9rem;
+    }
+}

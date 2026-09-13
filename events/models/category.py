@@ -1,13 +1,13 @@
 """
 Модель категории события.
 """
-
 from django.db import models
+from django.utils.text import slugify
 
-from .servis_models import ServisModel
+from .servis_models import TimestampedModel
 
 
-class Category(ServisModel):
+class Category(TimestampedModel):
     """Категория события."""
 
     name = models.CharField(
@@ -38,11 +38,15 @@ class Category(ServisModel):
         verbose_name='Порядок',
     )
 
-    class Meta:
+    class Meta(TimestampedModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['order', 'name']
-        # Index(fields=['slug']) не нужен: unique=True создаёт индекс сам.
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)[:120] or 'category'
+        super().save(*args, **kwargs)

@@ -1,16 +1,12 @@
 """
 Дополнительные изображения события (галерея).
-
-У каждого события может быть несколько фотографий.
-Первое по order — основное в галерее.
 """
-
 from django.db import models
 
-from .servis_models import ServisModel
+from .servis_models import TimestampedModel
 
 
-class EventImage(ServisModel):
+class EventImage(TimestampedModel):
     """Изображение в галерее события."""
 
     event = models.ForeignKey(
@@ -33,11 +29,26 @@ class EventImage(ServisModel):
         verbose_name="Порядок",
     )
 
-    class Meta:
+    class Meta(TimestampedModel.Meta):
         verbose_name = "Изображение галереи"
         verbose_name_plural = "Изображения галереи"
         ordering = ["order", "id"]
+        indexes = [
+            models.Index(fields=["event", "order"]),
+        ]
 
     def __str__(self):
-        # Не дёргаем self.event.title: это +1 запрос в БД при выводе в админке.
         return f"Фото #{self.pk} (событие #{self.event_id})"
+
+    def save(self, *args, **kwargs):
+        """Автопорядок: если order=0 — ставим в конец."""
+        if not self.order and self.event_id:
+            last = (
+                EventImage.all_objects
+                .filter(event_id=self.event_id)
+                .exclude(pk=self.pk)
+                .order_by('-order')
+                .first()
+            )
+            self.order = (last.order + 1) if last else 1
+        super().save(*args, **kwargs)

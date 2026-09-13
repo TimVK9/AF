@@ -55,8 +55,9 @@
         </span>
         <div class="event-detail__fact-body">
             <span class="event-detail__fact-label">Место</span>
-            <span class="event-detail__fact-value">{{ event.place.name }}</span>
-            {% if event.place.address %}
+<a href="{% url 'events:place_detail' event.place.slug %}" class="event-detail__fact-link">
+    {{ event.place.name }}
+</a>            {% if event.place.address %}
                 <span class="event-detail__fact-sub">{{ event.place.address.short_address }}</span>
             {% endif %}
         </div>

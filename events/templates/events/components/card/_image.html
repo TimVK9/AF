@@ -1,4 +1,5 @@
 {% load thumbnail %}
+{% load placeholders %}
 
 {% comment %}
 Изображение карточки.
@@ -6,7 +7,7 @@
 Приоритет:
   1. event.main_image (титульное изображение события);
   2. event.place.main_image (фото площадки);
-  3. SVG-плейсхолдер «ночная сцена».
+  3. Случайная SVG-заглушка (стабильная для этого события — seed=event.pk).
 {% endcomment %}
 <div class="event-card__image-wrapper">
 
@@ -29,7 +30,12 @@
              height="{{ thumb.height }}">
 
     {% else %}
-        {% include "events/components/card/_placeholder.html" %}
+        <img src="{% random_placeholder event.pk %}"
+             alt="{{ event.title }}"
+             class="event-card__image"
+             loading="lazy"
+             width="800"
+             height="500">
     {% endif %}
 
     <div class="event-card__badges">

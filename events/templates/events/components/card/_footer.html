@@ -4,13 +4,13 @@
 {% endcomment %}
 <div class="event-card__footer">
 
-    <span class="event-card__views">
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-        </svg>
-        {{ event.views_count }}
-    </span>
+<span class="event-card__views">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+    </svg>
+    {{ event.views_total|default:0 }}
+</span>
 
     <span class="event-card__link">
         Подробнее
