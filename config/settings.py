@@ -81,7 +81,6 @@ if IS_PROD:
 # ПРИЛОЖЕНИЯ
 # =========================================================
 INSTALLED_APPS = [
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -112,11 +111,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'pages.middleware.ComingSoonMiddleware',   # ← на месте
-
+    "pages.middleware.ComingSoonMiddleware",
 ]
 
 SITE_COMING_SOON = False
+
 
 # =========================================================
 # URLS / WSGI
@@ -215,11 +214,26 @@ else:
 
 
 # =========================================================
+# СТРАНИЦЫ ОШИБОК
+# =========================================================
+# Django автоматически подхватывает 400.html, 403.html, 404.html, 500.html
+# из templates/ при DEBUG=False.
+#
+# Для 403 CSRF нужен отдельный view. Указываем кастомный.
+CSRF_FAILURE_VIEW = "events.views.csrf_failure"
+
+# 503 не подхватывается автоматически. Его рендерит middleware
+# ComingSoonMiddleware через render(request, '503.html', status=503).
+#
+# Шаблон 503 должен лежать в templates/503.html.
+
+
+# =========================================================
 # АВТОРИЗАЦИЯ
 # =========================================================
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -255,6 +269,25 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "Афиша Искитим <hello@iskitim-afisha.ru>",
 )
 
+# Отправитель писем об ошибках (mail_admins).
+# Должен совпадать с EMAIL_HOST_USER, иначе Яндекс/SMTP может отклонить.
+SERVER_EMAIL = os.environ.get(
+    "SERVER_EMAIL",
+    "Афиша Искитим — ошибки <hello@iskitim-afisha.ru>",
+)
+
+# Кому слать письма об ошибках (500).
+# Дополнительно письма уходят всем User с is_staff=True и заполненным email.
+ADMINS = [
+    # ("Имя", "admin@iskitim-afisha.ru"),
+]
+
+# Менеджеры получают уведомления о битых ссылках (404) — Django это
+# не шлёт автоматически, но на будущее.
+MANAGERS = [
+    # ("Имя", "manager@iskitim-afisha.ru"),
+]
+
 
 # =========================================================
 # ЛОГИРОВАНИЕ
@@ -269,6 +302,11 @@ LOGGING = {
         "verbose": {
             "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)d] %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
         },
     },
     "handlers": {
@@ -295,12 +333,39 @@ LOGGING = {
             "formatter": "verbose",
             "encoding": "utf-8",
         },
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
+            "include_html": True,
+        },
     },
     "loggers": {
-        "waiting_list": {"handlers": ["console", "file"], "level": "INFO", "propagate": False},
-        "captcha": {"handlers": ["console"], "level": "WARNING", "propagate": False},
-        "django": {"handlers": ["console"], "level": "WARNING", "propagate": False},
-        "": {"handlers": ["console", "error_file"], "level": "WARNING", "propagate": True},
+        "waiting_list": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "captcha": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console", "error_file", "mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "": {
+            "handlers": ["console", "error_file"],
+            "level": "WARNING",
+            "propagate": True,
+        },
     },
 }
 

@@ -1,0 +1,289 @@
+/* =========================================================
+   СТРАНИЦЫ ОШИБОК (404, 500, 403, 400, 503)
+   ========================================================= */
+
+:root {
+    --accent: #0f766e;
+    --accent-hover: #0b5e57;
+    --accent-glow: rgba(15, 118, 110, 0.25);
+    --accent-light: rgba(15, 118, 110, 0.10);
+
+    --bg-primary: #f7f9f8;
+    --bg-secondary: #ffffff;
+
+    --text-primary: #14181a;
+    --text-secondary: #3d474b;
+    --text-muted: #6b767a;
+
+    --border: rgba(20, 24, 26, 0.08);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+}
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 900px;
+    background: radial-gradient(circle, var(--accent-light) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.error-page {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 560px;
+    text-align: center;
+}
+
+/* Логотип */
+.error-page__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+    margin-bottom: 32px;
+}
+
+.error-page__logo .logo-accent {
+    color: var(--accent);
+}
+
+/* Карточка */
+.error-page__card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 48px 36px 40px;
+    box-shadow: 0 20px 60px rgba(20, 24, 26, 0.08);
+    animation: fadeUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Большой код ошибки */
+.error-page__code {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -4px;
+    color: var(--accent);
+    opacity: 0.15;
+    margin-bottom: -28px;
+    user-select: none;
+}
+
+/* Иконка */
+.error-page__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    position: relative;
+    animation: pulse 2.8s ease-in-out infinite;
+}
+
+.error-page__icon svg {
+    width: 34px;
+    height: 34px;
+}
+
+/* Заголовок */
+.error-page__title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.25;
+}
+
+/* Текст */
+.error-page__text {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0 auto 26px;
+    max-width: 420px;
+    line-height: 1.6;
+}
+
+/* Кнопки */
+.error-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.error-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.error-btn svg {
+    flex-shrink: 0;
+}
+
+.error-btn--primary {
+    background: var(--accent);
+    color: #ffffff;
+}
+
+.error-btn--primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--accent-glow);
+}
+
+.error-btn--ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+.error-btn--ghost:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Подпись внизу */
+.error-page__footer {
+    margin-top: 26px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.error-page__footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.error-page__footer a:hover {
+    text-decoration: underline;
+}
+
+/* Дополнительный блок деталей (например, код ошибки для админа) */
+.error-page__details {
+    margin-top: 20px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: rgba(20, 24, 26, 0.04);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: left;
+    word-break: break-all;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+/* Анимации */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+    50%      { box-shadow: 0 0 0 14px rgba(15, 118, 110, 0); }
+}
+
+/* Мобильные */
+@media (max-width: 480px) {
+    body { padding: 16px; }
+
+    .error-page__card {
+        padding: 36px 22px 32px;
+        border-radius: var(--radius-lg);
+    }
+
+    .error-page__code {
+        font-size: 3.8rem;
+        margin-bottom: -20px;
+    }
+
+    .error-page__title { font-size: 1.3rem; }
+    .error-page__text  { font-size: 0.88rem; }
+
+    .error-page__icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .error-page__icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .error-page__actions {
+        flex-direction: column;
+    }
+
+    .error-btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

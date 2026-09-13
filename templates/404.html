@@ -1,0 +1,19 @@
+{% extends "errors/_base.html" %}
+
+{% block title %}Страница не найдена{% endblock %}
+{% block code %}404{% endblock %}
+{% block heading %}Страница не найдена{% endblock %}
+{% block message %}
+    Возможно, ссылка устарела, событие удалили, или вы ошиблись в адресе.
+{% endblock %}
+
+{% block icon %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <line x1="8" y1="11" x2="14" y2="11"/>
+</svg>
+{% endblock %}
+
+{% block email_subject %}Страница%20не%20найдена%20(404){% endblock %}
+{% block email_body %}Здравствуйте!%0A%0AПолучил%20ошибку%20404%20на%20сайте%20АФИША%20ИСКИТИМ.%0A%0AСтраница%3A%20(вставьте%20ссылку)%0A%0AСпасибо!{% endblock %}

@@ -8,7 +8,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import (
@@ -406,3 +406,20 @@ class EventBulkActionView(StaffRequiredMixin, View):
             messages.error(request, 'Неизвестное действие.')
 
         return redirect('events:event_list_manage')
+
+
+# ======================================================================
+#  ОБРАБОТЧИК CSRF-ОШИБКИ (403)
+# ======================================================================
+
+def csrf_failure(request, reason=""):
+    """
+    Кастомная страница ошибки CSRF (403).
+    Django рендерит её, когда CSRF-токен невалиден или отсутствует.
+    """
+    return render(
+        request,
+        "403_csrf.html",
+        {"reason": reason},
+        status=403,
+    )
