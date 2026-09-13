@@ -122,8 +122,6 @@ MIDDLEWARE = [
     "pages.middleware.ComingSoonMiddleware",
 ]
 
-SITE_COMING_SOON = True
-
 
 # =========================================================
 # URLS / WSGI

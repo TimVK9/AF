@@ -18,6 +18,7 @@ from .models import (
     SiteView,
     EmailOTP,
     ImportLog,
+    SiteSettings,
 )
 
 
@@ -32,6 +33,7 @@ class EventImageInline(admin.TabularInline):
     readonly_fields = ('preview',)
     ordering = ('order', 'id')
 
+    @admin.display(description='Превью')
     def preview(self, obj):
         if not obj.image:
             return '—'
@@ -39,7 +41,6 @@ class EventImageInline(admin.TabularInline):
             '<img src="{}" style="height:60px;border-radius:6px;" />',
             obj.image.url,
         )
-    preview.short_description = 'Превью'
 
 
 # =====================================================================
@@ -122,6 +123,7 @@ class EventAdmin(admin.ModelAdmin):
 
     readonly_fields = ('main_image_preview',)
 
+    @admin.display(description='Превью')
     def main_image_preview(self, obj):
         if not obj.main_image:
             return '—'
@@ -129,8 +131,8 @@ class EventAdmin(admin.ModelAdmin):
             '<img src="{}" style="max-height:200px;border-radius:8px;" />',
             obj.main_image.url,
         )
-    main_image_preview.short_description = 'Превью'
 
+    @admin.display(description='Статус', ordering='status')
     def status_badge(self, obj):
         colors = {
             'draft': '#6b767a',
@@ -141,13 +143,14 @@ class EventAdmin(admin.ModelAdmin):
         }
         color = colors.get(obj.status, '#6b767a')
         return format_html(
-            '<span style="display:inline-block;padding:3px 10px;border-radius:10px;'
-            'background:{}20;color:{};font-size:11px;font-weight:700;'
-            'text-transform:uppercase;letter-spacing:0.3px;">{}</span>',
-            color, color, obj.get_status_display(),
+            '<span style="display:inline-block;padding:3px 10px;'
+            'border-radius:10px;background:{}20;color:{};font-size:11px;'
+            'font-weight:700;text-transform:uppercase;letter-spacing:0.3px;">'
+            '{}</span>',
+            color,
+            color,
+            obj.get_status_display(),
         )
-    status_badge.short_description = 'Статус'
-    status_badge.admin_order_field = 'status'
 
     def get_queryset(self, request):
         return (
@@ -167,6 +170,7 @@ class EventImageAdmin(admin.ModelAdmin):
     ordering = ('event', 'order', 'id')
     readonly_fields = ('preview',)
 
+    @admin.display(description='Превью')
     def preview(self, obj):
         if not obj.image:
             return '—'
@@ -174,7 +178,6 @@ class EventImageAdmin(admin.ModelAdmin):
             '<img src="{}" style="height:60px;border-radius:6px;" />',
             obj.image.url,
         )
-    preview.short_description = 'Превью'
 
 
 # =====================================================================
@@ -182,7 +185,10 @@ class EventImageAdmin(admin.ModelAdmin):
 # =====================================================================
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'street', 'house_number', 'phone', 'main_image_preview')
+    list_display = (
+        'name', 'city', 'street', 'house_number',
+        'phone', 'main_image_preview',
+    )
     search_fields = ('name', 'city', 'street', 'house_number')
     list_filter = ('city',)
     prepopulated_fields = {'slug': ('name',)}
@@ -212,6 +218,7 @@ class PlaceAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('main_image_preview',)
 
+    @admin.display(description='Фото')
     def main_image_preview(self, obj):
         if not obj.main_image:
             return '—'
@@ -219,7 +226,6 @@ class PlaceAdmin(admin.ModelAdmin):
             '<img src="{}" style="height:60px;border-radius:6px;" />',
             obj.main_image.url,
         )
-    main_image_preview.short_description = 'Фото'
 
 
 # =====================================================================
@@ -233,9 +239,9 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     ordering = ('order', 'name')
 
+    @admin.display(description='Событий')
     def events_count(self, obj):
         return obj.events.count()
-    events_count.short_description = 'Событий'
 
 
 # =====================================================================
@@ -258,8 +264,10 @@ class EmailOTPAdmin(admin.ModelAdmin):
 # =====================================================================
 @admin.register(ImportLog)
 class ImportLogAdmin(admin.ModelAdmin):
-    list_display = ('source', 'status', 'started_at', 'finished_at',
-                    'events_created', 'events_skipped', 'created_by')
+    list_display = (
+        'source', 'status', 'started_at', 'finished_at',
+        'events_created', 'events_skipped', 'created_by',
+    )
     list_filter = ('source', 'status')
     search_fields = ('log_output',)
     ordering = ('-started_at',)
@@ -320,6 +328,61 @@ class SiteViewAdmin(AbstractViewAdmin):
 
 
 # =====================================================================
+#  НАСТРОЙКИ САЙТА (СИНГЛТОН)
+# =====================================================================
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ('coming_soon_badge', 'updated_at')
+    readonly_fields = ('updated_at',)
+
+    fieldsets = (
+        ('Режим заглушки', {
+            'fields': ('coming_soon', 'coming_soon_message'),
+            'description': (
+                'Включите «Скоро запуск», чтобы все посетители '
+                '(кроме staff и superuser) видели страницу-заглушку. '
+                'Админы видят сайт как обычно.'
+            ),
+        }),
+        ('Служебное', {
+            'fields': ('updated_at',),
+        }),
+    )
+
+    @admin.display(description='Заглушка')
+    def coming_soon_badge(self, obj):
+        if obj.coming_soon:
+            return format_html(
+                '<span style="display:inline-block;padding:3px 10px;'
+                'border-radius:10px;background:rgba(220,38,38,0.15);'
+                'color:#b91c1c;font-weight:700;font-size:11px;'
+                'text-transform:uppercase;">{}</span>',
+                'Включено',
+            )
+        return format_html(
+            '<span style="display:inline-block;padding:3px 10px;'
+            'border-radius:10px;background:rgba(15,118,110,0.15);'
+            'color:#0f766e;font-weight:700;font-size:11px;'
+            'text-transform:uppercase;">{}</span>',
+            'Выключено',
+        )
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        """
+        Создаём синглтон при первом открытии списка, чтобы не было
+        пустой страницы.
+        """
+        SiteSettings.load()
+        return super().changelist_view(request, extra_context)
+
+
+# =====================================================================
 #  КАСТОМНЫЙ ДАШБОРД
 # =====================================================================
 def admin_dashboard_callback(request, extra_context):
@@ -362,3 +425,9 @@ def admin_dashboard_callback(request, extra_context):
 
     extra_context['url_event_manage'] = reverse('events:event_list_manage')
     extra_context['url_event_create'] = reverse('events:event_create')
+
+    # Статус заглушки для дашборда
+    try:
+        extra_context['site_settings'] = SiteSettings.load()
+    except Exception:
+        extra_context['site_settings'] = None

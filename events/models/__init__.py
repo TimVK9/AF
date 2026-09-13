@@ -6,6 +6,7 @@ from .event_image import EventImage
 from .analytics import EventView, PlaceView, CategoryView, SiteView
 from .email_otp import EmailOTP
 from .import_log import ImportLog
+from .site_settings import SiteSettings
 
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     'SiteView',
     'EmailOTP',
     'ImportLog',
+    'SiteSettings',
 ]

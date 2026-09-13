@@ -139,6 +139,7 @@
             font-size: 1rem;
             max-width: 420px;
             margin: 0 auto 32px;
+            white-space: pre-line;
         }
 
         .soon__progress {
@@ -271,8 +272,12 @@
 
             <h1 class="soon__title">Сайт скоро <span class="accent">начнёт работу</span></h1>
             <p class="soon__text">
-                Мы готовим афишу событий вашего города: концерты, спектакли, выставки и фестивали.
-                Совсем немного — и всё будет доступно.
+                {% if message %}
+                    {{ message }}
+                {% else %}
+                    Мы готовим афишу событий вашего города: концерты, спектакли, выставки и фестивали.
+                    Совсем немного — и всё будет доступно.
+                {% endif %}
             </p>
 
             <div class="soon__progress">
@@ -291,8 +296,7 @@
             </div>
         </div>
 
-        <p class="soon__footer">© 2026 АФИША ИСКИТИМ.   hello@afisha-iskitim.ru
-</p>
+        <p class="soon__footer">© 2026 АФИША ИСКИТИМ · hello@afisha-iskitim.ru</p>
     </main>
 
 </body>
