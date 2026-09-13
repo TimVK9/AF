@@ -32,6 +32,9 @@
 
     --header-height: 64px;
     --header-height-mobile: 56px;
+
+    /* Высота хедера с учётом safe-area (iOS standalone) */
+    --header-offset: var(--header-height);
 }
 
 /* ===== СБРОС ===== */
@@ -60,7 +63,7 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     min-height: -webkit-fill-available;
-    padding-top: var(--header-height);
+    padding-top: var(--header-offset);
     padding-bottom: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -81,7 +84,8 @@ body {
     -o-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
-    height: var(--header-height);
+    height: var(--header-offset);
+    padding-top: env(safe-area-inset-top, 0);
     -webkit-transition: all var(--transition);
     -moz-transition: all var(--transition);
     -ms-transition: all var(--transition);
@@ -700,7 +704,7 @@ body {
 
 .search-container.mobile-open {
     position: fixed;
-    top: var(--header-height);
+    top: var(--header-offset);
     left: 0;
     right: 0;
     bottom: 0;
@@ -713,7 +717,7 @@ body {
 
 /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
 .main-content {
-    min-height: calc(100vh - var(--header-height) - 200px);
+    min-height: calc(100vh - var(--header-offset) - 200px);
     padding-bottom: 40px;
 }
 
@@ -781,6 +785,7 @@ body {
     border-top: 1px solid var(--border);
     padding: 40px 0 30px;
     margin-top: auto;
+    padding-bottom: calc(30px + env(safe-area-inset-bottom, 0));
 }
 
 .footer-container {
@@ -931,7 +936,7 @@ body {
     -o-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border-top: 1px solid var(--border);
-    padding: 6px 0 env(safe-area-inset-bottom);
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0));
     -webkit-box-pack: space-around;
     -webkit-justify-content: space-around;
     -moz-box-pack: space-around;
@@ -1008,6 +1013,37 @@ body {
     border: 2px solid var(--bg-secondary);
 }
 
+/* =========================================================
+   iOS STANDALONE — ПРАВИЛЬНАЯ ВЫСОТА ХЕДЕРА
+   =========================================================
+   Когда сайт запущен с иконки на домашнем экране iOS,
+   нужно учесть safe-area-inset-top (высоту «острова» или чёлки),
+   чтобы хедер не был обрезан и часы не налезали на логотип.
+*/
+@media screen and (display-mode: standalone) {
+    :root {
+        --header-offset: calc(var(--header-height) + env(safe-area-inset-top, 0));
+    }
+
+    body {
+        padding-top: var(--header-offset);
+    }
+
+    .site-header {
+        height: var(--header-offset);
+        padding-top: env(safe-area-inset-top, 0);
+        box-sizing: content-box;
+    }
+
+    .search-container.mobile-open {
+        top: var(--header-offset);
+    }
+
+    .main-content {
+        min-height: calc(100vh - var(--header-offset) - 200px);
+    }
+}
+
 /* ===== АДАПТИВ ===== */
 @media (max-width: 1024px) {
     .header-container {
@@ -1048,6 +1084,7 @@ body {
 @media (max-width: 768px) {
     :root {
         --header-height: var(--header-height-mobile);
+        --header-offset: var(--header-height-mobile);
     }
 
     body {
@@ -1055,7 +1092,7 @@ body {
     }
 
     .site-header {
-        height: var(--header-height-mobile);
+        height: var(--header-offset);
     }
 
     .header-container {
@@ -1081,7 +1118,7 @@ body {
     .search-container.mobile-open {
         display: block;
         position: fixed;
-        top: var(--header-height-mobile);
+        top: var(--header-offset);
         left: 0;
         right: 0;
         bottom: 0;
@@ -1271,7 +1308,6 @@ body {
     }
 }
 
-
 /* ===== FIREFOX ===== */
 @-moz-document url-prefix() {
     .search-container.mobile-open {
@@ -1292,36 +1328,5 @@ body {
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
     .header-nav {
         display: -ms-flexbox;
-    }
-}
-
-/* ===== iOS FULLSCREEN / СКРЫТИЕ ЧАСОВ ===== */
-
-@supports (padding-top: env(safe-area-inset-top)) {
-    @media screen and (display-mode: standalone) {
-        /* Сдвигаем body вверх, чтобы часы ушли за край экрана */
-        body {
-            /* env(safe-area-inset-top) — высота системного "острова" */
-            /* Отрицательный margin заставляет контент уйти вверх */
-            margin-top: calc(-1 * env(safe-area-inset-top));
-            padding-top: 0;
-            min-height: 100vh; /* Чтобы фон не обрезался */
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Сдвигаем контент обратно, чтобы он не залезал под кнопку "домой" */
-        .main-content {
-            height: calc(100vh + env(safe-area-inset-top));
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Хедер теперь можно сместить вниз на ту же высоту */
-        .site-header {
-            top: 0;
-            padding-top: env(safe-area-inset-top);
-            box-sizing: border-box;
-        }
     }
 }
