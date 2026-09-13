@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 from events import admin_views
 from events import views_auth
@@ -23,7 +24,18 @@ sitemaps = {
 
 
 urlpatterns = [
+
     # ---------------------------------------------------------
+    # Подтверждение прав в Яндекс.Вебмастере
+    # ---------------------------------------------------------
+    path(
+        'yandex_7fcb848bf230967f.html',
+        TemplateView.as_view(
+            template_name='yandex_7fcb848bf230967f.html',
+            content_type='text/html',
+        ),
+        name='yandex_verification',
+    ),    # ----------------------------
     # Служебные админские вью — ДО admin.site.urls,
     # чтобы перехватывать /admin/... до стандартной админки
     # ---------------------------------------------------------
