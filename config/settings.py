@@ -6,6 +6,14 @@ Django settings — единый файл для dev и prod.
   - DJANGO_DEBUG=False                  → продакшен
 
 Все значения читаются из .env в корне проекта (см. load_dotenv ниже).
+
+Письма об ошибках:
+  • в проде (DEBUG=False) — уходят на ADMINS и всем staff с email;
+  • в dev (DEBUG=True) — печатаются в консоль, потому что
+    EMAIL_BACKEND=console и фильтр require_debug_false отсекает
+    mail_admins.
+  • чтобы получать письма и в dev — убери фильтр require_debug_false
+    в handler'е mail_admins и настрой реальный SMTP.
 """
 import os
 from pathlib import Path
@@ -48,7 +56,6 @@ ALLOWED_HOSTS = [
 ]
 
 # CSRF_TRUSTED_ORIGINS нужен за https-прокси (nginx) в проде.
-# В dev, если не задано, оставляем пустым.
 CSRF_TRUSTED_ORIGINS = [
     o.strip()
     for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
@@ -154,7 +161,6 @@ DATABASES = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
         "OPTIONS": {
-            # Ждать до 20 сек при блокировке, а не падать сразу с "database is locked"
             "timeout": 20,
         },
     }
@@ -192,7 +198,6 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 if IS_PROD:
-    # В проде — хешированные имена файлов (кеш браузера не залипает после деплоя)
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -202,7 +207,6 @@ if IS_PROD:
         },
     }
 else:
-    # В dev — обычная отдача без манифеста
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -235,6 +239,7 @@ SUBSCRIBE_COOLDOWN_SECONDS = int(
 # EMAIL
 # =========================================================
 # В dev — в консоль, в prod — реальный SMTP.
+# Если в .env явно задан EMAIL_BACKEND, он перебьёт дефолт.
 if IS_PROD:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 else:
@@ -249,28 +254,28 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
 EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").lower() == "true"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
     "Афиша Искитим <hello@iskitim-afisha.ru>",
 )
 
 # Отправитель писем об ошибках (mail_admins).
-# Должен совпадать с EMAIL_HOST_USER, иначе Яндекс/SMTP может отклонить.
+# Должен совпадать с EMAIL_HOST_USER, иначе Яндекс/SMTP отклонит.
+# Без кириллицы и угловых скобок — так надёжнее.
 SERVER_EMAIL = os.environ.get(
     "SERVER_EMAIL",
-    "Афиша Искитим — ошибки <hello@iskitim-afisha.ru>",
+    "hello@iskitim-afisha.ru",
 )
 
 # Кому слать письма об ошибках (500).
 # Дополнительно письма уходят всем User с is_staff=True и заполненным email.
 ADMINS = [
-    # ("Имя", "admin@iskitim-afisha.ru"),
+    # ("Админ", "admin@iskitim-afisha.ru"),
 ]
 
-# Менеджеры получают уведомления о битых ссылках (404) — Django это
-# не шлёт автоматически, но на будущее.
 MANAGERS = [
-    # ("Имя", "manager@iskitim-afisha.ru"),
+    # ("Менеджер", "manager@iskitim-afisha.ru"),
 ]
 
 
