@@ -1294,3 +1294,34 @@ body {
         display: -ms-flexbox;
     }
 }
+
+/* ===== iOS FULLSCREEN / СКРЫТИЕ ЧАСОВ ===== */
+
+@supports (padding-top: env(safe-area-inset-top)) {
+    @media screen and (display-mode: standalone) {
+        /* Сдвигаем body вверх, чтобы часы ушли за край экрана */
+        body {
+            /* env(safe-area-inset-top) — высота системного "острова" */
+            /* Отрицательный margin заставляет контент уйти вверх */
+            margin-top: calc(-1 * env(safe-area-inset-top));
+            padding-top: 0;
+            min-height: 100vh; /* Чтобы фон не обрезался */
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Сдвигаем контент обратно, чтобы он не залезал под кнопку "домой" */
+        .main-content {
+            height: calc(100vh + env(safe-area-inset-top));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Хедер теперь можно сместить вниз на ту же высоту */
+        .site-header {
+            top: 0;
+            padding-top: env(safe-area-inset-top);
+            box-sizing: border-box;
+        }
+    }
+}
