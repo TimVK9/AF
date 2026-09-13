@@ -122,7 +122,7 @@ MIDDLEWARE = [
     "pages.middleware.ComingSoonMiddleware",
 ]
 
-SITE_COMING_SOON = False
+SITE_COMING_SOON = True
 
 
 # =========================================================
