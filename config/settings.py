@@ -412,3 +412,9 @@ THUMBNAIL_QUALITY = 85
 THUMBNAIL_PRESERVE_EXTENSIONS = ("png",)
 THUMBNAIL_HIGH_RESOLUTION = True
 THUMBNAIL_EXTENSION = "webp"
+
+
+
+ADMINS = [
+    ('Тимофей  ', 'kalinin.timofei@mail.ru'),
+]
