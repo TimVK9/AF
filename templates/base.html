@@ -6,7 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <title>{% block title %}АФИША ИСКИТИМ{% endblock %}</title>
+{# ===== FAVICON ===== #}
+<link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicon/favicon-96x96.png' %}">
+<link rel="icon" type="image/svg+xml" href="{% static 'images/favicon/favicon.svg' %}">
+<link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon/apple-touch-icon.png' %}">
+<meta name="apple-mobile-web-app-title" content="Афиша Искитим">
+<meta name="theme-color" content="#0f766e">
 
+{# ===== PWA ===== #}
+<link rel="manifest" href="{% static 'site.webmanifest' %}">
     {# ===== OPEN GRAPH / TWITTER ===== #}
     {% block meta %}
     <meta property="og:type" content="website">
