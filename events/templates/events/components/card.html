@@ -8,7 +8,7 @@
 =========================================================
 {% endcomment %}
 
-<a href="{% url 'event_detail' event.slug %}" class="event-card">
+<a href="{% url 'events:event_detail' event.slug %}" class="event-card">
 
     {% include "events/components/card/_image.html" %}
     {% include "events/components/card/_content.html" %}

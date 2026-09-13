@@ -4,6 +4,7 @@
 У каждого события может быть несколько фотографий.
 Первое по order — основное в галерее.
 """
+
 from django.db import models
 
 from .servis_models import ServisModel
@@ -38,4 +39,5 @@ class EventImage(ServisModel):
         ordering = ["order", "id"]
 
     def __str__(self):
-        return f"{self.event.title} — фото #{self.pk}"
+        # Не дёргаем self.event.title: это +1 запрос в БД при выводе в админке.
+        return f"Фото #{self.pk} (событие #{self.event_id})"

@@ -8,7 +8,7 @@
 
     {# Главная — всегда первая, кроме случая, когда мы уже на ней без фильтров #}
     {% if request.resolver_match.url_name != "home" or request.GET %}
-        <a href="{% url 'home' %}">Афиша</a>
+        <a href="{% url 'events:home' %}">Афиша</a>
         <span class="breadcrumbs__sep" aria-hidden="true">/</span>
     {% endif %}
 
@@ -44,7 +44,7 @@
     {# ---------- ДЕТАЛЬНАЯ СОБЫТИЯ ---------- #}
     {% elif request.resolver_match.url_name == "event_detail" %}
         {% if event.category %}
-            <a href="{% url 'home' %}?category={{ event.category.slug }}">
+            <a href="{% url 'events:home' %}?category={{ event.category.slug }}">
                 {{ event.category.name }}
             </a>
             <span class="breadcrumbs__sep" aria-hidden="true">/</span>

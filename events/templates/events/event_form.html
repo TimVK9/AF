@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} — АФИША ИСКИТИМ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/event_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container event-form-page">
+
+    {# ============ ХЛЕБНЫЕ КРОШКИ + ЗАГОЛОВОК ============ #}
+    <div class="event-form-page__top">
+        <nav class="event-form-breadcrumbs">
+            <a href="{% url 'events:event_list_manage' %}">Управление</a>
+            <span>/</span>
+            <span class="event-form-breadcrumbs__current">{{ page_title }}</span>
+        </nav>
+
+        <div class="event-form-page__title-row">
+            <h1 class="event-form-page__title">{{ page_title }}</h1>
+
+            {% if is_edit %}
+                <a href="{{ public_url }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="event-form-page__view-link">
+                    Открыть на сайте
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ============ СООБЩЕНИЯ ============ #}
+    {% if messages %}
+        <div class="event-form-messages">
+            {% for message in messages %}
+                <div class="event-form-message event-form-message--{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="event-form" novalidate id="eventForm">
+        {% csrf_token %}
+
+        {# ============ ОБЩИЕ ОШИБКИ ФОРМЫ ============ #}
+        {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="event-form__layout">
+
+            {# ================= ЛЕВАЯ КОЛОНКА ================= #}
+            <div class="event-form__main">
+
+                {# ---------- Основное ---------- #}
+                <section class="form-section">
+                    <h2 class="form-section__title">Основное</h2>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.title.id_for_label }}">
+                            {{ form.title.label }} <span class="req">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.help_text %}<span class="form-help">{{ form.title.help_text }}</span>{% endif %}
+                        {% if form.title.errors %}<span class="form-error">{{ form.title.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row form-row--two">
+                        <div>
+                            <label class="form-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                            {{ form.category }}
+                            {% if form.category.help_text %}<span class="form-help">{{ form.category.help_text }}</span>{% endif %}
+                            {% if form.category.errors %}<span class="form-error">{{ form.category.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="{{ form.place.id_for_label }}">
+                                {{ form.place.label }} <span class="req">*</span>
+                            </label>
+                            {{ form.place }}
+                            {% if form.place.help_text %}<span class="form-help">{{ form.place.help_text }}</span>{% endif %}
+                            {% if form.place.errors %}<span class="form-error">{{ form.place.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.description_short.id_for_label }}">
+                            {{ form.description_short.label }} <span class="req">*</span>
+                        </label>
+                        {{ form.description_short }}
+                        {% if form.description_short.help_text %}<span class="form-help">{{ form.description_short.help_text }}</span>{% endif %}
+                        {% if form.description_short.errors %}<span class="form-error">{{ form.description_short.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.description.id_for_label }}">
+                            {{ form.description.label }} <span class="req">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.help_text %}<span class="form-help">{{ form.description.help_text }}</span>{% endif %}
+                        {% if form.description.errors %}<span class="form-error">{{ form.description.errors.0 }}</span>{% endif %}
+                    </div>
+                </section>
+
+                {# ---------- Дата и время ---------- #}
+                <section class="form-section">
+                    <h2 class="form-section__title">Дата и время</h2>
+
+                    <div class="form-row form-row--two">
+                        <div>
+                            <label class="form-label" for="{{ form.start_date.id_for_label }}">
+                                {{ form.start_date.label }} <span class="req">*</span>
+                            </label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}<span class="form-error">{{ form.start_date.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
+                            {{ form.end_date }}
+                            {% if form.end_date.help_text %}<span class="form-help">{{ form.end_date.help_text }}</span>{% endif %}
+                            {% if form.end_date.errors %}<span class="form-error">{{ form.end_date.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row--two">
+                        <div>
+                            <label class="form-label" for="{{ form.start_time.id_for_label }}">{{ form.start_time.label }}</label>
+                            {{ form.start_time }}
+                            {% if form.start_time.errors %}<span class="form-error">{{ form.start_time.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="{{ form.end_time.id_for_label }}">{{ form.end_time.label }}</label>
+                            {{ form.end_time }}
+                            {% if form.end_time.errors %}<span class="form-error">{{ form.end_time.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row--two">
+                        <div>
+                            <label class="form-label" for="{{ form.schedule_type.id_for_label }}">{{ form.schedule_type.label }}</label>
+                            {{ form.schedule_type }}
+                            {% if form.schedule_type.help_text %}<span class="form-help">{{ form.schedule_type.help_text }}</span>{% endif %}
+                            {% if form.schedule_type.errors %}<span class="form-error">{{ form.schedule_type.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="{{ form.age_restriction.id_for_label }}">{{ form.age_restriction.label }}</label>
+                            {{ form.age_restriction }}
+                            {% if form.age_restriction.errors %}<span class="form-error">{{ form.age_restriction.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+                </section>
+
+                {# ---------- Медиа ---------- #}
+                <section class="form-section">
+                    <h2 class="form-section__title">Медиа</h2>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.main_image.id_for_label }}">{{ form.main_image.label }}</label>
+                        {{ form.main_image }}
+                        {% if form.main_image.help_text %}<span class="form-help">{{ form.main_image.help_text }}</span>{% endif %}
+                        {% if form.main_image.errors %}<span class="form-error">{{ form.main_image.errors.0 }}</span>{% endif %}
+
+                        {% if form.instance.main_image %}
+                            <div class="form-image-preview">
+                                <span class="form-image-preview__label">Текущее:</span>
+                                <img src="{{ form.instance.main_image.url }}" alt="">
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                {# ---------- Галерея ---------- #}
+                <section class="form-section">
+                    <h2 class="form-section__title">Галерея</h2>
+                    <p class="form-help form-help--block">До 15 изображений. Пустые строки игнорируются. Порядок можно менять цифрой.</p>
+
+                    {{ image_formset.management_form }}
+
+                    {% if image_formset.non_form_errors %}
+                        <div class="form-errors">
+                            {% for error in image_formset.non_form_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-gallery-grid">
+                        {% for img_form in image_formset %}
+                            <div class="form-image-row">
+                                {{ img_form.id }}
+
+                                {% if img_form.instance.pk and img_form.instance.image %}
+                                    <div class="form-image-row__preview">
+                                        <img src="{{ img_form.instance.image.url }}" alt="">
+                                    </div>
+                                {% else %}
+                                    <div class="form-image-row__preview form-image-row__preview--empty">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                                            <polyline points="21 15 16 10 5 21"/>
+                                        </svg>
+                                    </div>
+                                {% endif %}
+
+                                <div class="form-image-row__fields">
+                                    <div class="form-row">
+                                        <label class="form-label">Изображение</label>
+                                        {{ img_form.image }}
+                                        {% if img_form.image.errors %}<span class="form-error">{{ img_form.image.errors.0 }}</span>{% endif %}
+                                    </div>
+
+                                    <div class="form-row form-row--two">
+                                        <div>
+                                            <label class="form-label">Подпись</label>
+                                            {{ img_form.caption }}
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Порядок</label>
+                                            {{ img_form.order }}
+                                        </div>
+                                    </div>
+
+                                    {% if img_form.instance.pk %}
+                                        <label class="form-checkbox-label form-checkbox-label--danger">
+                                            {{ img_form.DELETE }}
+                                            <span>Удалить</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            {# ================= ПРАВАЯ КОЛОНКА (САЙДБАР) ================= #}
+            <aside class="event-form__sidebar">
+
+                <div class="form-sidebar-block">
+                    <h3 class="form-sidebar-block__title">Публикация</h3>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                        {{ form.status }}
+                        {% if form.status.help_text %}<span class="form-help">{{ form.status.help_text }}</span>{% endif %}
+                        {% if form.status.errors %}<span class="form-error">{{ form.status.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-sidebar-block">
+                    <h3 class="form-sidebar-block__title">Стоимость</h3>
+
+                    <div class="form-row">
+                        <label class="form-checkbox-label">
+                            {{ form.is_free }}
+                            <span>{{ form.is_free.label }}</span>
+                        </label>
+                        {% if form.is_free.help_text %}<span class="form-help">{{ form.is_free.help_text }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                        {{ form.price }}
+                        {% if form.price.help_text %}<span class="form-help">{{ form.price.help_text }}</span>{% endif %}
+                        {% if form.price.errors %}<span class="form-error">{{ form.price.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-sidebar-block">
+                    <h3 class="form-sidebar-block__title">Контакты</h3>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }}</label>
+                        {{ form.contact_email }}
+                        {% if form.contact_email.errors %}<span class="form-error">{{ form.contact_email.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }}</label>
+                        {{ form.contact_phone }}
+                        {% if form.contact_phone.errors %}<span class="form-error">{{ form.contact_phone.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                {# ---------- Действия ---------- #}
+                <div class="form-sidebar-actions">
+                    <button type="submit" class="form-btn form-btn--primary">{{ submit_label }}</button>
+                    <a href="{% url 'events:event_list_manage' %}" class="form-btn form-btn--ghost">К списку</a>
+                </div>
+            </aside>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    'use strict';
+
+    /* Автоподстановка даты окончания = дате начала при потере фокуса */
+    var startDate = document.getElementById('id_start_date');
+    var endDate = document.getElementById('id_end_date');
+    var isFree = document.getElementById('id_is_free');
+    var price = document.getElementById('id_price');
+
+    if (startDate && endDate) {
+        startDate.addEventListener('change', function () {
+            if (!endDate.value) {
+                endDate.min = startDate.value;
+            }
+        });
+    }
+
+    /* Блокировка цены при is_free */
+    function syncPrice() {
+        if (!isFree || !price) return;
+        if (isFree.checked) {
+            price.value = '';
+            price.setAttribute('disabled', 'disabled');
+        } else {
+            price.removeAttribute('disabled');
+        }
+    }
+    if (isFree) {
+        isFree.addEventListener('change', syncPrice);
+        syncPrice();
+    }
+
+    /* Ctrl+S — сохранить форму */
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            var form = document.getElementById('eventForm');
+            if (form) form.submit();
+        }
+    });
+
+    /* Предупреждение при уходе с несохранёнными изменениями */
+    var form = document.getElementById('eventForm');
+    var dirty = false;
+
+    if (form) {
+        form.addEventListener('input', function () { dirty = true; });
+        form.addEventListener('change', function () { dirty = true; });
+        form.addEventListener('submit', function () { dirty = false; });
+
+        window.addEventListener('beforeunload', function (e) {
+            if (!dirty) return;
+            e.preventDefault();
+            e.returnValue = '';
+        });
+    }
+})();
+</script>
+{% endblock %}

@@ -5,20 +5,24 @@ OpenGraph / Twitter / Canonical.
 Все данные берутся из объекта `event` во вью.
 {% endcomment %}
 
-{# Основные OG-теги #}
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="АФИША ИСКИТИМ">
 <meta property="og:title" content="{{ event.title }}">
 <meta property="og:description" content="{{ event.description_short|default:event.title|truncatechars:180 }}">
 <meta property="og:url" content="{{ request.build_absolute_uri }}">
 
-{# OG-картинка #}
 {% if event.main_image %}
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url }}">
     <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ event.main_image.url }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{{ event.title }}">
+{% elif event.place.main_image %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.place.main_image.url }}">
+    <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ event.place.main_image.url }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ event.place.name }}">
 {% else %}
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
     <meta property="og:image:secure_url" content="https://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
@@ -27,7 +31,6 @@ OpenGraph / Twitter / Canonical.
     <meta property="og:image:alt" content="{{ event.title }}">
 {% endif %}
 
-{# Гео, даты, категория #}
 {% if event.place and event.place.address %}
     <meta property="og:street-address" content="{{ event.place.address.short_address }}">
 {% endif %}
@@ -37,15 +40,15 @@ OpenGraph / Twitter / Canonical.
     <meta property="article:section" content="{{ event.category.name }}">
 {% endif %}
 
-{# Twitter Card #}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ event.title }}">
 <meta name="twitter:description" content="{{ event.description_short|default:event.title|truncatechars:180 }}">
 {% if event.main_image %}
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url }}">
+{% elif event.place.main_image %}
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.place.main_image.url }}">
 {% else %}
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
 {% endif %}
 
-{# Canonical #}
 <link rel="canonical" href="{{ request.build_absolute_uri }}">

@@ -396,7 +396,32 @@
 .event-share-btn:active {
     opacity: 0.9;
 }
+/* Нативная кнопка «Поделиться» — показывается только на мобильных */
+.event-share-btn--native {
+    display: none;
+}
 
+@media (max-width: 768px) {
+    .event-share-btn--native {
+        display: inline-flex;
+    }
+
+    /* ВК-кнопку на мобильных скрываем — она открыла бы браузер */
+    .event-share-btn--vk {
+        display: none;
+    }
+
+    /* Сетка из одной колонки, чтобы кнопки не растягивались криво */
+    .event-detail__share-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 400px) {
+    .event-detail__share-grid {
+        grid-template-columns: 1fr;
+    }
+}
 .event-share-btn__icon {
     display: flex;
     align-items: center;

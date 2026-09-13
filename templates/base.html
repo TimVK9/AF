@@ -45,18 +45,12 @@
     {% endblock %}
 
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-
-    {# ===== CSS COOKIE-БАННЕРА (в head — валидно) ===== #}
     <link rel="stylesheet" href="{% static 'pages/css/cookie_banner.css' %}">
 
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% include 'includes/header.html' %}
-
-    {# ===================================================== #}
-    {# ТРИ ОВЕРЛЕЯ: поиск / фильтр / даты                    #}
-    {# ===================================================== #}
 
     <div class="search-container" id="searchOverlay">
         {% block search %}{% endblock %}
@@ -76,12 +70,9 @@
 
     {% include 'includes/footer.html' %}
 
-    {# ===================================================== #}
-    {# МОБИЛЬНАЯ НИЖНЯЯ ПАНЕЛЬ                               #}
-    {# ===================================================== #}
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
 
-        <a href="{% url 'home' %}"
+        <a href="{% url 'events:home' %}"
            class="mobile-nav-item {% if request.resolver_match.url_name == 'home' and not request.GET.date_filter and not request.GET.search and not request.GET.category %}active{% endif %}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -190,14 +181,47 @@
     </script>
 
     {# ===================================================== #}
-    {# COOKIE-БАННЕР — ПЕРЕД extra_js                        #}
+    {# JS ДЛЯ ВЫПАДАЮЩЕГО МЕНЮ STAFF                          #}
     {# ===================================================== #}
+    <script>
+    (function () {
+        'use strict';
+
+        document.addEventListener('click', function (e) {
+            var toggle = e.target.closest('.header-user-menu__toggle');
+            var menu = document.querySelector('.header-user-menu__dropdown');
+
+            if (toggle && menu) {
+                e.preventDefault();
+                var isOpen = !menu.hidden;
+                menu.hidden = isOpen;
+                toggle.setAttribute('aria-expanded', String(!isOpen));
+                return;
+            }
+
+            if (menu && !menu.hidden && !e.target.closest('.header-user-menu')) {
+                menu.hidden = true;
+                var t = document.querySelector('.header-user-menu__toggle');
+                if (t) t.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                var menu = document.querySelector('.header-user-menu__dropdown');
+                if (menu) {
+                    menu.hidden = true;
+                    var t = document.querySelector('.header-user-menu__toggle');
+                    if (t) t.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+    })();
+    </script>
+
     {% include "pages/includes/cookie_banner.html" %}
     <script src="{% static 'pages/js/cookie_banner.js' %}" defer></script>
 
-    {# ===================================================== #}
-    {# ДОПОЛНИТЕЛЬНЫЕ СКРИПТЫ КОНКРЕТНОЙ СТРАНИЦЫ            #}
-    {# ===================================================== #}
     {% block extra_js %}{% endblock %}
 
 </body>

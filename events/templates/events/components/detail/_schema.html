@@ -12,13 +12,19 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
     "image": [
         "{{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url }}"
     ],
+    {% elif event.place.main_image %}
+    "image": [
+        "{{ request.scheme }}://{{ request.get_host }}{{ event.place.main_image.url }}"
+    ],
     {% endif %}
     "startDate": "{{ event.start_date|date:'c' }}{% if event.start_time %}T{{ event.start_time|time:'H:i:s' }}{% endif %}",
     {% if event.end_date %}
-    "endDate": "{{ event.end_date|date:'c' }}{% if event.start_time %}T{{ event.start_time|time:'H:i:s' }}{% endif %}",
+    "endDate": "{{ event.end_date|date:'c' }}{% if event.end_time %}T{{ event.end_time|time:'H:i:s' }}{% endif %}",
     {% endif %}
     "eventStatus": "{% if event.status == 'cancelled' %}https://schema.org/EventCancelled{% else %}https://schema.org/EventScheduled{% endif %}",
     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "datePublished": "{{ event.created_at|date:'c' }}",
+    "dateModified": "{{ event.updated_at|date:'c' }}",
     {% if event.place %}
     "location": {
         "@type": "Place",
@@ -40,7 +46,7 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
             "longitude": {{ event.place.address.longitude }}
         },
         {% endif %}
-        "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'event_detail' event.slug %}"
+        "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}"
     },
     {% endif %}
     {% if event.category %}

@@ -1,10 +1,9 @@
 {% comment %}
-Контент карточки: категория, дата, заголовок,
-краткое описание, место проведения.
+Контент карточки: категория, дата (или диапазон),
+заголовок, краткое описание, место проведения.
 {% endcomment %}
 <div class="event-card__content">
 
-    {% comment %} Категория и дата {% endcomment %}
     <div class="event-card__meta">
         {% if event.category %}
             <span class="event-card__category">
@@ -19,24 +18,26 @@
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            {{ event.start_date|date:"d.m.Y" }}
-            {% if event.start_time %}
-                в {{ event.start_time|time:"H:i" }}
+
+            {% if event.end_date and event.end_date != event.start_date %}
+                {{ event.start_date|date:"d.m" }} — {{ event.end_date|date:"d.m.Y" }}
+            {% else %}
+                {{ event.start_date|date:"d.m.Y" }}
+                {% if event.start_time %}
+                    в {{ event.start_time|time:"H:i" }}
+                {% endif %}
             {% endif %}
         </span>
     </div>
 
-    {% comment %} Название {% endcomment %}
     <h3 class="event-card__title">{{ event.title }}</h3>
 
-    {% comment %} Краткое описание {% endcomment %}
     {% if event.description_short %}
         <p class="event-card__description">
             {{ event.description_short|truncatechars:100 }}
         </p>
     {% endif %}
 
-    {% comment %} Место проведения {% endcomment %}
     <div class="event-card__place">
         <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>

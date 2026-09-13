@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Вход — АФИША ИСКИТИМ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+
+        <div class="auth-card__header">
+            <h1 class="auth-card__title">Вход</h1>
+            <p class="auth-card__subtitle">Введите логин и пароль — мы отправим код на почту</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="auth-message auth-message--{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            <div class="auth-field">
+                <label for="id_username" class="auth-label">Логин</label>
+                <input type="text"
+                       name="username"
+                       id="id_username"
+                       class="auth-input"
+                       autocomplete="username"
+                       autofocus
+                       required>
+            </div>
+
+            <div class="auth-field">
+                <label for="id_password" class="auth-label">Пароль</label>
+                <input type="password"
+                       name="password"
+                       id="id_password"
+                       class="auth-input"
+                       autocomplete="current-password"
+                       required>
+            </div>
+
+            <label class="auth-checkbox">
+                <input type="checkbox" name="remember">
+                <span>Запомнить меня на 30 дней</span>
+            </label>
+
+            <button type="submit" class="auth-btn">Войти</button>
+        </form>
+
+        <p class="auth-card__footer">
+            Нет аккаунта? Обратитесь к администратору.
+        </p>
+    </div>
+</div>
+{% endblock %}

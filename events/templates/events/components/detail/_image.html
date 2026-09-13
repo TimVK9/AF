@@ -1,9 +1,15 @@
 {% load thumbnail %}
 
 {% comment %}
-Изображение события.
+Изображение события на странице детали.
+
+Приоритет:
+  1. event.main_image;
+  2. event.place.main_image (фото площадки);
+  3. SVG-плейсхолдер.
 {% endcomment %}
 <div class="event-detail__image-wrapper">
+
     {% if event.main_image %}
         {% thumbnail event.main_image "detail" crop="smart" quality=85 as thumb %}
         <img src="{{ thumb.url }}"
@@ -12,6 +18,16 @@
              loading="eager"
              width="{{ thumb.width }}"
              height="{{ thumb.height }}">
+
+    {% elif event.place.main_image %}
+        {% thumbnail event.place.main_image "detail" crop="smart" quality=85 as thumb %}
+        <img src="{{ thumb.url }}"
+             alt="{{ event.place.name }}"
+             class="event-detail__image"
+             loading="eager"
+             width="{{ thumb.width }}"
+             height="{{ thumb.height }}">
+
     {% else %}
         <div class="event-detail__image-placeholder" aria-hidden="true">
             <div class="ph-sky"></div>

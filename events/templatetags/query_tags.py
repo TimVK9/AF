@@ -1,4 +1,6 @@
 from django import template
+from django.http import QueryDict
+from django.urls import reverse
 
 register = template.Library()
 
@@ -6,29 +8,32 @@ register = template.Library()
 @register.simple_tag(takes_context=True)
 def querystring(context, **kwargs):
     """
-    Формирует querystring из текущего request.GET,
-    заменяя/удаляя указанные параметры.
+    Собирает query string, сохраняя текущие GET-параметры
+    и заменяя/удаляя указанные.
 
-    Использование:
-        {% querystring category=category.slug %}
-        {% querystring date_filter='today' %}
-        {% querystring search='' %}   -> удалит search
+    На страницах, отличных от главной, ссылка ведёт на главную
+    (чтобы фильтры с детальной события работали корректно).
     """
-    request = context.get('request')
-    if request is None:
-        return ''
+    request = context['request']
+    current = request.GET.copy()
 
-    params = request.GET.copy()
-
-    # Сбрасываем page, если не передан явно
-    if 'page' not in kwargs:
-        params.pop('page', None)
+    # На не-главной — ведём на главную с фильтрами
+    url_name = request.resolver_match.url_name if request.resolver_match else None
+    if url_name != 'home':
+        base = reverse('events:home')
+    else:
+        base = ''
 
     for key, value in kwargs.items():
-        if value is None or value == '':
-            params.pop(key, None)
+        if value == '' or value is None:
+            current.pop(key, None)
         else:
-            params[key] = value
+            current[key] = value
 
-    encoded = params.urlencode()
-    return f'?{encoded}' if encoded else '?'
+    # Убираем page при смене фильтра
+    current.pop('page', None)
+
+    qs = current.urlencode()
+    if qs:
+        return f'{base}?{qs}'
+    return base or '?'

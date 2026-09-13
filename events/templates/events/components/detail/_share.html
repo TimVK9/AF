@@ -1,32 +1,41 @@
 {% comment %}
-Кнопки «Поделиться»: ВКонтакте, MAX, Скопировать.
-Логика:
-  • ВК — стабильный веб-шер vk.com/share.php;
-  • Скопировать — универсальный фолбэк для Telegram, WhatsApp и др.
+Кнопки «Поделиться».
+
+Логика показа:
+  • на мобильных (max-width: 768px) — одна кнопка «Поделиться»
+    (navigator.share → системное меню → приложение ВК, Telegram и др.);
+  • на десктопе — «ВКонтакте» (веб-шара) и «Скопировать».
+
 JS — в _scripts.html.
 {% endcomment %}
 <div class="event-detail__actions">
-
-    {% comment %}
-    Кнопка «В избранное» временно отключена.
-    Раскомментировать, когда появится модель Favorite и AJAX-обработчик.
-    {% endcomment %}
-    {% comment %}
-    <button type="button" class="event-detail__btn event-detail__btn--primary">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-        </svg>
-        В избранное
-    </button>
-    {% endcomment %}
 
     <div class="event-detail__share">
         <span class="event-detail__share-label">Поделиться</span>
 
         <div class="event-detail__share-grid">
 
-            {# ВКонтакте #}
-            <a class="event-share-btn event-share-btn--vk"
+            {# Универсальная кнопка — показывается только на мобильных #}
+            <button type="button"
+                    class="event-share-btn event-share-btn--native js-share-native"
+                    data-share-title="{{ event.title }}"
+                    data-share-text="{{ event.description_short|default:event.title|truncatechars:120 }}"
+                    data-share-url="{{ request.build_absolute_uri }}"
+                    aria-label="Поделиться">
+                <span class="event-share-btn__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"/>
+                        <circle cx="6" cy="12" r="3"/>
+                        <circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                </span>
+                <span class="event-share-btn__text">Поделиться</span>
+            </button>
+
+            {# ВКонтакте — только на десктопе #}
+            <a class="event-share-btn event-share-btn--vk js-share-vk"
                href="https://vk.com/share.php?url={{ request.build_absolute_uri|urlencode }}&title={{ event.title|urlencode }}&description={{ event.description_short|default:event.title|truncatechars:180|urlencode }}{% if event.main_image %}&image={{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url|urlencode }}{% endif %}"
                target="_blank"
                rel="noopener noreferrer"
@@ -39,8 +48,7 @@ JS — в _scripts.html.
                 <span class="event-share-btn__text">ВКонтакте</span>
             </a>
 
-            
-            {# Скопировать #}
+            {# Скопировать — везде #}
             <button type="button"
                     class="event-share-btn event-share-btn--copy js-copy-btn"
                     data-share-url="{{ request.build_absolute_uri }}"

@@ -3,11 +3,20 @@
     <div class="event-detail__subtitle">
         {% if event.category %}
             <span>{{ event.category.name }}</span>
+            {% if event.start_date %}
+                <span class="event-detail__subtitle-sep">·</span>
+            {% endif %}
         {% endif %}
-        {% if event.category and event.start_date %}
-            <span class="event-detail__subtitle-sep">·</span>
-        {% endif %}
-        <span>{{ event.start_date|date:"d E Y" }}{% if event.start_time %}, {{ event.start_time|time:"H:i" }}{% endif %}</span>
+
+        <span>
+            {% if event.end_date and event.end_date != event.start_date %}
+                {{ event.start_date|date:"d E" }} — {{ event.end_date|date:"d E Y" }}
+            {% else %}
+                {{ event.start_date|date:"d E Y" }}
+                {% if event.start_time %}, {{ event.start_time|time:"H:i" }}{% endif %}
+            {% endif %}
+        </span>
+
         {% if event.place %}
             <span class="event-detail__subtitle-sep">·</span>
             <span>{{ event.place.name }}</span>

@@ -6,6 +6,7 @@
 
 Никаких IP, User-Agent, cookies, session_id, идентификаторов пользователя.
 """
+
 from django.db import models
 
 
@@ -25,12 +26,17 @@ class PageView(models.Model):
         db_index=True,
         verbose_name="Тип",
     )
+
+    # object_id = 0 означает «не применимо» (для главной и поиска).
+    # Используем 0 вместо NULL, потому что в SQL NULL != NULL, и
+    # unique_together с NULL не работал бы — можно было бы создать
+    # сколько угодно дублирующих записей за один день.
     object_id = models.PositiveIntegerField(
-        null=True,
-        blank=True,
+        default=0,
         db_index=True,
         verbose_name="ID объекта",
     )
+
     date = models.DateField(
         db_index=True,
         verbose_name="Дата",
@@ -43,7 +49,12 @@ class PageView(models.Model):
     class Meta:
         verbose_name = "Просмотр"
         verbose_name_plural = "Просмотры"
-        unique_together = (("kind", "object_id", "date"),)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["kind", "object_id", "date"],
+                name="unique_pageview_kind_object_date",
+            ),
+        ]
         indexes = [
             models.Index(fields=["kind", "date"]),
             models.Index(fields=["object_id", "date"]),
