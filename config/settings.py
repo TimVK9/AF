@@ -261,7 +261,7 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 
 SERVER_EMAIL = os.environ.get(
     "SERVER_EMAIL",
-    "hello@iskitim-afisha.ru",
+    "hello@afisha-iskitim.ru",
 )
 
 # Кому слать письма об ошибках.
