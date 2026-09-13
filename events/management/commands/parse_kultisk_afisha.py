@@ -5,12 +5,16 @@
 Команда скачивает HTML, разбирает таблицы, создаёт события
 в статусе MODERATION для ручной проверки.
 
-Категории определяются автоматически:
+Категории НЕ создаются автоматически. Парсер ищет существующую
+категорию по фиксированному slug (CATEGORY_SLUGS). Если категории
+нет — событие сохраняется БЕЗ категории.
+
+Категории определяются:
   • 2-колоночные таблицы (Выставки) → категория «Выставки»;
   • остальные — по ключевым словам в названии (CATEGORY_RULES).
 
-Категории ищутся по slug (уникальный идентификатор) — name может
-меняться, slug остаётся. Если категории нет — создаётся.
+Площадки создаются автоматически, если не найдены (это безопасно —
+они создаются как обычные справочники).
 
 Использование:
     python manage.py parse_kultisk_afisha --dry-run
@@ -100,8 +104,8 @@ CATEGORY_RULES = [
 ]
 
 # Фиксированные slug'и для категорий.
-# Если категория уже есть в БД с таким slug — используется она.
-# Если её нет — создаётся с этим slug и name из CATEGORY_RULES/DEFAULT.
+# Парсер только ИЩЕТ категории по этим slug. Если категории нет —
+# событие сохраняется БЕЗ категории (не создаётся автоматически).
 CATEGORY_SLUGS = {
     'Концерты': 'concerts',
     'Спектакли': 'theatre',
@@ -130,7 +134,8 @@ def detect_category(title, default=DEFAULT_CATEGORY):
 class Command(BaseCommand):
     help = (
         'Парсит афишу с kultisk.ru/afisha/ и создаёт события '
-        'в статусе MODERATION. Категории определяются автоматически.'
+        'в статусе MODERATION. Категории определяются автоматически, '
+        'но новые НЕ создаются.'
     )
 
     def add_arguments(self, parser):
@@ -149,7 +154,7 @@ class Command(BaseCommand):
 
         self.skipped_no_date = []
         self.seen_keys = set()
-        self.new_categories = set()
+        self.missing_categories = set()
 
         self.stdout.write(f'Скачиваю {URL} ...')
         html = self._fetch()
@@ -162,6 +167,7 @@ class Command(BaseCommand):
         total_created = 0
         total_skipped = 0
         total_parsed = 0
+        total_no_category = 0
 
         for table in tables:
             context = table['context']
@@ -173,11 +179,17 @@ class Command(BaseCommand):
 
                 total_parsed += 1
 
-                # Определяем категорию
+                # Определяем название категории
                 if parsed.get('category_hint'):
                     cat_name = parsed['category_hint']
                 else:
                     cat_name = detect_category(parsed['title'])
+
+                # Ищем категорию по slug (без создания)
+                category = self._get_category(cat_name)
+                if category is None:
+                    total_no_category += 1
+                    self.missing_categories.add(cat_name)
 
                 if self.dry_run:
                     key = (parsed['title'], parsed['start_date'])
@@ -190,15 +202,16 @@ class Command(BaseCommand):
 
                     end = parsed.get('end_date')
                     end_str = f' → {end}' if end else ''
+                    cat_str = cat_name if category else f'{cat_name} (нет в БД)'
                     self.stdout.write(
-                        f'[DRY] [{cat_name}] '
+                        f'[DRY] [{cat_str}] '
                         f'{parsed["start_date"]}{end_str} | '
                         f'{parsed["title"][:60]} | '
                         f'{parsed["place_name"]}\n'
                     )
                     continue
 
-                created = self._save_event(parsed, cat_name)
+                created = self._save_event(parsed, category)
                 if created:
                     total_created += 1
                 else:
@@ -208,14 +221,19 @@ class Command(BaseCommand):
         self.stdout.write(
             f'Пропущено (не распознал дату): {len(self.skipped_no_date)}\n'
         )
+        if total_no_category:
+            self.stdout.write(
+                f'Без категории (не найдена в БД): {total_no_category}\n'
+            )
 
         for row in self.skipped_no_date[:10]:
             self.stdout.write(f'  · {row}\n')
 
-        if self.new_categories:
-            self.stdout.write('\nСозданные категории:\n')
-            for slug in sorted(self.new_categories):
-                self.stdout.write(f'  + {slug}\n')
+        if self.missing_categories:
+            self.stdout.write('\nНе найдены категории (создайте вручную):\n')
+            for name in sorted(self.missing_categories):
+                slug = CATEGORY_SLUGS.get(name, slugify(name))
+                self.stdout.write(f'  ! {name} (slug: {slug})\n')
 
         if self.dry_run:
             self.stdout.write('\n')
@@ -471,25 +489,14 @@ class Command(BaseCommand):
 
     def _get_category(self, category_name):
         """
-        Возвращает Category по slug.
-        Если категории с таким slug нет — создаёт её с нужным name.
+        Ищет категорию по фиксированному slug (CATEGORY_SLUGS).
+        Если категории нет — возвращает None. НИЧЕГО НЕ СОЗДАЁТ.
         """
         slug = CATEGORY_SLUGS.get(
             category_name,
             slugify(category_name)[:100] or 'other',
         )
-
-        category = Category.objects.filter(slug=slug).first()
-        if category is not None:
-            return category
-
-        category = Category.objects.create(
-            slug=slug,
-            name=category_name,
-            is_active=True,
-        )
-        self.new_categories.add(slug)
-        return category
+        return Category.objects.filter(slug=slug).first()
 
     def _get_place(self, place_name):
         """
@@ -507,8 +514,11 @@ class Command(BaseCommand):
         return place
 
     @transaction.atomic
-    def _save_event(self, parsed, category_name):
-        category = self._get_category(category_name)
+    def _save_event(self, parsed, category):
+        """
+        Сохраняет событие. `category` может быть None —
+        тогда событие сохранится без категории.
+        """
         place = self._get_place(parsed['place_name'])
 
         exists = Event.objects.filter(
@@ -520,7 +530,7 @@ class Command(BaseCommand):
 
         Event.objects.create(
             title=parsed['title'],
-            category=category,
+            category=category,  # может быть None
             place=place,
             description_short=parsed['description_short'],
             description=parsed['description'],
