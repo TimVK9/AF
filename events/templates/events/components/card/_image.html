@@ -1,5 +1,4 @@
 {% load thumbnail %}
-{% load placeholders %}
 
 {% comment %}
 Изображение карточки.
@@ -7,7 +6,7 @@
 Приоритет:
   1. event.main_image (титульное изображение события);
   2. event.place.main_image (фото площадки);
-  3. Случайная SVG-заглушка (стабильная для этого события — seed=event.pk).
+  3. SVG-плейсхолдер «ночная сцена».
 {% endcomment %}
 <div class="event-card__image-wrapper">
 
@@ -30,14 +29,22 @@
              height="{{ thumb.height }}">
 
     {% else %}
-        <img src="{% random_placeholder event.pk %}"
-             alt="{{ event.title }}"
-             class="event-card__image"
-             loading="lazy"
-             width="800"
-             height="500">
+        {% include "events/components/card/_placeholder.html" %}
     {% endif %}
 
+    {# Бейдж с датой — поверх картинки, слева внизу #}
+<div class="event-card__date-badge">
+    {% if event.end_date and event.end_date != event.start_date %}
+        <span class="event-card__date-range">
+            {{ event.start_date|date:"d.m" }} — {{ event.end_date|date:"d.m" }}
+        </span>
+    {% else %}
+        <span class="event-card__date-day">{{ event.start_date|date:"d" }}</span>
+        <span class="event-card__date-month">{{ event.start_date|date:"M" }}</span>
+    {% endif %}
+</div>
+
+    {# Бейджи цены и возраста — справа сверху #}
     <div class="event-card__badges">
         {% if event.is_free %}
             <span class="badge badge--free">Бесплатно</span>

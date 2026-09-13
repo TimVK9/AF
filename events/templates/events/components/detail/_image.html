@@ -8,6 +8,9 @@
   1. event.main_image;
   2. event.place.main_image (фото площадки);
   3. Случайная SVG-заглушка (стабильная для этого события — seed=event.pk).
+
+Бейдж даты — слева внизу, как в карточке.
+Бейджи цены/возраста — справа сверху.
 {% endcomment %}
 <div class="event-detail__image-wrapper">
 
@@ -38,6 +41,19 @@
              height="675">
     {% endif %}
 
+    {# Бейдж с датой — слева внизу #}
+    <div class="event-detail__date-badge">
+        {% if event.end_date and event.end_date != event.start_date %}
+            <span class="event-detail__date-range">
+                {{ event.start_date|date:"d.m" }} — {{ event.end_date|date:"d.m" }}
+            </span>
+        {% else %}
+            <span class="event-detail__date-day">{{ event.start_date|date:"d" }}</span>
+            <span class="event-detail__date-month">{{ event.start_date|date:"M" }}</span>
+        {% endif %}
+    </div>
+
+    {# Бейджи цены и возраста — справа сверху #}
     <div class="event-detail__badges">
         {% if event.is_free %}
             <span class="badge badge--free">Бесплатно</span>
