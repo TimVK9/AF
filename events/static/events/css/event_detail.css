@@ -121,6 +121,13 @@
     flex-wrap: wrap;
     z-index: 3;
 }
+
+.event-detail__badges .badge {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 12px;
+}
+
 /* ===== БЕЙДЖ ДАТЫ (слева внизу поверх изображения) ===== */
 .event-detail__date-badge {
     position: absolute;
@@ -167,11 +174,6 @@
     line-height: 1.2;
     text-align: center;
     white-space: nowrap;
-}
-.event-detail__badges .badge {
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 12px;
 }
 
 /* ===== СЕКЦИИ ===== */
@@ -335,14 +337,90 @@
     margin-top: 2px;
 }
 
-/* ===== КНОПКИ ===== */
+.event-detail__fact-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.event-detail__fact-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+.event-detail__fact-sub--vk {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #0077FF;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+.event-detail__fact-sub--vk:hover {
+    text-decoration: underline;
+}
+
+/* ===== ДЕЙСТВИЯ: ПОДЕЛИТЬСЯ + РЕДАКТИРОВАТЬ ===== */
 .event-detail__actions {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 16px;
     border-top: 1px solid var(--border);
     padding-top: 20px;
 }
 
+/* Кнопка «Редактировать событие» — только для staff/superuser.
+   Лежит под блоком «Поделиться», нейтральная, на всю ширину. */
+.event-detail__edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease, border-color 0.2s ease,
+                color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-detail__edit-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.event-detail__edit-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+/* Оставляем на случай, если где-то ещё используется .event-detail__btn--edit */
+.event-detail__btn--edit {
+    width: 100%;
+    justify-content: center;
+}
+
+.event-detail__btn--edit svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ===== КНОПКИ (старые, для совместимости) ===== */
 .event-detail__btn {
     display: inline-flex;
     align-items: center;
@@ -442,7 +520,8 @@
 .event-share-btn:active {
     opacity: 0.9;
 }
-/* Нативная кнопка «Поделиться» — показывается только на мобильных */
+
+/* Нативная кнопка «Поделиться» — только на мобильных */
 .event-share-btn--native {
     display: none;
 }
@@ -452,22 +531,15 @@
         display: inline-flex;
     }
 
-    /* ВК-кнопку на мобильных скрываем — она открыла бы браузер */
     .event-share-btn--vk {
         display: none;
     }
 
-    /* Сетка из одной колонки, чтобы кнопки не растягивались криво */
     .event-detail__share-grid {
         grid-template-columns: 1fr 1fr;
     }
 }
 
-@media (max-width: 400px) {
-    .event-detail__share-grid {
-        grid-template-columns: 1fr;
-    }
-}
 .event-share-btn__icon {
     display: flex;
     align-items: center;
@@ -527,37 +599,12 @@
 .event-share-btn--copy:hover .event-share-btn__text {
     color: #ffffff;
 }
-.event-detail__fact-link {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.2s;
-}
-
-.event-detail__fact-link:hover {
-    color: var(--accent);
-    text-decoration: underline;
-}
-
-.event-detail__fact-sub--vk {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: #0077FF;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.8rem;
-    margin-top: 4px;
-}
-
-.event-detail__fact-sub--vk:hover {
-    text-decoration: underline;
-}
 
 @media (max-width: 400px) {
     .event-detail__share-grid {
         grid-template-columns: 1fr;
     }
+
     .event-share-btn {
         flex-direction: row;
         justify-content: flex-start;
@@ -565,6 +612,7 @@
         padding: 10px 14px;
         text-align: left;
     }
+
     .event-share-btn__text {
         font-size: 0.82rem;
     }
@@ -797,6 +845,26 @@
         padding: 4px 9px;
     }
 
+    .event-detail__date-badge {
+        left: 12px;
+        bottom: 12px;
+        min-width: 60px;
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    .event-detail__date-day {
+        font-size: 1.5rem;
+    }
+
+    .event-detail__date-month {
+        font-size: 0.72rem;
+    }
+
+    .event-detail__date-range {
+        font-size: 0.85rem;
+    }
+
     .event-detail__sidebar,
     .event-detail__section {
         padding: 20px;
@@ -820,6 +888,11 @@
 
     .event-detail__actions {
         padding-top: 18px;
+    }
+
+    .event-detail__edit-btn {
+        padding: 11px 14px;
+        font-size: 0.82rem;
     }
 
     .event-detail__btn {
@@ -874,13 +947,34 @@
         font-size: 0.88rem;
     }
 
-    .event-detail__actions {
-        flex-direction: column;
-        gap: 8px;
+    .event-detail__edit-btn {
+        padding: 10px 12px;
+        font-size: 0.8rem;
     }
 
     .event-detail__btn {
         width: 100%;
+    }
+
+    .event-detail__date-badge {
+        left: 10px;
+        bottom: 10px;
+        min-width: 54px;
+        padding: 8px 10px;
+        border-radius: 10px;
+    }
+
+    .event-detail__date-day {
+        font-size: 1.35rem;
+    }
+
+    .event-detail__date-month {
+        font-size: 0.66rem;
+        margin-top: 3px;
+    }
+
+    .event-detail__date-range {
+        font-size: 0.78rem;
     }
 }
 

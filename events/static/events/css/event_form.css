@@ -72,7 +72,7 @@
     background: var(--accent-light);
 }
 
-/* ===== СООБЩЕНИЯ ===== */
+/* ===== СООБЩЕНИЯ (flash из вью) ===== */
 .event-form-messages { margin-bottom: 20px; }
 
 .event-form-message {
@@ -101,6 +101,64 @@
     background: var(--accent-light);
     border-color: var(--accent);
     color: var(--accent);
+}
+
+/* ===== СВОДКА ОШИБОК ФОРМЫ (сверху) ===== */
+.event-form-errors-summary {
+    display: flex;
+    gap: 14px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    background: rgba(220, 38, 38, 0.06);
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    border-left: 4px solid #dc2626;
+    border-radius: var(--radius-sm);
+    color: #b91c1c;
+}
+
+.event-form-errors-summary__icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: #dc2626;
+}
+
+.event-form-errors-summary__icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.event-form-errors-summary__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.event-form-errors-summary__title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #b91c1c;
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.event-form-errors-summary__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.event-form-errors-summary__list li {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #b91c1c;
+}
+
+.event-form-errors-summary__list li strong {
+    font-weight: 700;
+    color: #991b1b;
 }
 
 /* ===== LAYOUT ФОРМЫ ===== */
@@ -279,7 +337,7 @@
 
 .form-checkbox-label--danger span { color: #dc2626; }
 
-/* ===== ОШИБКИ ===== */
+/* ===== ОШИБКИ ПОЛЕЙ ===== */
 .form-error {
     display: block;
     color: #dc2626;

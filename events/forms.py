@@ -7,6 +7,47 @@ from .models import Event, EventImage
 class EventForm(forms.ModelForm):
     """Форма создания/редактирования события."""
 
+    # ------------------------------------------------------------------
+    # Явные поля для <input type="date"> и <input type="time">
+    # format — как рендерить значение, input_formats — что принимать,
+    # localize=False — отключить локализацию (иначе Django даст 15.09.2026).
+    # ------------------------------------------------------------------
+    start_date = forms.DateField(
+        widget=forms.DateInput(
+            format='%Y-%m-%d',
+            attrs={'class': 'form-input', 'type': 'date'},
+        ),
+        input_formats=['%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'],
+        localize=False,
+    )
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(
+            format='%Y-%m-%d',
+            attrs={'class': 'form-input', 'type': 'date'},
+        ),
+        input_formats=['%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'],
+        localize=False,
+    )
+    start_time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(
+            format='%H:%M',
+            attrs={'class': 'form-input', 'type': 'time'},
+        ),
+        input_formats=['%H:%M', '%H:%M:%S'],
+        localize=False,
+    )
+    end_time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(
+            format='%H:%M',
+            attrs={'class': 'form-input', 'type': 'time'},
+        ),
+        input_formats=['%H:%M', '%H:%M:%S'],
+        localize=False,
+    )
+
     class Meta:
         model = Event
         fields = [
@@ -51,22 +92,6 @@ class EventForm(forms.ModelForm):
             'schedule_type': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'age_restriction': forms.Select(attrs={'class': 'form-select'}),
-            'start_date': forms.DateInput(attrs={
-                'class': 'form-input',
-                'type': 'date',
-            }),
-            'end_date': forms.DateInput(attrs={
-                'class': 'form-input',
-                'type': 'date',
-            }),
-            'start_time': forms.TimeInput(attrs={
-                'class': 'form-input',
-                'type': 'time',
-            }),
-            'end_time': forms.TimeInput(attrs={
-                'class': 'form-input',
-                'type': 'time',
-            }),
             'is_free': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
             'price': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -97,6 +122,8 @@ class EventForm(forms.ModelForm):
                 'placeholder': 'https://vk.com/club12345',
                 'inputmode': 'url',
             }),
+            # ВАЖНО: start_date / end_date / start_time / end_time
+            # НЕ указываются здесь — они уже заданы явными полями выше.
         }
         labels = {
             'title': 'Название',

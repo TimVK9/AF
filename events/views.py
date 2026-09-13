@@ -350,7 +350,7 @@ class EventCreateView(StaffRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Новое событие'
-        context['submit_label'] = 'Создать и открыть'
+        context['submit_label'] = 'Создать'
         context['is_edit'] = False
 
         if self.request.POST:
@@ -378,7 +378,8 @@ class EventCreateView(StaffRequiredMixin, CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('events:event_update', kwargs={'slug': self.object.slug})
+        """После создания — на список управления."""
+        return reverse('events:event_list_manage')
 
 
 class EventUpdateView(StaffRequiredMixin, UpdateView):
@@ -422,7 +423,8 @@ class EventUpdateView(StaffRequiredMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('events:event_update', kwargs={'slug': self.object.slug})
+        """После сохранения — на список управления."""
+        return reverse('events:event_list_manage')
 
 
 class EventBulkActionView(StaffRequiredMixin, View):

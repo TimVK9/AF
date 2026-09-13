@@ -1,10 +1,7 @@
 {% comment %}
-Кнопки «Поделиться».
-
-Логика показа:
-  • на мобильных (max-width: 768px) — одна кнопка «Поделиться»
-    (navigator.share → системное меню → приложение ВК, Telegram и др.);
-  • на десктопе — «ВКонтакте» (веб-шара) и «Скопировать».
+Блок действий на детальной странице:
+  • Поделиться (ВК, Скопировать, нативная на мобильных);
+  • Редактировать — только для staff/superuser.
 
 JS — в _scripts.html.
 {% endcomment %}
@@ -64,4 +61,17 @@ JS — в _scripts.html.
 
         </div>
     </div>
+
+    {# Кнопка редактирования — только для staff/superuser, под блоком «Поделиться» #}
+    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+        <a href="{% url 'events:event_update' event.slug %}"
+           class="event-detail__edit-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span>Редактировать событие</span>
+        </a>
+    {% endif %}
+
 </div>
