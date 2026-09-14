@@ -64,6 +64,8 @@ class EventForm(forms.ModelForm):
             'organizer_email',
             'organizer_phone',
             'organizer_vk',
+            'external_id',
+            'external_url',
         ]
         widgets = {
             'title': forms.TextInput(attrs={
@@ -114,6 +116,14 @@ class EventForm(forms.ModelForm):
                 'placeholder': 'https://vk.com/club12345',
                 'inputmode': 'url',
             }),
+            'external_id': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Например: kassir_iskitim_12345',
+            }),
+            'external_url': forms.URLInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'https://nsk.kassir.ru/...',
+            }),
         }
         labels = {
             'title': 'Название',
@@ -133,6 +143,8 @@ class EventForm(forms.ModelForm):
             'organizer_email': 'Email организатора',
             'organizer_phone': 'Телефон организатора',
             'organizer_vk': 'ВКонтакте',
+            'external_id': 'ID из внешнего источника',
+            'external_url': 'Ссылка на покупку билета',
         }
         help_texts = {
             'title': 'От 5 до 200 символов. Из него генерируется URL.',
@@ -152,6 +164,8 @@ class EventForm(forms.ModelForm):
             'organizer_email': 'Необязательно. Показывается на странице события.',
             'organizer_phone': 'Необязательно. Показывается на странице события.',
             'organizer_vk': 'Полная ссылка, например https://vk.com/club12345.',
+            'external_id': 'Заполняется автоматически парсером. Используется для поиска дубликатов.',
+            'external_url': 'Ссылка на страницу события на сайте-источнике (kassir.ru, kassy.ru и т.п.).',
         }
 
     # ------------------------------------------------------------------
