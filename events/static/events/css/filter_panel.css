@@ -441,7 +441,6 @@
         width: 100%;
     }
 
-    /* Скрываем заголовок оверлея в десктопной панели */
     .desktop-filter .filter-panel__header {
         display: none !important;
     }

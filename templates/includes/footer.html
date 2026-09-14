@@ -1,19 +1,51 @@
+{% load static %}
+
+{% comment %}
+Футер сайта.
+
+- Левая часть — логотип и копирайт с текущим годом.
+- Центр — ссылки на правовые страницы.
+- Правая часть — место под соцсети (сейчас пусто, но структура готова).
+
+Классы соответствуют base.css: .site-footer, .footer-container,
+.footer-info, .footer-links, .footer-social, .social-link.
+{% endcomment %}
+
 <footer class="site-footer">
     <div class="footer-container">
+
+        {# Левая часть: логотип + копирайт #}
         <div class="footer-info">
-            <p>&copy; Афиша мероприятий нашего города</p>
+            <p class="footer-info__brand">
+                <span class="logo-text">АФИША<span class="logo-accent">ИСКИТИМ</span></span>
+            </p>
+            <p>&copy; {% now "Y" %} Афиша мероприятий города Искитима</p>
         </div>
-        
-<div class="footer-links">
-    <a href="{% url 'pages:about' %}">О нас</a>
-    <a href="{% url 'pages:contacts' %}">Контакты</a>
-    <a href="{% url 'pages:help' %}">Помощь</a>
-    <a href="{% url 'pages:privacy' %}">Политика конфиденциальности</a>
-    <a href="{% url 'pages:cookies' %}">Cookies</a>
-    <a href="{% url 'pages:terms' %}">Соглашение</a>
-</div>
-        
-    <div class="footer-social">
-            
+
+        {# Центр: ссылки #}
+        <div class="footer-links">
+            <a href="{% url 'pages:about' %}">О нас</a>
+            <a href="{% url 'pages:contacts' %}">Контакты</a>
+            <a href="{% url 'pages:help' %}">Помощь</a>
+            <a href="{% url 'pages:privacy' %}">Политика конфиденциальности</a>
+            <a href="{% url 'pages:cookies' %}">Cookies</a>
+            <a href="{% url 'pages:terms' %}">Соглашение</a>
+        </div>
+
+        {# Правая часть: соцсети. Пусто — легко добавить ссылки. #}
+        <div class="footer-social">
+
+            {% comment %} <a href="https://vk.com/clubXXXXXX"
+               class="social-link"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="ВКонтакте">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13.162 18.994..."/>
+                </svg>
+            </a> {% endcomment %}
+
+        </div>
+
     </div>
 </footer>

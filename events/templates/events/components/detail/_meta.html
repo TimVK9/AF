@@ -2,7 +2,9 @@
 
 {% comment %}
 OpenGraph / Twitter / Canonical.
-Все данные берутся из объекта `event` во вью.
+Все данные берутся из объекта `event`.
+
+ВАЖНО: у модели Place нет `address`. Используем поля напрямую.
 {% endcomment %}
 
 <meta property="og:type" content="article">
@@ -31,9 +33,11 @@ OpenGraph / Twitter / Canonical.
     <meta property="og:image:alt" content="{{ event.title }}">
 {% endif %}
 
-{% if event.place and event.place.address %}
-    <meta property="og:street-address" content="{{ event.place.address.short_address }}">
+{# Адрес — берём прямо из place, а не из place.address #}
+{% if event.place and event.place.short_address %}
+    <meta property="og:street-address" content="{{ event.place.short_address }}">
 {% endif %}
+
 <meta property="article:published_time" content="{{ event.created_at|date:'c' }}">
 <meta property="article:modified_time" content="{{ event.updated_at|date:'c' }}">
 {% if event.category %}

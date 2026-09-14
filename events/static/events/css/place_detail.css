@@ -21,7 +21,6 @@
     min-width: 0;
 }
 
-/* ===== ЗАГОЛОВОК ===== */
 .place-detail__headline {
     display: flex;
     flex-direction: column;
@@ -51,7 +50,6 @@
     flex-shrink: 0;
 }
 
-/* ===== ИЗОБРАЖЕНИЕ ===== */
 .place-detail__image-wrapper {
     position: relative;
     width: 100%;
@@ -69,7 +67,6 @@
     display: block;
 }
 
-/* ===== СЕКЦИИ ===== */
 .place-detail__section {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -114,6 +111,7 @@
     color: var(--accent);
     font-size: 0.72rem;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .place-detail__description {
@@ -138,15 +136,6 @@
     padding: 8px 0;
 }
 
-/* ===== СЕТКА СХОЖИХ КАРТОЧЕК ===== */
-.events-grid--similar {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;
-    margin-top: 4px;
-}
-
-/* ===== САЙДБАР ===== */
 .place-detail__sidebar {
     position: sticky;
     top: calc(var(--header-height) + 20px);
@@ -186,7 +175,6 @@
     line-height: 1.45;
 }
 
-/* ===== КОНТАКТЫ ===== */
 .place-detail__contacts {
     display: flex;
     flex-direction: column;
@@ -220,9 +208,9 @@
     background: var(--accent-light);
 }
 
-/* ===== КАРТА ===== */
+/* Карта */
 .place-detail__map-wrapper {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     border: 1px solid var(--border);
 }
@@ -239,7 +227,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 32px 16px;
+    padding: 28px 16px;
     background:
         repeating-linear-gradient(
             45deg,
@@ -269,6 +257,7 @@
             var(--bg-secondary) 20px
         );
 }
+
 /* =========================================================
    РАСПИСАНИЕ ПО ДНЯМ
    ========================================================= */
@@ -335,7 +324,6 @@
     color: var(--accent);
 }
 
-/* ===== СОБЫТИЯ ВНУТРИ ДНЯ ===== */
 .place-schedule__events {
     display: flex;
     flex-direction: column;
@@ -344,7 +332,7 @@
 
 .place-schedule__event {
     display: grid;
-    grid-template-columns: 60px minmax(0, 1fr) auto auto;
+    grid-template-columns: 64px minmax(0, 1fr) auto auto;
     gap: 12px;
     align-items: center;
     padding: 10px 14px;
@@ -365,7 +353,6 @@
     transform: translateY(1px);
 }
 
-/* Время */
 .place-schedule__time {
     font-size: 0.85rem;
     font-weight: 700;
@@ -375,11 +362,12 @@
 }
 
 .place-schedule__time--empty {
-    color: var(--text-dark);
+    font-size: 0.7rem;
+    color: var(--text-muted);
     font-weight: 500;
+    line-height: 1.2;
 }
 
-/* Тело события */
 .place-schedule__event-body {
     display: flex;
     flex-direction: column;
@@ -408,7 +396,6 @@
     color: var(--text-muted);
 }
 
-/* Категория */
 .place-schedule__category {
     display: inline-flex;
     align-items: center;
@@ -424,7 +411,6 @@
     white-space: nowrap;
 }
 
-/* Бейдж цены */
 .place-schedule__badge {
     display: inline-flex;
     align-items: center;
@@ -445,56 +431,46 @@
     color: var(--accent);
 }
 
-/* ===== АДАПТИВ ===== */
-@media (max-width: 768px) {
-    .place-schedule {
-        gap: 20px;
-    }
-
-    .place-schedule__label {
-        font-size: 0.95rem;
-    }
-
-    .place-schedule__event {
-        grid-template-columns: 52px minmax(0, 1fr) auto;
-        gap: 10px;
-        padding: 10px 12px;
-    }
-
-    .place-schedule__category {
-        display: none;
-    }
-
-    .place-schedule__event-title {
-        font-size: 0.88rem;
-    }
+/* Прошедшие события */
+.place-schedule--past {
+    gap: 6px;
 }
 
-@media (max-width: 480px) {
-    .place-schedule__event {
-        grid-template-columns: 48px minmax(0, 1fr);
-        gap: 10px;
-        padding: 10px;
-        position: relative;
-    }
-
-    .place-schedule__badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        font-size: 0.65rem;
-        padding: 2px 6px;
-    }
-
-    .place-schedule__label {
-        font-size: 0.9rem;
-    }
-
-    .place-schedule__weekday {
-        font-size: 0.75rem;
-    }
+.place-schedule__event--past {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
 }
-/* ===== АДАПТИВ ===== */
+
+.place-schedule__date-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 6px 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    line-height: 1;
+}
+
+.place-schedule__date-day {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.place-schedule__date-month {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.4px;
+    margin-top: 2px;
+}
+
+/* =========================================================
+   АДАПТИВНОСТЬ
+   ========================================================= */
+
 @media (max-width: 1024px) {
     .place-detail__grid {
         grid-template-columns: minmax(0, 1fr) 300px;
@@ -542,15 +518,26 @@
         border-radius: var(--radius);
     }
 
-    .events-grid--similar {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 16px;
+    .place-schedule {
+        gap: 20px;
     }
-}
 
-@media (max-width: 600px) {
-    .events-grid--similar {
-        grid-template-columns: 1fr;
+    .place-schedule__label {
+        font-size: 0.95rem;
+    }
+
+    .place-schedule__event {
+        grid-template-columns: 60px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    .place-schedule__category {
+        display: none;
+    }
+
+    .place-schedule__event-title {
+        font-size: 0.88rem;
     }
 }
 
@@ -561,5 +548,28 @@
 
     .place-detail__description {
         font-size: 0.9rem;
+    }
+
+    .place-schedule__event {
+        grid-template-columns: 52px minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px;
+        position: relative;
+    }
+
+    .place-schedule__badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 0.65rem;
+        padding: 2px 6px;
+    }
+
+    .place-schedule__label {
+        font-size: 0.9rem;
+    }
+
+    .place-schedule__weekday {
+        font-size: 0.75rem;
     }
 }

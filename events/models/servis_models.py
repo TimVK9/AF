@@ -1,54 +1,86 @@
 """
-Базовые абстрактные модели.
+Базовые абстрактные модели и менеджеры.
 
-TimestampedModel — общий предок всех моделей проекта:
-  • created_at / updated_at;
-  • is_deleted — для мягкого удаления;
-  • objects — менеджер, который НЕ показывает удалённые;
-  • all_objects — менеджер, который показывает всё.
-
-Soft delete реализован через переопределение delete().
+- SoftDeleteQuerySet — QuerySet с методами массового удаления.
+- SoftDeleteManager — менеджер по умолчанию, скрывает удалённые.
+- AllObjectsManager — показывает всё, включая удалённые.
+- TimestampedModel — абстрактная база: created_at / updated_at / is_deleted.
 """
 from django.db import models
+from django.utils import timezone
 
 
-class ActiveManager(models.Manager):
-    """Менеджер по умолчанию — скрывает удалённые объекты."""
+class SoftDeleteQuerySet(models.QuerySet):
+    """QuerySet с методами мягкого удаления и восстановления."""
+
+    def delete(self):
+        """Массовое мягкое удаление: проставляет is_deleted=True."""
+        return self.update(is_deleted=True, updated_at=timezone.now())
+
+    def hard_delete(self):
+        """Настоящее удаление из БД. Осторожно."""
+        return super().delete()
+
+    def alive(self):
+        """Только неудалённые записи."""
+        return self.filter(is_deleted=False)
+
+    def dead(self):
+        """Только удалённые записи."""
+        return self.filter(is_deleted=True)
+
+    def restore(self):
+        """Массовое восстановление."""
+        return self.update(is_deleted=False, updated_at=timezone.now())
+
+
+class SoftDeleteManager(models.Manager):
+    """
+    Менеджер по умолчанию. Скрывает записи с is_deleted=True.
+    Именно его Django использует как `Model.objects`.
+    """
+
     def get_queryset(self):
-        return super().get_queryset().filter(is_deleted=False)
+        return SoftDeleteQuerySet(self.model, using=self._db).filter(is_deleted=False)
+
+
+class AllObjectsManager(models.Manager):
+    """
+    Показывает все записи, включая удалённые.
+    Доступен как `Model.all_objects`.
+    """
+
+    def get_queryset(self):
+        return SoftDeleteQuerySet(self.model, using=self._db)
 
 
 class TimestampedModel(models.Model):
     """
-    Абстрактная модель с временными метками и мягким удалением.
+    Абстрактная база.
 
-    Использование:
-        Model.objects.all()       # только неудалённые
-        Model.all_objects.all()   # все, включая удалённые
-        obj.delete()              # мягкое удаление (is_deleted=True)
-        obj.hard_delete()         # настоящее удаление из БД
+    Содержит:
+    - created_at, updated_at — временные метки;
+    - is_deleted — флаг мягкого удаления;
+    - objects — менеджер, скрывающий удалённые;
+    - all_objects — менеджер, показывающий всё.
     """
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Создано',
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='Обновлено',
-    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
     is_deleted = models.BooleanField(
         default=False,
         db_index=True,
         verbose_name='Удалено',
     )
 
-    objects = ActiveManager()
-    all_objects = models.Manager()
+    # ВАЖНО: objects идёт первым — он становится менеджером по умолчанию.
+    objects = SoftDeleteManager()
+    all_objects = AllObjectsManager()
 
     class Meta:
         abstract = True
-        ordering = ['-created_at']
+        # ordering не задаём: каждая модель определяет свой порядок.
+        # Иначе '-created_at' унаследуется во все модели и будет мешать.
 
     def delete(self, using=None, keep_parents=False):
         """Мягкое удаление: помечает is_deleted=True."""
@@ -56,7 +88,7 @@ class TimestampedModel(models.Model):
         self.save(update_fields=['is_deleted', 'updated_at'])
 
     def hard_delete(self, using=None, keep_parents=False):
-        """Настоящее удаление из БД. Использовать осторожно."""
+        """Настоящее удаление из БД."""
         super().delete(using=using, keep_parents=keep_parents)
 
     def restore(self):

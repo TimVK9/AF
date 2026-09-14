@@ -1,3 +1,4 @@
+"""Формы для работы с событиями и галереей."""
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -8,9 +9,9 @@ class EventForm(forms.ModelForm):
     """Форма создания/редактирования события."""
 
     # ------------------------------------------------------------------
-    # Явные поля для <input type="date"> и <input type="time">
-    # format — как рендерить значение, input_formats — что принимать,
-    # localize=False — отключить локализацию (иначе Django даст 15.09.2026).
+    # Явные поля для <input type="date"> и <input type="time">.
+    # format — как рендерить значение, input_formats — что принимать.
+    # localize=False — иначе Django отдаст 15.09.2026 вместо 2026-09-15.
     # ------------------------------------------------------------------
     start_date = forms.DateField(
         widget=forms.DateInput(
@@ -50,20 +51,20 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = Event
+        # ВАЖНО: только поля, которые реально есть в модели.
+        # is_free / schedule_type / views_count — свойств в модели нет.
         fields = [
             'title',
             'category',
             'place',
             'description_short',
             'description',
-            'schedule_type',
             'status',
             'age_restriction',
             'start_date',
             'end_date',
             'start_time',
             'end_time',
-            'is_free',
             'price',
             'main_image',
             'organizer_name',
@@ -81,18 +82,16 @@ class EventForm(forms.ModelForm):
             'place': forms.Select(attrs={'class': 'form-select'}),
             'description_short': forms.TextInput(attrs={
                 'class': 'form-input',
-                'placeholder': 'Одно предложение — оно попадёт в карточку и OG-описание',
+                'placeholder': 'Одно предложение — попадёт в карточку и OG-описание',
                 'maxlength': 500,
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-textarea',
                 'rows': 12,
-                'placeholder': 'Полное описание. Можно использовать пустые строки между абзацами.',
+                'placeholder': 'Полное описание. Пустая строка = новый абзац.',
             }),
-            'schedule_type': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'age_restriction': forms.Select(attrs={'class': 'form-select'}),
-            'is_free': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
             'price': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'step': '0.01',
@@ -122,8 +121,6 @@ class EventForm(forms.ModelForm):
                 'placeholder': 'https://vk.com/club12345',
                 'inputmode': 'url',
             }),
-            # ВАЖНО: start_date / end_date / start_time / end_time
-            # НЕ указываются здесь — они уже заданы явными полями выше.
         }
         labels = {
             'title': 'Название',
@@ -131,14 +128,12 @@ class EventForm(forms.ModelForm):
             'place': 'Площадка',
             'description_short': 'Краткое описание',
             'description': 'Полное описание',
-            'schedule_type': 'Тип расписания',
             'status': 'Статус',
             'age_restriction': 'Возрастное ограничение',
             'start_date': 'Дата начала',
             'end_date': 'Дата окончания',
             'start_time': 'Время начала',
             'end_time': 'Время окончания',
-            'is_free': 'Бесплатное событие',
             'price': 'Цена, ₽',
             'main_image': 'Главное изображение',
             'organizer_name': 'Организатор',
@@ -147,33 +142,44 @@ class EventForm(forms.ModelForm):
             'organizer_vk': 'ВКонтакте',
         }
         help_texts = {
-            'title': 'От 5 до 200 символов. По нему генерируется URL.',
-            'category': 'Определяет раздел афиши и цвет бейджа.',
+            'title': 'От 5 до 200 символов. Из него генерируется URL.',
+            'category': 'Определяет раздел афиши.',
             'place': 'Если нужной площадки нет — создайте её в админке.',
             'description_short': 'До 500 символов. Показывается в карточке и в соцсетях.',
             'description': 'Полный текст страницы. Поддерживаются переносы строк.',
-            'schedule_type': 'Однократное — концерт, многократное — выставка, повторяющееся — курс.',
             'status': '«Черновик» и «На модерации» не показываются в афише.',
             'age_restriction': 'Влияет на бейдж в карточке и Schema.org.',
             'start_date': 'Обязательное поле.',
             'end_date': 'Оставьте пустым для однодневного события.',
             'start_time': 'Можно не указывать, если время не важно.',
-            'end_time': 'Только если есть start_time.',
-            'is_free': 'Если отмечено — цена сбрасывается.',
-            'price': 'В рублях. Можно оставить пустым, если цена «уточняется».',
-            'main_image': 'JPEG/PNG, желательно 1200×630 или больше. Если не задано — используется фото площадки.',
-            'organizer_name': 'Название организации или имя — появится в карточке события.',
+            'end_time': 'Только если есть время начала.',
+            'price': 'В рублях. Пустое = «уточняется». 0 = бесплатно.',
+            'main_image': 'JPEG/PNG, желательно от 1200×630.',
+            'organizer_name': 'Название организации или имя — появится в карточке.',
             'organizer_email': 'Необязательно. Показывается на странице события.',
             'organizer_phone': 'Необязательно. Показывается на странице события.',
-            'organizer_vk': 'Полная ссылка на страницу или сообщество, например https://vk.com/club12345.',
+            'organizer_vk': 'Полная ссылка, например https://vk.com/club12345.',
         }
 
+    # ------------------------------------------------------------------
+    # Очистка отдельных полей
+    # ------------------------------------------------------------------
     def clean_title(self):
         title = (self.cleaned_data.get('title') or '').strip()
         if len(title) < 5:
             raise ValidationError('Название должно быть не короче 5 символов.')
         return title
 
+    def clean_price(self):
+        """Цена 0 — то же самое, что пустая (бесплатно)."""
+        price = self.cleaned_data.get('price')
+        if price is not None and price == 0:
+            return None
+        return price
+
+    # ------------------------------------------------------------------
+    # Общая валидация формы
+    # ------------------------------------------------------------------
     def clean(self):
         cleaned = super().clean()
 
@@ -181,23 +187,21 @@ class EventForm(forms.ModelForm):
         end_date = cleaned.get('end_date')
         start_time = cleaned.get('start_time')
         end_time = cleaned.get('end_time')
-        is_free = cleaned.get('is_free')
-        price = cleaned.get('price')
 
+        # 1. Дата окончания не раньше даты начала.
         if start_date and end_date and end_date < start_date:
             self.add_error('end_date', 'Дата окончания не может быть раньше даты начала.')
 
+        # 2. Время окончания — только в один день.
         if (
             start_date and end_date and start_date == end_date
             and start_time and end_time and end_time < start_time
         ):
             self.add_error('end_time', 'Время окончания не может быть раньше времени начала.')
 
+        # 3. Без времени начала время окончания бессмысленно.
         if end_time and not start_time:
             self.add_error('end_time', 'Укажите время начала, прежде чем задавать время окончания.')
-
-        if is_free and price:
-            self.add_error('price', 'У бесплатного события не может быть цены. Снимите галочку «Бесплатное» или очистите цену.')
 
         return cleaned
 

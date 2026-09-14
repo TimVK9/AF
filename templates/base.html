@@ -7,7 +7,7 @@
 
     <title>{% block title %}АФИША ИСКИТИМ{% endblock %}</title>
 
-    {# ===== FAVICON ===== #}
+    {# FAVICON #}
     <link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicon/favicon-96x96.png' %}">
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon/favicon.svg' %}">
     <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
@@ -17,10 +17,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    {# ===== PWA ===== #}
+    {# PWA #}
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
 
-    {# ===== OPEN GRAPH / TWITTER ===== #}
+    {# OPEN GRAPH / TWITTER — общие значения, страница может переопределить #}
     {% block meta %}
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="АФИША ИСКИТИМ">
@@ -40,7 +40,7 @@
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
     {% endblock %}
 
-    {# ===== SCHEMA.ORG JSON-LD ===== #}
+    {# SCHEMA.ORG JSON-LD — по умолчанию WebSite, страница может переопределить #}
     {% block schema %}
     <script type="application/ld+json">
     {
@@ -65,6 +65,9 @@
 <body>
     {% include 'includes/header.html' %}
 
+    {# ===================================================== #}
+    {# МОБИЛЬНЫЕ ОВЕРЛЕИ (поиск, фильтр, даты)               #}
+    {# ===================================================== #}
     <div class="search-container" id="searchOverlay">
         {% block search %}{% endblock %}
     </div>
@@ -83,6 +86,9 @@
 
     {% include 'includes/footer.html' %}
 
+    {# ===================================================== #}
+    {# МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ                            #}
+    {# ===================================================== #}
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
 
         <a href="{% url 'events:home' %}"
@@ -194,7 +200,7 @@
     </script>
 
     {# ===================================================== #}
-    {# JS ДЛЯ ВЫПАДАЮЩЕГО МЕНЮ STAFF                          #}
+    {# JS ДЛЯ ВЫПАДАЮЩЕГО МЕНЮ STAFF                         #}
     {# ===================================================== #}
     <script>
     (function () {

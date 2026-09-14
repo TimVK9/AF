@@ -1,21 +1,14 @@
-"""
-Корневые URL проекта.
-"""
-
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 from django.views.generic import TemplateView
-
-from events import admin_views
-from events import views_auth
 from events.sitemaps import EventSitemap, StaticViewSitemap
 
 
 # ---------------------------------------------------------
-# Карты сайта
+#  Карты сайта (sitemap.xml)
 # ---------------------------------------------------------
 sitemaps = {
     'events': EventSitemap,
@@ -25,55 +18,32 @@ sitemaps = {
 
 urlpatterns = [
 
-    # ---------------------------------------------------------
-    # Подтверждение прав в Яндекс.Вебмастере
-    # ---------------------------------------------------------
-    path(
-        'yandex_7fcb848bf230967f.html',
-        TemplateView.as_view(
-            template_name='yandex_7fcb848bf230967f.html',
-            content_type='text/html',
-        ),
-        name='yandex_verification',
-    ),    # ----------------------------
-    # Служебные админские вью — ДО admin.site.urls,
-    # чтобы перехватывать /admin/... до стандартной админки
-    # ---------------------------------------------------------
-    path(
-        'admin/run-import-kultisk/',
-        admin_views.run_import_kultisk,
-        name='run_import_kultisk',
-    ),
+
 
     # ---------------------------------------------------------
-    # Админка
+    #  Админка Django
+    #  (маршрут /admin/run-import-kultisk/ удалён вместе
+    #   с events/admin_views.py и моделью ImportLog)
     # ---------------------------------------------------------
     path('admin/', admin.site.urls),
+    path('', include('accounts.urls')),
 
     # ---------------------------------------------------------
-    # Sitemap
+    #  Sitemap
+    #  Имя короткое — удобно в reverse('sitemap').
     # ---------------------------------------------------------
-    path(
-        'sitemap.xml',
-        sitemap,
-        {'sitemaps': sitemaps},
-        name='django.contrib.sitemaps.views.sitemap',
-    ),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
+
 
     # ---------------------------------------------------------
-    # Своя авторизация с 2FA — в корне, без namespace
-    # ---------------------------------------------------------
-    path('login/',  views_auth.login_view,      name='login'),
-    path('verify/', views_auth.verify_view,     name='verify'),
-    path('resend/', views_auth.resend_otp_view, name='resend_otp'),
-    path('logout/', views_auth.logout_view,     name='logout'),
-
-    # ---------------------------------------------------------
-    # Приложения
+    #  Приложения
+    #  events — первым, чтобы '' не перехватил pages.
+    #  Namespace берётся из app_name в events/urls.py и pages/urls.py.
     # ---------------------------------------------------------
     path('', include('events.urls')),
     path('', include('pages.urls')),
 ]
+
 
 
 if settings.DEBUG:

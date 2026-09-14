@@ -1,6 +1,6 @@
 {% comment %}
 Блок действий на детальной странице:
-  • Поделиться (ВК, Скопировать, нативная на мобильных);
+  • Поделиться (ВК, Скопировать, нативная кнопка на мобильных);
   • Редактировать — только для staff/superuser.
 
 JS — в _scripts.html.
@@ -62,7 +62,7 @@ JS — в _scripts.html.
         </div>
     </div>
 
-    {# Кнопка редактирования — только для staff/superuser, под блоком «Поделиться» #}
+    {# Кнопка редактирования — только для staff/superuser #}
     {% if user.is_authenticated and user.is_staff or user.is_superuser %}
         <a href="{% url 'events:event_update' event.slug %}"
            class="event-detail__edit-btn">

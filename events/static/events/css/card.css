@@ -1,4 +1,7 @@
-/* ===== КАРТОЧКА СОБЫТИЯ ===== */
+/* =========================================================
+   КАРТОЧКА СОБЫТИЯ
+   ========================================================= */
+
 .event-card {
     display: flex;
     flex-direction: column;
@@ -58,7 +61,7 @@
     transform: scale(1.04);
 }
 
-/* Плейсхолдер */
+/* Плейсхолдер (SVG «ночная сцена») */
 .event-card__image-placeholder {
     position: absolute;
     inset: 0;
@@ -104,7 +107,7 @@
     transform: scale(1.05);
 }
 
-/* ===== БЕЙДЖ ДАТЫ (поверх изображения, слева внизу) ===== */
+/* ===== БЕЙДЖ ДАТЫ (слева внизу поверх изображения) ===== */
 .event-card__date-badge {
     position: absolute;
     left: 12px;
@@ -156,7 +159,7 @@
     white-space: nowrap;
 }
 
-/* ===== БЕЙДЖИ ЦЕНЫ/ВОЗРАСТА (поверх изображения, справа вверху) ===== */
+/* ===== БЕЙДЖИ ЦЕНЫ/ВОЗРАСТА (справа вверху поверх изображения) ===== */
 .event-card__badges {
     position: absolute;
     top: 12px;
@@ -340,6 +343,23 @@
     z-index: 2;
 }
 
+/*
+ * Подсказка слева в футере: «Вход свободный» / «от N ₽» / «Цена уточняется».
+ * Пришла на смену счётчику просмотров.
+ */
+.event-card__meta-hint {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+/* Совместимость: старый класс больше не используется в шаблоне,
+   но оставлен, если где-то ещё встречается. */
 .event-card__views {
     display: flex;
     align-items: center;
@@ -376,7 +396,7 @@
     opacity: 1;
 }
 
-/* ===== АНИМАЦИЯ ===== */
+/* ===== АНИМАЦИЯ ПОЯВЛЕНИЯ ===== */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -426,6 +446,7 @@
     .event-card__description { font-size: 12px; }
     .event-card__meta-row { font-size: 11px; }
     .event-card__footer { padding: 10px 14px; }
+    .event-card__meta-hint,
     .event-card__views,
     .event-card__link { font-size: 11px; }
 

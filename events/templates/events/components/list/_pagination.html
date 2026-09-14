@@ -1,16 +1,18 @@
+{% load query_tags %}
+
 {% comment %}
-Пагинация. Все ссылки сохраняют GET-параметры фильтра:
-category, search, date_filter, start_date, end_date, sort.
+Пагинация. Все ссылки сохраняют GET-параметры через тег {% querystring %}.
+Тег сам сбрасывает page, если его не передали явно.
 {% endcomment %}
-{% if is_paginated %}
+
+{% if page_obj.paginator.num_pages > 1 %}
 <nav class="pagination" aria-label="Навигация по страницам">
     <ul class="pagination__list">
 
         {% comment %} Первая и Назад {% endcomment %}
         {% if page_obj.has_previous %}
             <li class="pagination__item">
-                <a href="?page=1{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
-                   class="pagination__link">
+                <a href="{% querystring page=1 %}" class="pagination__link">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="11 17 6 12 11 7"/>
                         <polyline points="18 17 13 12 18 7"/>
@@ -19,8 +21,7 @@ category, search, date_filter, start_date, end_date, sort.
                 </a>
             </li>
             <li class="pagination__item">
-                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
-                   class="pagination__link">
+                <a href="{% querystring page=page_obj.previous_page_number %}" class="pagination__link">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="15 18 9 12 15 6"/>
                     </svg>
@@ -37,8 +38,7 @@ category, search, date_filter, start_date, end_date, sort.
                 </li>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                 <li class="pagination__item">
-                    <a href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
-                       class="pagination__link">{{ num }}</a>
+                    <a href="{% querystring page=num %}" class="pagination__link">{{ num }}</a>
                 </li>
             {% endif %}
         {% endfor %}
@@ -46,8 +46,7 @@ category, search, date_filter, start_date, end_date, sort.
         {% comment %} Вперёд и Последняя {% endcomment %}
         {% if page_obj.has_next %}
             <li class="pagination__item">
-                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
-                   class="pagination__link">
+                <a href="{% querystring page=page_obj.next_page_number %}" class="pagination__link">
                     <span class="pagination-text">Вперед</span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="9 18 15 12 9 6"/>
@@ -55,8 +54,7 @@ category, search, date_filter, start_date, end_date, sort.
                 </a>
             </li>
             <li class="pagination__item">
-                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
-                   class="pagination__link">
+                <a href="{% querystring page=page_obj.paginator.num_pages %}" class="pagination__link">
                     <span class="pagination-text">Последняя</span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="13 17 18 12 13 7"/>

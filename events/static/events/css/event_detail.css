@@ -75,6 +75,7 @@
     display: block;
 }
 
+/* Placeholder-классы оставлены — не мешают, если где-то понадобятся. */
 .event-detail__image-placeholder {
     position: absolute;
     inset: 0;
@@ -329,6 +330,16 @@
     word-break: break-word;
 }
 
+.event-detail__fact-value--link {
+    text-decoration: none;
+    color: var(--accent);
+    transition: color 0.2s;
+}
+
+.event-detail__fact-value--link:hover {
+    text-decoration: underline;
+}
+
 .event-detail__fact-sub {
     font-size: 0.8rem;
     color: var(--text-muted);
@@ -373,8 +384,6 @@
     padding-top: 20px;
 }
 
-/* Кнопка «Редактировать событие» — только для staff/superuser.
-   Лежит под блоком «Поделиться», нейтральная, на всю ширину. */
 .event-detail__edit-btn {
     display: inline-flex;
     align-items: center;
@@ -409,7 +418,7 @@
     flex-shrink: 0;
 }
 
-/* Оставляем на случай, если где-то ещё используется .event-detail__btn--edit */
+/* Старое имя кнопки оставлено для совместимости. */
 .event-detail__btn--edit {
     width: 100%;
     justify-content: center;
@@ -678,7 +687,7 @@
     color: var(--accent);
 }
 
-/* ===== СТАТИСТИКА ===== */
+/* ===== СТАТИСТИКА (только «Опубликовано …») ===== */
 .event-detail__stats {
     display: flex;
     gap: 16px;
@@ -1023,9 +1032,9 @@
     }
 }
 
-/* ========================================================= */
-/* ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ                                        */
-/* ========================================================= */
+/* =========================================================
+   ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ
+   ========================================================= */
 
 .event-detail__gallery {
     padding: 0;

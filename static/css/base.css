@@ -835,6 +835,23 @@ body {
     margin: 0;
 }
 
+/* Логотип в футере */
+.footer-info__brand {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--text-primary);
+    margin: 0 0 2px;
+}
+
+.footer-info__brand .logo-accent {
+    color: var(--accent);
+}
+
+/* Первый <p> больше не «бренд», поэтому сбрасываем прежний вес */
+.footer-info p:first-child {
+    font-weight: 400;
+}
 .footer-info p:first-child {
     color: var(--text-secondary);
     font-weight: 500;

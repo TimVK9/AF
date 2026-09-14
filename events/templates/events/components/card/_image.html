@@ -7,7 +7,7 @@
 Приоритет:
   1. event.main_image (титульное изображение события);
   2. event.place.main_image (фото площадки);
-  3. Случайная SVG-заглушка — стабильная для этого события (seed=event.pk).
+  3. SVG-заглушка, стабильная для этого события (seed=event.pk).
 {% endcomment %}
 <div class="event-card__image-wrapper">
 
@@ -53,7 +53,7 @@
     {# Бейджи цены и возраста — справа сверху #}
     <div class="event-card__badges">
         {% if event.is_free %}
-            <span class="badge badge--free">Бесплатно</span>
+            <span class="badge badge--free">Вход свободный</span>
         {% elif event.price %}
             <span class="badge badge--price">{{ event.price }} ₽</span>
         {% endif %}

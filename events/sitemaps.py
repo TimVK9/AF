@@ -9,7 +9,8 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
-from .models import Event
+from events.models.event import Event
+
 
 
 class EventSitemap(Sitemap):

@@ -1,5 +1,8 @@
 {% comment %}
 Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
+
+ВАЖНО: у Place нет `address` и `latitude/longitude` —
+берём street / city / postal_code напрямую.
 {% endcomment %}
 <script type="application/ld+json">
 {
@@ -29,24 +32,14 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
     "location": {
         "@type": "Place",
         "name": "{{ event.place.name|escapejs }}",
-        {% if event.place.address %}
         "address": {
             "@type": "PostalAddress",
-            "streetAddress": "{{ event.place.address.street|escapejs }}{% if event.place.address.house_number %}, {{ event.place.address.house_number }}{% endif %}",
-            "addressLocality": "{{ event.place.address.city|escapejs }}",
-            {% if event.place.address.region %}"addressRegion": "{{ event.place.address.region|escapejs }}",{% endif %}
-            {% if event.place.address.postal_code %}"postalCode": "{{ event.place.address.postal_code|escapejs }}",{% endif %}
-            "addressCountry": "{{ event.place.address.country|default:'RU'|escapejs }}"
+            "streetAddress": "{{ event.place.street|escapejs }}{% if event.place.house_number %}, {{ event.place.house_number }}{% endif %}",
+            "addressLocality": "{{ event.place.city|escapejs }}",
+            {% if event.place.postal_code %}"postalCode": "{{ event.place.postal_code|escapejs }}",{% endif %}
+            "addressCountry": "RU"
         },
-        {% endif %}
-        {% if event.place.address.latitude and event.place.address.longitude %}
-        "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": {{ event.place.address.latitude }},
-            "longitude": {{ event.place.address.longitude }}
-        },
-        {% endif %}
-        "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}"
+        "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:place_detail' event.place.slug %}"
     },
     {% endif %}
     {% if event.category %}

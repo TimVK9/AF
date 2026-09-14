@@ -17,24 +17,18 @@
 <link rel="stylesheet" href="{% static 'events/css/filter_panel.css' %}">
 {% endblock %}
 
-{# ===================================================== #}
-{# ОВЕРЛЕЙ 1: ПОИСК (мобильный)                          #}
-{# ===================================================== #}
+{# Оверлей 1: поиск (мобильный) #}
 {% block search %}
     {% include "events/components/filter/_search.html" %}
 {% endblock %}
 
-{# ===================================================== #}
-{# ОВЕРЛЕЙ 2: ФИЛЬТР (мобильный)                         #}
-{# ===================================================== #}
+{# Оверлей 2: фильтр (мобильный) #}
 {% block filter %}
     {% include "events/components/filter/_categories.html" with categories=categories %}
     {% include "events/components/filter/_date_chips.html" %}
 {% endblock %}
 
-{# ===================================================== #}
-{# ОВЕРЛЕЙ 3: ДАТЫ (мобильный)                           #}
-{# ===================================================== #}
+{# Оверлей 3: даты (мобильный) #}
 {% block dates %}
     {% include "events/components/filter/_date_range.html" %}
 {% endblock %}
@@ -46,7 +40,7 @@
 
     <div class="event-detail__grid">
 
-        {# ============ ЛЕВАЯ КОЛОНКА ============ #}
+        {# Левая колонка #}
         <div class="event-detail__main">
             {% include "events/components/detail/_headline.html" %}
             {% include "events/components/detail/_image.html" %}
@@ -54,7 +48,7 @@
             {% include "events/components/detail/_gallery.html" %}
         </div>
 
-        {# ============ ПРАВАЯ КОЛОНКА (САЙДБАР) ============ #}
+        {# Правая колонка (сайдбар) #}
         <aside class="event-detail__sidebar">
             {% include "events/components/detail/_facts.html" %}
             {% include "events/components/detail/_share.html" %}

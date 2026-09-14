@@ -1,33 +1,23 @@
-"""
-Основная модель события.
-
-Ключевая особенность: событие может длиться несколько дней.
-Интервал события — [start_date; end_date].
-Если end_date пустой — считаем событие однодневным.
-"""
-
+"""Основная модель события."""
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.utils.text import slugify
 from django.utils.crypto import get_random_string
+from django.utils.text import slugify
 
-from .servis_models import TimestampedModel
-from .place import Place
 from .category import Category
+from .place import Place
+from .servis_models import TimestampedModel
 
 
 class Event(TimestampedModel):
     """Основная модель события."""
 
-    # ==================================================================
-    #  Связи
-    # ==================================================================
     place = models.ForeignKey(
         Place,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name='events',
         verbose_name='Площадка',
     )
@@ -40,9 +30,6 @@ class Event(TimestampedModel):
         verbose_name='Категория',
     )
 
-    # ==================================================================
-    #  Choices
-    # ==================================================================
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Черновик'
         MODERATION = 'moderation', 'На модерации'
@@ -57,42 +44,15 @@ class Event(TimestampedModel):
         SIXTEEN = '16+', '16+'
         EIGHTEEN = '18+', '18+'
 
-    class ScheduleType(models.TextChoices):
-        SINGLE = 'single', 'Однократное'
-        MULTIPLE = 'multiple', 'Многократное'
-        RECURRING = 'recurring', 'Повторяющееся'
-
-    # ==================================================================
-    #  Основная информация
-    # ==================================================================
-    title = models.CharField(
-        max_length=200,
-        verbose_name='Название',
-    )
+    title = models.CharField(max_length=200, verbose_name='Название')
     slug = models.SlugField(
         unique=True,
         max_length=220,
         blank=True,
         verbose_name='URL',
     )
-    description_short = models.CharField(
-        max_length=500,
-        verbose_name='Краткое описание',
-    )
-    description = models.TextField(
-        verbose_name='Полное описание',
-    )
-    schedule_type = models.CharField(
-        max_length=20,
-        choices=ScheduleType.choices,
-        blank=True,
-        default='',
-        verbose_name='Тип расписания',
-    )
-
-    # ==================================================================
-    #  Статусы и ограничения
-    # ==================================================================
+    description_short = models.CharField(max_length=500, verbose_name='Краткое описание')
+    description = models.TextField(verbose_name='Полное описание')
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
@@ -107,33 +67,16 @@ class Event(TimestampedModel):
         verbose_name='Возрастное ограничение',
     )
 
-    # ==================================================================
-    #  Время проведения
-    # ==================================================================
-    start_date = models.DateField(
-        db_index=True,
-        verbose_name='Дата начала',
-    )
+    start_date = models.DateField(db_index=True, verbose_name='Дата начала')
     end_date = models.DateField(
         null=True,
         blank=True,
         db_index=True,
         verbose_name='Дата окончания',
     )
-    start_time = models.TimeField(
-        null=True,
-        blank=True,
-        verbose_name='Время начала',
-    )
-    end_time = models.TimeField(
-        null=True,
-        blank=True,
-        verbose_name='Время окончания',
-    )
+    start_time = models.TimeField(null=True, blank=True, verbose_name='Время начала')
+    end_time = models.TimeField(null=True, blank=True, verbose_name='Время окончания')
 
-    # ==================================================================
-    #  Цены
-    # ==================================================================
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -142,14 +85,6 @@ class Event(TimestampedModel):
         validators=[MinValueValidator(Decimal('0'))],
         verbose_name='Цена',
     )
-    is_free = models.BooleanField(
-        default=False,
-        verbose_name='Бесплатное',
-    )
-
-    # ==================================================================
-    #  Медиа
-    # ==================================================================
     main_image = models.ImageField(
         upload_to='events/%Y/%m/',
         null=True,
@@ -157,41 +92,18 @@ class Event(TimestampedModel):
         verbose_name='Главное изображение',
     )
 
-    # ==================================================================
-    #  Организатор
-    # ==================================================================
     organizer_name = models.CharField(
         max_length=255,
         blank=True,
         verbose_name='Организатор',
         help_text='Название организации или имя. Необязательно.',
     )
-    organizer_email = models.EmailField(
-        blank=True,
-        verbose_name='Email организатора',
-    )
-    organizer_phone = models.CharField(
-        max_length=30,
-        blank=True,
-        verbose_name='Телефон организатора',
-    )
+    organizer_email = models.EmailField(blank=True, verbose_name='Email организатора')
+    organizer_phone = models.CharField(max_length=30, blank=True, verbose_name='Телефон организатора')
     organizer_vk = models.URLField(
         blank=True,
         verbose_name='ВКонтакте организатора',
         help_text='Полная ссылка, например https://vk.com/club12345',
-    )
-
-    # ==================================================================
-    #  Счётчики
-    # ==================================================================
-    views_count = models.PositiveIntegerField(
-        default=0,
-        db_index=True,
-        verbose_name='Просмотры',
-    )
-    favorites_count = models.PositiveIntegerField(
-        default=0,
-        verbose_name='В избранном',
     )
 
     class Meta:
@@ -207,16 +119,41 @@ class Event(TimestampedModel):
         return self.title
 
     # ==================================================================
+    #  Свойства
+    # ==================================================================
+    @property
+    def is_free(self):
+        """Бесплатное, если цена не задана или равна нулю."""
+        return self.price is None or self.price == 0
+
+    @property
+    def has_organizer_contacts(self):
+        """Есть ли хоть один контакт организатора."""
+        return any([
+            self.organizer_phone,
+            self.organizer_email,
+            self.organizer_vk,
+        ])
+
+    @property
+    def is_multi_day(self):
+        """Событие длится больше одного дня."""
+        return bool(self.end_date and self.end_date != self.start_date)
+
+    # ==================================================================
     #  Валидация
     # ==================================================================
     def clean(self):
         super().clean()
 
+        # 1. Дата окончания не раньше даты начала.
         if self.end_date and self.start_date and self.end_date < self.start_date:
             raise ValidationError({
                 'end_date': 'Дата окончания не может быть раньше даты начала.',
             })
 
+        # 2. Время окончания не раньше времени начала
+        #    (только если это один день).
         if (
             self.start_time
             and self.end_time
@@ -227,50 +164,48 @@ class Event(TimestampedModel):
                 'end_time': 'Время окончания не может быть раньше времени начала.',
             })
 
-        if self.is_free and self.price:
-            raise ValidationError({
-                'price': 'У бесплатного события не может быть цены.',
-            })
-
+        # 3. Ссылка ВК должна быть полной.
         if self.organizer_vk and not self.organizer_vk.startswith(('http://', 'https://')):
             raise ValidationError({
                 'organizer_vk': 'Ссылка должна начинаться с http:// или https://',
             })
 
     # ==================================================================
-    #  Автогенерация slug
+    #  Сохранение
     # ==================================================================
     def save(self, *args, **kwargs):
+        # 1. Автогенерация slug.
         if not self.slug:
             base = slugify(self.title)[:200] or 'event'
             slug = base
-            while Event.all_objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            while (
+                Event.all_objects
+                .filter(slug=slug)
+                .exclude(pk=self.pk)
+                .exists()
+            ):
                 slug = f"{base}-{get_random_string(4).lower()}"
             self.slug = slug
 
-        if self.is_free:
+        # 2. Если цена 0 — обнуляем price.
+        #    is_free — это свойство, в БД его нет.
+        if self.price is not None and self.price == 0:
             self.price = None
 
         super().save(*args, **kwargs)
 
     # ==================================================================
-    #  Свойства
+    #  Мягкое удаление с сбросом статуса
     # ==================================================================
-    @property
-    def has_organizer_contacts(self):
-        return bool(
-            self.organizer_email
-            or self.organizer_phone
-            or self.organizer_vk
-        )
+    def delete(self, using=None, keep_parents=False):
+        """
+        Мягкое удаление события.
 
-    @property
-    def vk_short_url(self):
-        if not self.organizer_vk:
-            return ''
-        return (
-            self.organizer_vk
-            .replace('https://vk.com/', '')
-            .replace('http://vk.com/', '')
-            .rstrip('/')
-        )
+        Отличается от базового TimestampedModel.delete():
+        дополнительно сбрасывает статус в DRAFT, чтобы после
+        восстановления из корзины событие вернулось черновиком,
+        а не опубликованным.
+        """
+        self.is_deleted = True
+        self.status = self.Status.DRAFT
+        self.save(update_fields=['is_deleted', 'status', 'updated_at'])

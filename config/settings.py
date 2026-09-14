@@ -15,11 +15,11 @@ Django settings — единый файл для dev и prod.
   • Любая ошибка через logger    → письмо на ADMINS + staff.
 
 В dev (DEBUG=True) письма НЕ уходят — печатаются в консоль.
-Чтобы получать письма и в dev: убери фильтр require_debug_false
-в handler'е mail_admins и настрой реальный SMTP в .env.
+Чтобы получать письма и в dev: уберите фильтр require_debug_false
+в handler'е mail_admins и настройте реальный SMTP в .env.
 
 ВАЖНО: письма о 404/403/400 могут быстро заспамить почту при атаках
-ботов. Если начнётся флуд — верни для них уровень ERROR (только 500).
+ботов. Если начнётся флуд — верните для них уровень ERROR (только 500).
 """
 import os
 from pathlib import Path
@@ -42,6 +42,7 @@ IS_PROD = not DEBUG
 # БЕЗОПАСНОСТЬ
 # =========================================================
 if IS_PROD:
+    # В проде ключ обязателен — падаем, если не задан.
     SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 else:
     SECRET_KEY = os.environ.get(
@@ -74,7 +75,7 @@ if IS_PROD:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = False
+    CSRF_COOKIE_HTTPONLY = False  # JS должен читать CSRF-токен
 
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
@@ -89,6 +90,7 @@ if IS_PROD:
 # ПРИЛОЖЕНИЯ
 # =========================================================
 INSTALLED_APPS = [
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -98,8 +100,11 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.sitemaps",
 
+    # Сторонние
     "easy_thumbnails",
 
+    # Локальные
+    'accounts',
     "events",
     "pages",
 ]
@@ -119,7 +124,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "pages.middleware.ComingSoonMiddleware",
+
 ]
 
 
@@ -196,6 +201,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Хранилища. В проде — ManifestStaticFilesStorage (хеширование имён).
+# Если collectstatic падает — временно замените на StaticFilesStorage.
 if IS_PROD:
     STORAGES = {
         "default": {
@@ -240,6 +247,9 @@ SUBSCRIBE_COOLDOWN_SECONDS = int(
 if IS_PROD:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 else:
+    # В dev по умолчанию письма печатаются в консоль.
+    # Чтобы тестировать реальный SMTP в dev — задайте EMAIL_BACKEND
+    # в .env, например: EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
     EMAIL_BACKEND = os.environ.get(
         "EMAIL_BACKEND",
         "django.core.mail.backends.console.EmailBackend",
@@ -252,32 +262,36 @@ EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").lower() == "true"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 
+# Единый домен для писем — afisha-iskitim.ru.
+# Меняйте только здесь, чтобы DEFAULT_FROM_EMAIL и SERVER_EMAIL
+# не разъезжались по разным доменам (иначе DMARC/SPF ломается).
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    "Афиша Искитим <hello@iskitim-afisha.ru>",
+    "Афиша Искитим <hello@afisha-iskitim.ru>",
 )
 
+# Адрес для писем об ошибках. Fallback — тот же домен.
 SERVER_EMAIL = os.environ.get(
     "SERVER_EMAIL",
     "hello@afisha-iskitim.ru",
 )
 
-# Кому слать письма об ошибках.
-# Дополнительно письма уходят всем User с is_staff=True и заполненным email.
+# Кому слать письма об ошибках (django.request и т.п.).
+# Если подключён StaffEmailHandler (см. ниже) — дополнительно
+# разошлём всем is_staff=True с заполненным email.
 ADMINS = [
-    # ("Админ", "admin@iskitim-afisha.ru"),
+    ("Тимофей", "kalinin.timofei@mail.ru"),
 ]
 
-MANAGERS = [
-    # ("Менеджер", "manager@iskitim-afisha.ru"),
-]
+# MANAGERS по умолчанию равен ADMINS — удобно для писем о 500.
+MANAGERS = ADMINS
 
 
 # =========================================================
 # ЛОГИРОВАНИЕ
 # =========================================================
 LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -312,7 +326,7 @@ LOGGING = {
             "encoding": "utf-8",
         },
         "error_file": {
-            "level": "WARNING",   # ← теперь пишем и WARNING, и ERROR
+            "level": "WARNING",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOGS_DIR / "errors.log",
             "maxBytes": 10 * 1024 * 1024,
@@ -321,62 +335,62 @@ LOGGING = {
             "encoding": "utf-8",
         },
         "mail_admins": {
-            "level": "WARNING",   # ← теперь ловим WARNING (404/403/400) и ERROR (500)
+            "level": "WARNING",
             "filters": ["require_debug_false"],
+            # Стандартный AdminEmailHandler шлёт только на ADMINS/MANAGERS.
+            # Если нужен ещё и staff — раскомментируйте строку ниже
+            # и создайте pages/logging_handlers.py (см. пример в конце файла).
             "class": "django.utils.log.AdminEmailHandler",
+            # "class": "pages.logging_handlers.StaffEmailHandler",
             "include_html": True,
         },
     },
 
     "loggers": {
-        # django.request — сюда Django пишет 4xx и 5xx
+        # Django пишет сюда все 4xx и 5xx.
         "django.request": {
             "handlers": ["console", "error_file", "mail_admins"],
             "level": "WARNING",
             "propagate": False,
         },
 
-        # django.security — CSRF, SuspiciousOperation и т.п.
+        # CSRF, SuspiciousOperation и прочие security-события.
         "django.security": {
             "handlers": ["console", "error_file", "mail_admins"],
             "level": "WARNING",
             "propagate": False,
         },
 
-        # Ошибки внутри шаблонов (не всегда попадают в request)
+        # Ошибки шаблонов.
         "django.template": {
             "handlers": ["console", "error_file"],
             "level": "WARNING",
             "propagate": False,
         },
 
-        # Ошибки на уровне БД (например, "database is locked")
+        # Ошибки БД. Только ERROR — иначе SQLite засоряет errors.log
+        # WARNING'ами «database is locked» при массовых операциях.
         "django.db.backends": {
-            "handlers": ["console", "error_file"],
-            "level": "WARNING",
+            "handlers": ["console"],
+            "level": "ERROR",
             "propagate": False,
         },
 
-        # Прикладные логгеры
-        "waiting_list": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
+        # Прикладные логгеры проекта.
         "captcha": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
 
-        # Общий django-логгер — чтобы не сыпалось мимо
+        # Общий django-логгер — чтобы не сыпалось мимо.
         "django": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
 
-        # Root — всё, что не поймано выше
+        # Root — всё, что не поймано выше.
         "": {
             "handlers": ["console", "error_file"],
             "level": "WARNING",
@@ -412,7 +426,40 @@ THUMBNAIL_HIGH_RESOLUTION = True
 THUMBNAIL_EXTENSION = "webp"
 
 
-
-ADMINS = [
-    ('Тимофей  ', 'kalinin.timofei@mail.ru'),
-]
+# =========================================================
+# ОПЦИОНАЛЬНО: кастомный handler для staff
+# =========================================================
+# Если хотите, чтобы письма об ошибках дополнительно уходили
+# всем is_staff=True с email — создайте pages/logging_handlers.py
+# с классом StaffEmailHandler и замените class в mail_admins выше.
+#
+# Пример pages/logging_handlers.py:
+#
+# import logging
+# from django.conf import settings
+# from django.contrib.auth import get_user_model
+# from django.core.mail import send_mail
+# from django.utils.log import AdminEmailHandler
+#
+# class StaffEmailHandler(AdminEmailHandler):
+#     """Шлёт письма об ошибках на ADMINS + всех is_staff с email."""
+#     def send_mail(self, subject, message, *args, **kwargs):
+#         User = get_user_model()
+#         staff_emails = list(
+#             User.objects
+#             .filter(is_staff=True)
+#             .exclude(email="")
+#             .values_list("email", flat=True)
+#             .distinct()
+#         )
+#         recipient_list = [email for _, email in settings.ADMINS] + staff_emails
+#         recipient_list = list(dict.fromkeys(recipient_list))  # дедуп
+#         if not recipient_list:
+#             return
+#         send_mail(
+#             subject,
+#             message,
+#             settings.SERVER_EMAIL,
+#             recipient_list,
+#             fail_silently=True,
+#         )

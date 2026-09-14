@@ -1,3 +1,7 @@
+{% comment %}
+Контакты организатора. Показываем блок, только если есть
+хоть один контакт (свойство Event.has_organizer_contacts).
+{% endcomment %}
 {% if event.has_organizer_contacts %}
 <div class="event-detail__contacts">
     <h3 class="event-detail__contacts-title">

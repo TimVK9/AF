@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Подтверждение входа — АФИША ИСКИТИМ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+
+        <div class="auth-card__header">
+            <h1 class="auth-card__title">Подтверждение</h1>
+            <p class="auth-card__subtitle">Мы отправили 6-значный код на вашу почту</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="auth-message auth-message--{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            <div class="auth-field">
+                <label for="id_code" class="auth-label">Код из письма</label>
+                <input type="text"
+                       name="code"
+                       id="id_code"
+                       class="auth-input auth-input--code"
+                       inputmode="numeric"
+                       autocomplete="one-time-code"
+                       pattern="[0-9]{6}"
+                       maxlength="6"
+                       placeholder="000000"
+                       autofocus
+                       required>
+            </div>
+
+            <button type="submit" class="auth-btn">Подтвердить</button>
+        </form>
+
+        <p class="auth-card__footer">
+            Не пришло письмо?
+            <a href="{% url 'accounts:resend_otp' %}">Отправить заново</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

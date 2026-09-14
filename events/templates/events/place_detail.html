@@ -8,26 +8,17 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="АФИША ИСКИТИМ">
     <meta property="og:title" content="{{ place.name }}">
-    <meta property="og:description" content="{{ place.description|default:place.name|truncatechars:180 }}">
+    <meta property="og:description" content="{{ place.description|striptags|default:place.name|truncatechars:180 }}">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     {% if place.main_image %}
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
+        <meta property="og:image:width" content="{{ place.main_image.width }}">
+        <meta property="og:image:height" content="{{ place.main_image.height }}">
         <meta property="og:image:alt" content="{{ place.name }}">
     {% else %}
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
-    {% endif %}
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ place.name }}">
-    <meta name="twitter:description" content="{{ place.description|default:place.name|truncatechars:180 }}">
-    {% if place.main_image %}
-        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}">
-    {% else %}
-        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
     {% endif %}
 
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
@@ -41,7 +32,7 @@
     "name": "{{ place.name|escapejs }}",
     "url": "{{ request.build_absolute_uri }}",
     {% if place.description %}
-    "description": "{{ place.description|truncatechars:250|escapejs }}",
+    "description": "{{ place.description|striptags|truncatechars:250|escapejs }}",
     {% endif %}
     {% if place.main_image %}
     "image": ["{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}"],
@@ -49,26 +40,21 @@
     {% if place.short_address %}
     "address": {
         "@type": "PostalAddress",
-        "streetAddress": "{{ place.street|escapejs }}{% if place.house_number %}, {{ place.house_number }}{% endif %}",
-        "addressLocality": "{{ place.city|escapejs }}",
+        "streetAddress": "{{ place.street|default:''|escapejs }}{% if place.house_number %}, {{ place.house_number|escapejs }}{% endif %}",
+        "addressLocality": "{{ place.city|default:''|escapejs }}",
         {% if place.postal_code %}"postalCode": "{{ place.postal_code|escapejs }}",{% endif %}
         "addressCountry": "RU"
-    },
-    {% endif %}
-    {% if place.latitude and place.longitude %}
-    "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": {{ place.latitude }},
-        "longitude": {{ place.longitude }}
     },
     {% endif %}
     {% if place.phone %}
     "telephone": "{{ place.phone|escapejs }}",
     {% endif %}
+    {% if place.website or place.vk_url %}
     "sameAs": [
-        {% if place.website %}"{{ place.website }}",{% endif %}
+        {% if place.website %}"{{ place.website }}"{% if place.vk_url %},{% endif %}{% endif %}
         {% if place.vk_url %}"{{ place.vk_url }}"{% endif %}
     ]
+    {% endif %}
 }
 </script>
 {% endblock %}
@@ -81,7 +67,7 @@
 {% block content %}
 <div class="container place-detail">
 
-    {# ============ ХЛЕБНЫЕ КРОШКИ ============ #}
+    {# Хлебные крошки #}
     <nav class="breadcrumbs" aria-label="Хлебные крошки">
         <a href="{% url 'events:home' %}">Афиша</a>
         <span class="breadcrumbs__sep" aria-hidden="true">/</span>
@@ -90,10 +76,10 @@
 
     <div class="place-detail__grid">
 
-        {# ============ ЛЕВАЯ КОЛОНКА ============ #}
+        {# Левая колонка #}
         <div class="place-detail__main">
 
-            {# ---------- Заголовок ---------- #}
+            {# Заголовок #}
             <div class="place-detail__headline">
                 <h1 class="place-detail__title">{{ place.name }}</h1>
                 {% if place.short_address %}
@@ -107,13 +93,15 @@
                 {% endif %}
             </div>
 
-            {# ---------- Изображение ---------- #}
+            {# Изображение #}
             <div class="place-detail__image-wrapper">
                 {% if place.main_image %}
                     <img src="{{ place.main_image.url }}"
                          alt="{{ place.name }}"
                          class="place-detail__image"
-                         loading="eager">
+                         loading="eager"
+                         width="{{ place.main_image.width }}"
+                         height="{{ place.main_image.height }}">
                 {% else %}
                     <img src="{% random_placeholder place.pk %}"
                          alt="{{ place.name }}"
@@ -124,7 +112,7 @@
                 {% endif %}
             </div>
 
-            {# ---------- Описание ---------- #}
+            {# Описание #}
             {% if place.description %}
                 <section class="place-detail__section">
                     <h2 class="place-detail__section-title">Описание</h2>
@@ -134,12 +122,14 @@
                 </section>
             {% endif %}
 
-            {# ---------- Расписание по дням ---------- #}
+            {# Расписание по дням #}
             <section class="place-detail__section">
                 <h2 class="place-detail__section-title">
                     Расписание
                     {% if total_upcoming %}
-                        <span class="place-detail__count">{{ total_upcoming }}</span>
+                        <span class="place-detail__count">
+                            {{ total_upcoming }}&nbsp;событ{{ total_upcoming|pluralize:",ие,ия,ий" }}
+                        </span>
                     {% endif %}
                 </h2>
 
@@ -167,7 +157,7 @@
                                                 </span>
                                             {% else %}
                                                 <span class="place-schedule__time place-schedule__time--empty">
-                                                    —:—
+                                                    весь день
                                                 </span>
                                             {% endif %}
 
@@ -209,7 +199,7 @@
                 {% endif %}
             </section>
 
-            {# ---------- Прошедшие события ---------- #}
+            {# Прошедшие события #}
             {% if past_events %}
                 <section class="place-detail__section">
                     <h2 class="place-detail__section-title">
@@ -256,46 +246,44 @@
 
         </div>
 
-        {# ============ САЙДБАР ============ #}
+        {# Сайдбар #}
         <aside class="place-detail__sidebar">
 
-            {# ---------- Адрес ---------- #}
+            {# Адрес #}
             {% if place.full_address %}
                 <div class="place-detail__info-block">
-                    <h3 class="place-detail__info-title">Адрес</h3>
+                    <h2 class="place-detail__info-title">Адрес</h2>
                     <div class="place-detail__info-text">
                         {{ place.full_address }}
                     </div>
-                    {% if place.landmark %}
-                        <div class="place-detail__info-sub">
-                            Ориентир: {{ place.landmark }}
-                        </div>
-                    {% endif %}
                 </div>
             {% endif %}
 
-            {# ---------- Карта ---------- #}
+            {# Карта #}
             {% if place.latitude and place.longitude %}
-                <div class="place-detail__map-wrapper">
-                    <a href="https://yandex.ru/maps/?pt={{ place.longitude }},{{ place.latitude }}&z=17&l=map"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="place-detail__map-link">
-                        <div class="place-detail__map-placeholder">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                <circle cx="12" cy="10" r="3"/>
-                            </svg>
-                            <span>Открыть на карте</span>
-                        </div>
-                    </a>
+                <div class="place-detail__info-block">
+                    <h2 class="place-detail__info-title">На карте</h2>
+                    <div class="place-detail__map-wrapper">
+                        <a href="https://yandex.ru/maps/?pt={{ place.longitude }},{{ place.latitude }}&z=16&l=map"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="place-detail__map-link">
+                            <div class="place-detail__map-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                <span>Открыть на карте</span>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             {% endif %}
 
-            {# ---------- Контакты ---------- #}
+            {# Контакты #}
             {% if place.phone or place.email or place.website or place.vk_url %}
                 <div class="place-detail__info-block">
-                    <h3 class="place-detail__info-title">Контакты</h3>
+                    <h2 class="place-detail__info-title">Контакты</h2>
 
                     <div class="place-detail__contacts">
                         {% if place.phone %}

@@ -171,7 +171,6 @@
 
 /* ===== АДАПТИВ ===== */
 @media (max-width: 1024px) {
-
     .events-grid {
         gap: 20px;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -320,7 +319,6 @@
 
 /* ===== КРОССБРАУЗЕРНОСТЬ ===== */
 
-/* Grid fallback для старых браузеров */
 @supports not (display: grid) {
     .events-grid {
         display: -webkit-box;
@@ -345,7 +343,6 @@
     }
 }
 
-/* Safari 10+ */
 @media not all and (min-resolution: 0.001dpcm) {
     @supports (-webkit-appearance: none) {
         .events-grid {
@@ -354,7 +351,6 @@
     }
 }
 
-/* Firefox */
 @-moz-document url-prefix() {
     .pagination__link {
         display: -moz-box;
@@ -366,7 +362,6 @@
     }
 }
 
-/* Internet Explorer 10-11 */
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
     .events-grid {
         display: -ms-grid;
@@ -383,7 +378,6 @@
     }
 }
 
-/* Edge */
 @supports (-ms-accelerator: true) {
     .events-grid {
         display: -ms-grid;
@@ -391,7 +385,6 @@
     }
 }
 
-/* Chrome, Safari, Opera */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
     .search-input::-webkit-search-decoration,
     .search-input::-webkit-search-cancel-button,
@@ -402,14 +395,12 @@
     }
 }
 
-/* iOS Safari */
 @supports (-webkit-touch-callout: none) {
     .search-container.mobile-open {
         -webkit-overflow-scrolling: touch;
     }
 }
 
-/* Android Chrome */
 @media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 0) {
     .mobile-nav-item {
         -webkit-tap-highlight-color: transparent;
@@ -420,7 +411,6 @@
     }
 }
 
-/* Samsung Internet */
 @supports (-moz-bool-prefix: "false") {
     .events-grid {
         display: grid;

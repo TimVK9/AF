@@ -10,7 +10,7 @@
 {% block content %}
 <div class="container event-form-page">
 
-    {# ============ ХЛЕБНЫЕ КРОШКИ + ЗАГОЛОВОК ============ #}
+    {# Хлебные крошки + заголовок #}
     <div class="event-form-page__top">
         <nav class="event-form-breadcrumbs">
             <a href="{% url 'events:event_list_manage' %}">Управление</a>
@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    {# ============ СВОДКА ОШИБОК ФОРМЫ ============ #}
+    {# Сводка ошибок формы #}
     {% if form.errors or image_formset.errors or image_formset.non_form_errors %}
         <div class="event-form-errors-summary" role="alert">
             <div class="event-form-errors-summary__icon" aria-hidden="true">
@@ -76,27 +76,11 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-
-                {% if image_formset.errors %}
-                    <ul class="event-form-errors-summary__list">
-                        {% for img_form in image_formset %}
-                            {% if img_form.errors %}
-                                {% for field in img_form %}
-                                    {% if field.errors %}
-                                        <li>
-                                            <strong>Галерея (фото {{ forloop.parentloop.counter }}), {{ field.label }}:</strong>
-{% for error in field.errors %}{{ error }}{% if not forloop.last %}, {% endif %}{% endfor %}                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                {% endif %}
             </div>
         </div>
     {% endif %}
 
-    {# ============ FLASH-СООБЩЕНИЯ (успех/ошибка из вью) ============ #}
+    {# Flash-сообщения #}
     {% if messages %}
         <div class="event-form-messages">
             {% for message in messages %}
@@ -112,10 +96,10 @@
 
         <div class="event-form__layout">
 
-            {# ================= ЛЕВАЯ КОЛОНКА ================= #}
+            {# Левая колонка #}
             <div class="event-form__main">
 
-                {# ---------- Основное ---------- #}
+                {# Основное #}
                 <section class="form-section">
                     <h2 class="form-section__title">Основное</h2>
 
@@ -164,7 +148,7 @@
                     </div>
                 </section>
 
-                {# ---------- Дата и время ---------- #}
+                {# Дата и время #}
                 <section class="form-section">
                     <h2 class="form-section__title">Дата и время</h2>
 
@@ -199,10 +183,10 @@
 
                     <div class="form-row form-row--two">
                         <div>
-                            <label class="form-label" for="{{ form.schedule_type.id_for_label }}">{{ form.schedule_type.label }}</label>
-                            {{ form.schedule_type }}
-                            {% if form.schedule_type.help_text %}<span class="form-help">{{ form.schedule_type.help_text }}</span>{% endif %}
-                            {% if form.schedule_type.errors %}<span class="form-error">{{ form.schedule_type.errors.0 }}</span>{% endif %}
+                            <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                            {{ form.status }}
+                            {% if form.status.help_text %}<span class="form-help">{{ form.status.help_text }}</span>{% endif %}
+                            {% if form.status.errors %}<span class="form-error">{{ form.status.errors.0 }}</span>{% endif %}
                         </div>
                         <div>
                             <label class="form-label" for="{{ form.age_restriction.id_for_label }}">{{ form.age_restriction.label }}</label>
@@ -212,7 +196,7 @@
                     </div>
                 </section>
 
-                {# ---------- Медиа ---------- #}
+                {# Медиа #}
                 <section class="form-section">
                     <h2 class="form-section__title">Медиа</h2>
 
@@ -231,14 +215,12 @@
                     </div>
                 </section>
 
-                {# ---------- Организатор ---------- #}
+                {# Организатор #}
                 <section class="form-section">
                     <h2 class="form-section__title">Организатор</h2>
 
                     <div class="form-row">
-                        <label class="form-label" for="{{ form.organizer_name.id_for_label }}">
-                            {{ form.organizer_name.label }}
-                        </label>
+                        <label class="form-label" for="{{ form.organizer_name.id_for_label }}">{{ form.organizer_name.label }}</label>
                         {{ form.organizer_name }}
                         {% if form.organizer_name.help_text %}<span class="form-help">{{ form.organizer_name.help_text }}</span>{% endif %}
                         {% if form.organizer_name.errors %}<span class="form-error">{{ form.organizer_name.errors.0 }}</span>{% endif %}
@@ -246,32 +228,26 @@
 
                     <div class="form-row form-row--two">
                         <div>
-                            <label class="form-label" for="{{ form.organizer_email.id_for_label }}">
-                                {{ form.organizer_email.label }}
-                            </label>
+                            <label class="form-label" for="{{ form.organizer_email.id_for_label }}">{{ form.organizer_email.label }}</label>
                             {{ form.organizer_email }}
                             {% if form.organizer_email.errors %}<span class="form-error">{{ form.organizer_email.errors.0 }}</span>{% endif %}
                         </div>
                         <div>
-                            <label class="form-label" for="{{ form.organizer_phone.id_for_label }}">
-                                {{ form.organizer_phone.label }}
-                            </label>
+                            <label class="form-label" for="{{ form.organizer_phone.id_for_label }}">{{ form.organizer_phone.label }}</label>
                             {{ form.organizer_phone }}
                             {% if form.organizer_phone.errors %}<span class="form-error">{{ form.organizer_phone.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
                     <div class="form-row">
-                        <label class="form-label" for="{{ form.organizer_vk.id_for_label }}">
-                            {{ form.organizer_vk.label }}
-                        </label>
+                        <label class="form-label" for="{{ form.organizer_vk.id_for_label }}">{{ form.organizer_vk.label }}</label>
                         {{ form.organizer_vk }}
                         {% if form.organizer_vk.help_text %}<span class="form-help">{{ form.organizer_vk.help_text }}</span>{% endif %}
                         {% if form.organizer_vk.errors %}<span class="form-error">{{ form.organizer_vk.errors.0 }}</span>{% endif %}
                     </div>
                 </section>
 
-                {# ---------- Галерея ---------- #}
+                {# Галерея #}
                 <section class="form-section">
                     <h2 class="form-section__title">Галерея</h2>
                     <p class="form-help form-help--block">До 15 изображений. Пустые строки игнорируются. Порядок можно менять цифрой.</p>
@@ -338,31 +314,11 @@
                 </section>
             </div>
 
-            {# ================= ПРАВАЯ КОЛОНКА (САЙДБАР) ================= #}
+            {# Правая колонка #}
             <aside class="event-form__sidebar">
 
                 <div class="form-sidebar-block">
-                    <h3 class="form-sidebar-block__title">Публикация</h3>
-
-                    <div class="form-row">
-                        <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
-                        {{ form.status }}
-                        {% if form.status.help_text %}<span class="form-help">{{ form.status.help_text }}</span>{% endif %}
-                        {% if form.status.errors %}<span class="form-error">{{ form.status.errors.0 }}</span>{% endif %}
-                    </div>
-                </div>
-
-                <div class="form-sidebar-block">
-                    <h3 class="form-sidebar-block__title">Стоимость</h3>
-
-                    <div class="form-row">
-                        <label class="form-checkbox-label">
-                            {{ form.is_free }}
-                            <span>{{ form.is_free.label }}</span>
-                        </label>
-                        {% if form.is_free.help_text %}<span class="form-help">{{ form.is_free.help_text }}</span>{% endif %}
-                        {% if form.is_free.errors %}<span class="form-error">{{ form.is_free.errors.0 }}</span>{% endif %}
-                    </div>
+                    <h3 class="form-sidebar-block__title">Цена</h3>
 
                     <div class="form-row">
                         <label class="form-label" for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
@@ -372,7 +328,7 @@
                     </div>
                 </div>
 
-                {# ---------- Действия ---------- #}
+                {# Действия #}
                 <div class="form-sidebar-actions">
                     <button type="submit" class="form-btn form-btn--primary">{{ submit_label }}</button>
                     <a href="{% url 'events:event_list_manage' %}" class="form-btn form-btn--ghost">К списку</a>
@@ -390,9 +346,8 @@
 
     var startDate = document.getElementById('id_start_date');
     var endDate = document.getElementById('id_end_date');
-    var isFree = document.getElementById('id_is_free');
-    var price = document.getElementById('id_price');
 
+    // Минимальная дата окончания — дата начала.
     if (startDate && endDate) {
         startDate.addEventListener('change', function () {
             if (!endDate.value) {
@@ -401,20 +356,7 @@
         });
     }
 
-    function syncPrice() {
-        if (!isFree || !price) return;
-        if (isFree.checked) {
-            price.value = '';
-            price.setAttribute('disabled', 'disabled');
-        } else {
-            price.removeAttribute('disabled');
-        }
-    }
-    if (isFree) {
-        isFree.addEventListener('change', syncPrice);
-        syncPrice();
-    }
-
+    // Ctrl+S — сохранение формы.
     document.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
             e.preventDefault();
@@ -423,6 +365,7 @@
         }
     });
 
+    // Предупреждение о несохранённых изменениях.
     var form = document.getElementById('eventForm');
     var dirty = false;
 

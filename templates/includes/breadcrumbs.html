@@ -1,12 +1,26 @@
 {% comment %}
 Универсальные хлебные крошки.
+
 Определяют свой путь по URL name и request.GET.
+
+Используется в:
+- events/event_list.html (главная афиши)
+- events/components/detail/_breadcrumbs.html
+- других страницах через {% include "includes/breadcrumbs.html" %}
+
+Правила:
+1. Если мы не на главной — первой ссылкой идёт «Афиша».
+2. На главной с GET-параметрами — «Афиша» + текущий фильтр.
+3. На главной без фильтров — просто «Все события».
+4. На детальной события — категория → название.
+5. На детальной площадки — название площадки.
+6. На служебных страницах — их человекочитаемый заголовок.
 {% endcomment %}
 
 {% if request.resolver_match %}
 <nav class="breadcrumbs" aria-label="Хлебные крошки">
 
-    {# Главная — всегда первая, кроме случая, когда мы уже на ней без фильтров #}
+    {# Ссылка «Афиша» — всегда, кроме случая «мы уже на главной без фильтров» #}
     {% if request.resolver_match.url_name != "home" or request.GET %}
         <a href="{% url 'events:home' %}">Афиша</a>
         <span class="breadcrumbs__sep" aria-hidden="true">/</span>
@@ -50,6 +64,24 @@
             <span class="breadcrumbs__sep" aria-hidden="true">/</span>
         {% endif %}
         <span class="breadcrumbs__current">{{ event.title }}</span>
+
+    {# ---------- ДЕТАЛЬНАЯ ПЛОЩАДКИ ---------- #}
+    {% elif request.resolver_match.url_name == "place_detail" %}
+        <span class="breadcrumbs__current">{{ place.name }}</span>
+
+    {# ---------- УПРАВЛЕНИЕ ---------- #}
+    {% elif request.resolver_match.url_name == "event_list_manage" %}
+        <span class="breadcrumbs__current">Управление событиями</span>
+
+    {% elif request.resolver_match.url_name == "event_create" %}
+        <a href="{% url 'events:event_list_manage' %}">Управление</a>
+        <span class="breadcrumbs__sep" aria-hidden="true">/</span>
+        <span class="breadcrumbs__current">Новое событие</span>
+
+    {% elif request.resolver_match.url_name == "event_update" %}
+        <a href="{% url 'events:event_list_manage' %}">Управление</a>
+        <span class="breadcrumbs__sep" aria-hidden="true">/</span>
+        <span class="breadcrumbs__current">Редактирование</span>
 
     {# ---------- ПРАВОВЫЕ И ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ---------- #}
     {% else %}

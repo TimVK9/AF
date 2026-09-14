@@ -1,6 +1,6 @@
 """
 Глобальные настройки сайта — редактируются через админку.
-Всегда одна запись (singleton).
+Всегда одна запись (singleton, pk=1).
 """
 from django.db import models
 
@@ -9,14 +9,14 @@ class SiteSettings(models.Model):
     """
     Глобальные настройки сайта.
 
-    Используется через SiteSettings.load() — вернёт единственный объект,
-    создаст его при первом обращении.
+    Используется через SiteSettings.load() — вернёт единственный
+    объект, создаст при первом обращении.
     """
 
     coming_soon = models.BooleanField(
         default=False,
         verbose_name='Режим «Скоро запуск»',
-        help_text='Если включено — все не-админы видят заглушку coming_soon.',
+        help_text='Если включено — все не-админы видят заглушку.',
     )
     coming_soon_message = models.TextField(
         blank=True,
