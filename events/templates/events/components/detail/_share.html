@@ -11,7 +11,7 @@ JS — в _scripts.html.
 <div class="event-detail__actions">
 
     {# Купить билет — если есть external_url #}
-    {% if event.external_url %}
+{% if event.external_url and event.price and event.price > 0 %}
     <a href="{{ event.external_url }}"
        target="_blank"
        rel="noopener"

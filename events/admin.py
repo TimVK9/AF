@@ -18,6 +18,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .models import Event, EventImage, Place, Category, SiteSettings
+from .forms import EventForm
 
 
 # =====================================================================
@@ -46,6 +47,8 @@ class EventImageInline(admin.TabularInline):
 # =====================================================================
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
+    form = EventForm
+
     list_display = (
         'title', 'organizer_name', 'category', 'place',
         'start_date', 'status_badge', 'deleted_badge', 'created_at',
@@ -57,6 +60,7 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = (
         'title', 'description_short', 'description',
         'organizer_name', 'organizer_email', 'organizer_phone', 'place__name',
+        'external_id', 'external_url',
     )
     prepopulated_fields = {'slug': ('title',)}
     date_hierarchy = 'start_date'
@@ -100,6 +104,14 @@ class EventAdmin(admin.ModelAdmin):
             'fields': (
                 'organizer_name', 'organizer_email',
                 'organizer_phone', 'organizer_vk',
+            ),
+        }),
+        ('Внешние данные', {
+            'fields': ('external_id', 'external_url'),
+            'classes': ('collapse',),
+            'description': (
+                'Заполняется парсером. ID — для поиска дубликатов, '
+                'URL — ссылка на покупку билета на сайте-источнике.'
             ),
         }),
         ('Служебное', {
