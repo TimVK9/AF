@@ -6,16 +6,15 @@
 {% endcomment %}
 <div class="event-card__footer">
 
-<span class="event-card__meta-hint">
-    {% if event.price is not None and event.price > 0 %}
-        от {{ event.price }} ₽
-    {% elif event.price == 0 %}
-        Вход свободный
-    {% else %}
-        Цена уточняется
-    {% endif %}
-</span>
-
+    <span class="event-card__meta-hint">
+        {% if event.is_free %}
+            Вход свободный
+        {% elif event.price %}
+            от {{ event.price }} ₽
+        {% else %}
+            Цена уточняется
+        {% endif %}
+    </span>
 
     <span class="event-card__link">
         Подробнее

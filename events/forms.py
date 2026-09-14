@@ -8,11 +8,6 @@ from .models import Event, EventImage
 class EventForm(forms.ModelForm):
     """Форма создания/редактирования события."""
 
-    # ------------------------------------------------------------------
-    # Явные поля для <input type="date"> и <input type="time">.
-    # format — как рендерить значение, input_formats — что принимать.
-    # localize=False — иначе Django отдаст 15.09.2026 вместо 2026-09-15.
-    # ------------------------------------------------------------------
     start_date = forms.DateField(
         widget=forms.DateInput(
             format='%Y-%m-%d',
@@ -51,8 +46,6 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = Event
-        # ВАЖНО: только поля, которые реально есть в модели.
-        # is_free / schedule_type / views_count — свойств в модели нет.
         fields = [
             'title',
             'category',
@@ -162,7 +155,7 @@ class EventForm(forms.ModelForm):
         }
 
     # ------------------------------------------------------------------
-    # Очистка отдельных полей
+    #  Очистка отдельных полей
     # ------------------------------------------------------------------
     def clean_title(self):
         title = (self.cleaned_data.get('title') or '').strip()
@@ -171,14 +164,19 @@ class EventForm(forms.ModelForm):
         return title
 
     def clean_price(self):
-        """Цена 0 — то же самое, что пустая (бесплатно)."""
+        """
+        Три состояния цены:
+          None  — «уточняется» (поле пустое);
+          0     — «бесплатно»;
+          > 0   — указанная цена.
+        """
         price = self.cleaned_data.get('price')
-        if price is not None and price == 0:
-            return None
+        if price is not None and price < 0:
+            raise ValidationError('Цена не может быть отрицательной.')
         return price
 
     # ------------------------------------------------------------------
-    # Общая валидация формы
+    #  Общая валидация формы
     # ------------------------------------------------------------------
     def clean(self):
         cleaned = super().clean()

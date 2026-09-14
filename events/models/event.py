@@ -123,8 +123,9 @@ class Event(TimestampedModel):
     # ==================================================================
     @property
     def is_free(self):
-        """Бесплатное, если цена не задана или равна нулю."""
-        return self.price is None or self.price == 0
+        """Бесплатное, только если цена равна нулю."""
+        return self.price is not None and self.price == 0
+
 
     @property
     def has_organizer_contacts(self):
@@ -187,10 +188,6 @@ class Event(TimestampedModel):
                 slug = f"{base}-{get_random_string(4).lower()}"
             self.slug = slug
 
-        # 2. Если цена 0 — обнуляем price.
-        #    is_free — это свойство, в БД его нет.
-        if self.price is not None and self.price == 0:
-            self.price = None
 
         super().save(*args, **kwargs)
 

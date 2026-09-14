@@ -59,6 +59,8 @@
             <span class="badge badge--free">Бесплатно</span>
         {% elif event.price %}
             <span class="badge badge--price">{{ event.price }} ₽</span>
+        {% else %}
+            <span class="badge badge--unknown">Цена уточняется</span>
         {% endif %}
         <span class="badge badge--age">{{ event.age_restriction }}</span>
     </div>

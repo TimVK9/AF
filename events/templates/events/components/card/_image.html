@@ -51,18 +51,17 @@
     </div>
 
     {# Бейджи цены и возраста — справа сверху #}
-<div class="event-card__badges">
-    {% if event.price is not None and event.price > 0 %}
-        <span class="badge badge--price">{{ event.price }} ₽</span>
-    {% elif event.price == 0 %}
-        <span class="badge badge--free">Вход свободный</span>
-    {% else %}
-        <span class="badge badge--unknown">Цена уточняется</span>
-    {% endif %}
+    <div class="event-card__badges">
+        {% if event.is_free %}
+            <span class="badge badge--free">Вход свободный</span>
+        {% elif event.price %}
+            <span class="badge badge--price">{{ event.price }} ₽</span>
+        {% else %}
+            <span class="badge badge--unknown">Цена уточняется</span>
+        {% endif %}
 
-    <span class="badge badge--age">{{ event.age_restriction }}</span>
-</div>
-
+        <span class="badge badge--age">{{ event.age_restriction }}</span>
+    </div>
 
     {% if event.status == 'cancelled' %}
         <div class="event-card__status event-card__status--cancelled">

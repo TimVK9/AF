@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
 from django.db.models import (
     Q, Case, When, Value, IntegerField, Count, DateField,
 )
@@ -24,6 +24,15 @@ from .models import Event, Category, Place
 
 
 # ======================================================================
+#  ВСПОМОГАТЕЛЬНЫЕ
+# ======================================================================
+
+def invalidate_event_cache():
+    """Сброс кэша счётчиков на главной афише."""
+    cache.delete('events_published_count')
+
+
+# ======================================================================
 #  ПУБЛИЧНЫЕ
 # ======================================================================
 
@@ -33,16 +42,6 @@ class EventList(ListView):
 
     Событие может длиться несколько дней (start_date ... end_date).
     Если end_date пустой — считаем однодневным (event_end = start_date).
-
-    Логика фильтров:
-    1. Ручной диапазон (start_date / end_date) — отменяет date_filter.
-    2. Пресет date_filter (today / tomorrow / week / weekend / month / past).
-    3. Дефолт — только будущие события (включая сегодня).
-
-    Сортировка:
-    - date — идущие сейчас → будущие по дате начала.
-    - popular — по дате начала.
-    - price_asc / price_desc — по цене.
     """
     model = Event
     template_name = 'events/event_list.html'
@@ -72,7 +71,6 @@ class EventList(ListView):
         end_date_obj = parse_date(end_date_raw) if end_date_raw else None
 
         def overlaps(qs, range_start, range_end):
-            """Пересечение интервалов [start_date, event_end] × [range_start, range_end]."""
             return qs.filter(
                 start_date__lte=range_end,
                 event_end__gte=range_start,
@@ -149,11 +147,12 @@ class EventList(ListView):
             if sort == 'popular':
                 queryset = queryset.order_by('ongoing', 'start_date', 'start_time', 'id')
             elif sort == 'price_asc':
+                # Бесплатные (0) → по цене ↑ → цена уточняется (None) последними.
                 queryset = queryset.order_by(
                     'ongoing',
                     Case(
-                        When(price__isnull=True, then=Value(0)),
                         When(price=0, then=Value(0)),
+                        When(price__isnull=True, then=Value(2)),
                         default=Value(1),
                         output_field=IntegerField(),
                     ),
@@ -161,12 +160,13 @@ class EventList(ListView):
                     'start_date', 'start_time', 'id',
                 )
             elif sort == 'price_desc':
+                # По цене ↓ → бесплатные (0) → цена уточняется (None) последними.
                 queryset = queryset.order_by(
                     'ongoing',
                     Case(
                         When(price__isnull=True, then=Value(2)),
-                        When(price=0, then=Value(2)),
-                        default=Value(1),
+                        When(price=0, then=Value(1)),
+                        default=Value(0),
                         output_field=IntegerField(),
                     ),
                     '-price',
@@ -299,24 +299,6 @@ class EventManageListView(StaffRequiredMixin, ListView):
     context_object_name = 'events'
     paginate_by = 25
 
-    def get(self, request, *args, **kwargs):
-        # Нормализуем ?page=N в допустимый диапазон, чтобы не отдавать 404.
-        try:
-            page = int(request.GET.get('page', 1))
-        except (TypeError, ValueError):
-            page = 1
-        if page < 1:
-            page = 1
-
-        paginator = Paginator(self.get_queryset(), self.paginate_by)
-        num_pages = paginator.num_pages or 1
-        if page > num_pages:
-            page = num_pages
-
-        request.GET = request.GET.copy()
-        request.GET['page'] = page
-        return super().get(request, *args, **kwargs)
-
     def get_queryset(self):
         qs = Event.all_objects.select_related('category', 'place')
 
@@ -353,6 +335,35 @@ class EventManageListView(StaffRequiredMixin, ListView):
         }
         qs = qs.order_by(allowed_sorts.get(sort, '-updated_at'))
         return qs
+
+    def paginate_queryset(self, queryset, page_size):
+        """
+        Переопределение: при выходе страницы за диапазон
+        показываем последнюю, а не 404.
+        """
+        paginator = self.get_paginator(
+            queryset,
+            page_size,
+            orphans=self.get_paginate_orphans(),
+            allow_empty_first_page=self.get_allow_empty(),
+        )
+        page_kwarg = self.page_kwarg
+        page = self.kwargs.get(page_kwarg) or self.request.GET.get(page_kwarg) or 1
+        try:
+            page_number = int(page)
+        except (TypeError, ValueError):
+            page_number = 1
+        if page_number < 1:
+            page_number = 1
+        num_pages = paginator.num_pages
+        if num_pages > 0 and page_number > num_pages:
+            page_number = num_pages
+        try:
+            page_obj = paginator.page(page_number)
+            return (paginator, page_obj, page_obj.object_list, page_obj.has_other_pages())
+        except EmptyPage:
+            page_obj = paginator.page(1)
+            return (paginator, page_obj, page_obj.object_list, page_obj.has_other_pages())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -401,8 +412,9 @@ class EventCreateView(StaffRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        context = self.get_context_data()
-        image_formset = context['image_formset']
+        image_formset = EventImageFormSet(
+            self.request.POST, self.request.FILES
+        )
         if not image_formset.is_valid():
             return self.form_invalid(form)
 
@@ -410,6 +422,7 @@ class EventCreateView(StaffRequiredMixin, CreateView):
         image_formset.instance = self.object
         image_formset.save()
 
+        invalidate_event_cache()
         messages.success(self.request, f'Событие «{self.object.title}» создано.')
         return HttpResponseRedirect(self.get_success_url())
 
@@ -446,15 +459,16 @@ class EventUpdateView(StaffRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        context = self.get_context_data()
-        image_formset = context['image_formset']
+        image_formset = EventImageFormSet(
+            self.request.POST, self.request.FILES, instance=self.object
+        )
         if not image_formset.is_valid():
             return self.form_invalid(form)
 
         self.object = form.save()
-        image_formset.instance = self.object
         image_formset.save()
 
+        invalidate_event_cache()
         messages.success(self.request, f'Событие «{self.object.title}» сохранено.')
         return HttpResponseRedirect(self.get_success_url())
 
@@ -475,8 +489,6 @@ class EventBulkActionView(StaffRequiredMixin, View):
     Корзина (source=deleted):
     - restore     — восстановить из корзины;
     - hard_delete — удалить из БД навсегда.
-
-    Куда применять — определяется полем формы `source` ('active' | 'deleted').
     """
 
     MAX_BULK = 20
@@ -488,19 +500,15 @@ class EventBulkActionView(StaffRequiredMixin, View):
 
         if not ids:
             messages.warning(request, 'Ничего не выбрано.')
-            return redirect('events:event_list_manage')
+            return self._redirect_back(request, source)
 
-        manage_url = reverse('events:event_list_manage')
-        deleted_url = f'{manage_url}?show_deleted=1'
-
-        # Защита от массового «выбрать все и удалить».
         if len(ids) > self.MAX_BULK:
             messages.error(
                 request,
                 f'За раз можно обработать не более {self.MAX_BULK} событий. '
                 f'Выбрано: {len(ids)}.'
             )
-            return redirect(deleted_url if source == 'deleted' else manage_url)
+            return self._redirect_back(request, source)
 
         now = timezone.now()
 
@@ -510,51 +518,68 @@ class EventBulkActionView(StaffRequiredMixin, View):
 
             if action == 'restore':
                 restored = qs_deleted.update(is_deleted=False, updated_at=now)
+                invalidate_event_cache()
                 messages.success(request, f'Восстановлено: {restored}.')
-                return redirect(deleted_url)
+                return self._redirect_back(request, source)
 
             if action == 'hard_delete':
                 if request.POST.get('confirm') != 'yes':
                     messages.error(request, 'Не подтверждено удаление навсегда.')
-                    return redirect(deleted_url)
+                    return self._redirect_back(request, source)
 
-                # hard_delete() — метод SoftDeleteQuerySet.
-                # super().delete() возвращает кортеж (total, {label: count}).
                 count, _ = qs_deleted.hard_delete()
+                invalidate_event_cache()
                 messages.success(request, f'Удалено навсегда: {count}.')
-                return redirect(deleted_url)
+                return self._redirect_back(request, source)
 
             messages.error(request, 'Неизвестное действие для корзины.')
-            return redirect(deleted_url)
+            return self._redirect_back(request, source)
 
         # ---------- Обычный список ----------
         qs_active = Event.all_objects.filter(pk__in=ids, is_deleted=False)
 
         if action == 'publish':
             updated = qs_active.update(status=Event.Status.PUBLISHED, updated_at=now)
+            invalidate_event_cache()
             messages.success(request, f'Опубликовано: {updated}.')
 
         elif action == 'draft':
             updated = qs_active.update(status=Event.Status.DRAFT, updated_at=now)
+            invalidate_event_cache()
             messages.success(request, f'Снято в черновики: {updated}.')
 
         elif action == 'cancel':
             updated = qs_active.update(status=Event.Status.CANCELLED, updated_at=now)
+            invalidate_event_cache()
             messages.success(request, f'Отменено: {updated}.')
 
         elif action == 'delete':
-            # Мягкое удаление + сброс статуса в DRAFT.
-            # После восстановления событие вернётся черновиком.
             count = qs_active.update(
                 is_deleted=True,
                 status=Event.Status.DRAFT,
                 updated_at=now,
             )
+            invalidate_event_cache()
             messages.success(request, f'Удалено в корзину: {count}.')
 
         else:
             messages.error(request, 'Неизвестное действие.')
 
+        return self._redirect_back(request, source)
+
+    @staticmethod
+    def _redirect_back(request, source):
+        """
+        Возврат на страницу управления с сохранением фильтров.
+        Использует Referer, если он ведёт на event_list_manage.
+        """
+        referer = request.META.get('HTTP_REFERER', '')
+        if referer and 'manage' in referer:
+            return redirect(referer)
+
+        manage_url = reverse('events:event_list_manage')
+        if source == 'deleted':
+            return redirect(f'{manage_url}?show_deleted=1')
         return redirect(manage_url)
 
 
@@ -586,7 +611,6 @@ class PlaceDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         place = self.object
         today = timezone.localdate()
-
         horizon = today + timedelta(days=60)
 
         events = list(
@@ -615,7 +639,6 @@ class PlaceDetailView(DetailView):
         context['schedule'] = schedule
         context['past_events'] = past
         context['total_upcoming'] = len(events)
-
         return context
 
     @staticmethod

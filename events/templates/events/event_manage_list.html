@@ -12,7 +12,7 @@
 {% block content %}
 <div class="container manage-page">
 
-    {# ============ ЗАГОЛОВОК ============ #}
+    <!-- Заголовок -->
     <div class="manage-header">
         <div>
             <h1>Управление событиями</h1>
@@ -26,7 +26,7 @@
         </div>
 
         <a href="{% url 'events:event_create' %}" class="form-btn form-btn--primary">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -34,82 +34,43 @@
         </a>
     </div>
 
-    {# ============ СООБЩЕНИЯ ============ #}
+    <!-- Сообщения -->
     {% if messages %}
         <div class="event-form-messages">
             {% for message in messages %}
-                <div class="event-form-message event-form-message--{{ message.tags }}">
-                    {{ message }}
-                </div>
+                <div class="event-form-message event-form-message--{{ message.tags }}">{{ message }}</div>
             {% endfor %}
         </div>
     {% endif %}
 
-    {# ============ БЕЙДЖИ-СЧЁТЧИКИ ============ #}
+    <!-- Табы статусов -->
     <div class="manage-status-tabs">
-
         {% if show_deleted %}
-            <a href="{% url 'events:event_list_manage' %}"
-               class="manage-status-tab">
-                Активные <span>{{ counts.all }}</span>
-            </a>
-            <a href="{% querystring show_deleted=1 %}"
-               class="manage-status-tab manage-status-tab--deleted active">
-                В корзине <span>{{ counts.deleted }}</span>
-            </a>
+            <a href="{% url 'events:event_list_manage' %}" class="manage-status-tab">Активные <span>{{ counts.all }}</span></a>
+            <a href="{% querystring show_deleted=1 %}" class="manage-status-tab manage-status-tab--deleted active">В корзине <span>{{ counts.deleted }}</span></a>
         {% else %}
-            <a href="{% querystring status='' %}"
-               class="manage-status-tab {% if not status_filter %}active{% endif %}">
-                Все <span>{{ counts.all }}</span>
-            </a>
-            <a href="{% querystring status='draft' %}"
-               class="manage-status-tab {% if status_filter == 'draft' %}active{% endif %}">
-                Черновики <span>{{ counts.draft }}</span>
-            </a>
-            <a href="{% querystring status='moderation' %}"
-               class="manage-status-tab {% if status_filter == 'moderation' %}active{% endif %}">
-                На модерации <span>{{ counts.moderation }}</span>
-            </a>
-            <a href="{% querystring status='published' %}"
-               class="manage-status-tab {% if status_filter == 'published' %}active{% endif %}">
-                Опубликованные <span>{{ counts.published }}</span>
-            </a>
-            <a href="{% querystring status='cancelled' %}"
-               class="manage-status-tab {% if status_filter == 'cancelled' %}active{% endif %}">
-                Отменённые <span>{{ counts.cancelled }}</span>
-            </a>
-            <a href="{% querystring status='finished' %}"
-               class="manage-status-tab {% if status_filter == 'finished' %}active{% endif %}">
-                Завершённые <span>{{ counts.finished }}</span>
-            </a>
-            <a href="{% querystring show_deleted=1 status='' %}"
-               class="manage-status-tab manage-status-tab--deleted">
-                В корзине <span>{{ counts.deleted }}</span>
-            </a>
+            <a href="{% querystring status='' %}" class="manage-status-tab {% if not status_filter %}active{% endif %}">Все <span>{{ counts.all }}</span></a>
+            <a href="{% querystring status='draft' %}" class="manage-status-tab {% if status_filter == 'draft' %}active{% endif %}">Черновики <span>{{ counts.draft }}</span></a>
+            <a href="{% querystring status='moderation' %}" class="manage-status-tab {% if status_filter == 'moderation' %}active{% endif %}">На модерации <span>{{ counts.moderation }}</span></a>
+            <a href="{% querystring status='published' %}" class="manage-status-tab {% if status_filter == 'published' %}active{% endif %}">Опубликованные <span>{{ counts.published }}</span></a>
+            <a href="{% querystring status='cancelled' %}" class="manage-status-tab {% if status_filter == 'cancelled' %}active{% endif %}">Отменённые <span>{{ counts.cancelled }}</span></a>
+            <a href="{% querystring status='finished' %}" class="manage-status-tab {% if status_filter == 'finished' %}active{% endif %}">Завершённые <span>{{ counts.finished }}</span></a>
+            <a href="{% querystring show_deleted=1 status='' %}" class="manage-status-tab manage-status-tab--deleted">В корзине <span>{{ counts.deleted }}</span></a>
         {% endif %}
-
     </div>
 
-    {# ============ ФИЛЬТРЫ ============ #}
+    <!-- Фильтры -->
     <form method="get" class="manage-filters">
         <div class="manage-filters__row">
-
             <div class="manage-filters__search">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <circle cx="11" cy="11" r="8"/>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input type="text"
-                       name="search"
-                       value="{{ search_query }}"
-                       placeholder="Поиск по названию, описанию или площадке..."
-                       autocomplete="off">
-
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск по названию, описанию или площадке..." autocomplete="off">
                 {% if search_query %}
-                    <a href="{% querystring search='' %}"
-                       class="manage-filters__clear"
-                       aria-label="Очистить поиск">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <a href="{% querystring search='' %}" class="manage-filters__clear" aria-label="Очистить поиск">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                             <line x1="18" y1="6" x2="6" y2="18"/>
                             <line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
@@ -120,9 +81,7 @@
             <select name="category" class="manage-filters__select">
                 <option value="">Все категории</option>
                 {% for cat in all_categories %}
-                    <option value="{{ cat.slug }}" {% if category_filter == cat.slug %}selected{% endif %}>
-                        {{ cat.name }}
-                    </option>
+                    <option value="{{ cat.slug }}" {% if category_filter == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
                 {% endfor %}
             </select>
 
@@ -141,12 +100,10 @@
         </div>
     </form>
 
-    {# ============ СПИСОК ============ #}
+    <!-- Список событий -->
     {% if events %}
         <form method="post" action="{% url 'events:event_bulk' %}" id="bulkForm">
             {% csrf_token %}
-
-            {# Скрытое поле: куда применять действие — в активные или в корзину #}
             <input type="hidden" name="source" value="{% if show_deleted %}deleted{% else %}active{% endif %}">
 
             <div class="manage-bulk-bar">
@@ -155,32 +112,20 @@
                     <span>Выбрать все</span>
                 </label>
 
-                {% if show_deleted %}
-                    {# ===== Действия для корзины ===== #}
-                    <select name="action" class="manage-bulk-bar__select" required>
-                        <option value="">— Действие —</option>
+                <select name="action" class="manage-bulk-bar__select" required>
+                    <option value="">— Действие —</option>
+                    {% if show_deleted %}
                         <option value="restore">Восстановить</option>
                         <option value="hard_delete">Удалить навсегда</option>
-                    </select>
-
-                    <button type="submit" class="form-btn form-btn--danger" id="bulkSubmit">
-                        Применить
-                    </button>
-                {% else %}
-                    {# ===== Действия для обычного списка ===== #}
-                    <select name="action" class="manage-bulk-bar__select" required>
-                        <option value="">— Действие —</option>
+                    {% else %}
                         <option value="publish">Опубликовать</option>
                         <option value="draft">В черновики</option>
                         <option value="cancel">Отменить</option>
                         <option value="delete">Удалить в корзину</option>
-                    </select>
+                    {% endif %}
+                </select>
 
-                    <button type="submit" class="form-btn form-btn--danger" id="bulkSubmit">
-                        Применить
-                    </button>
-                {% endif %}
-
+                <button type="submit" class="form-btn form-btn--danger" id="bulkSubmit">Применить</button>
                 <span class="manage-bulk-bar__selected" id="selectedCount">Выбрано: 0</span>
             </div>
 
@@ -205,9 +150,7 @@
                                     <input type="checkbox" name="ids" value="{{ event.pk }}" class="bulk-checkbox">
                                 </td>
                                 <td>
-                                    <a href="{% url 'events:event_update' event.slug %}" class="manage-table__title">
-                                        {{ event.title }}
-                                    </a>
+                                    <a href="{% url 'events:event_update' event.slug %}" class="manage-table__title">{{ event.title }}</a>
                                     <span class="manage-table__slug">/{{ event.slug }}/</span>
                                 </td>
                                 <td>{{ event.category.name|default:"—" }}</td>
@@ -219,29 +162,19 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="status status--{{ event.status }}">
-                                        {{ event.get_status_display }}
-                                    </span>
+                                    <span class="status status--{{ event.status }}">{{ event.get_status_display }}</span>
                                 </td>
-                                <td class="manage-table__nowrap manage-table__dim">
-                                    {{ event.updated_at|date:"d.m.Y H:i" }}
-                                </td>
+                                <td class="manage-table__nowrap manage-table__dim">{{ event.updated_at|date:"d.m.Y H:i" }}</td>
                                 <td class="manage-table__actions">
-                                    <a href="{% url 'events:event_detail' event.slug %}"
-                                       target="_blank"
-                                       rel="noopener"
-                                       class="manage-table__action"
-                                       title="Открыть на сайте">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <a href="{% url 'events:event_detail' event.slug %}" target="_blank" rel="noopener" class="manage-table__action" title="Открыть на сайте">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                                             <polyline points="15 3 21 3 21 9"/>
                                             <line x1="10" y1="14" x2="21" y2="3"/>
                                         </svg>
                                     </a>
-                                    <a href="{% url 'events:event_update' event.slug %}"
-                                       class="manage-table__action"
-                                       title="Редактировать">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <a href="{% url 'events:event_update' event.slug %}" class="manage-table__action" title="Редактировать">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                                             <path d="M12 20h9"/>
                                             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                                         </svg>
@@ -258,7 +191,7 @@
 
     {% else %}
         <div class="manage-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
                 <rect x="3" y="4" width="18" height="18" rx="2"/>
                 <line x1="16" y1="2" x2="16" y2="6"/>
                 <line x1="8" y1="2" x2="8" y2="6"/>
@@ -277,13 +210,12 @@
             {% endif %}
         </div>
     {% endif %}
-
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-(function () {
+(function() {
     'use strict';
 
     var form = document.getElementById('bulkForm');
@@ -295,64 +227,58 @@
     var actionSelect = form.querySelector('select[name="action"]');
     var submitBtn = document.getElementById('bulkSubmit');
 
-    function checkedCount() {
-        return document.querySelectorAll('.bulk-checkbox:checked').length;
+    function countChecked() {
+        return Array.from(checkboxes).filter(cb => cb.checked).length;
     }
 
-    function updateCount() {
-        var n = checkedCount();
+    function updateUI() {
+        var n = countChecked();
         if (counter) counter.textContent = 'Выбрано: ' + n;
         if (selectAll) {
-            selectAll.checked = n > 0 && n === checkboxes.length;
-            selectAll.indeterminate = n > 0 && n < checkboxes.length;
+            var all = n === checkboxes.length;
+            selectAll.checked = all;
+            selectAll.indeterminate = !all && n > 0;
         }
-    }
-
-    function syncSubmit() {
-        if (submitBtn) {
-            submitBtn.disabled = !actionSelect || !actionSelect.value;
+        if (actionSelect && submitBtn) {
+            submitBtn.disabled = !actionSelect.value;
         }
     }
 
     if (selectAll) {
-        selectAll.addEventListener('change', function () {
-            checkboxes.forEach(function (cb) { cb.checked = selectAll.checked; });
-            updateCount();
+        selectAll.addEventListener('change', function() {
+            Array.from(checkboxes).forEach(cb => cb.checked = selectAll.checked);
+            updateUI();
         });
     }
 
-    checkboxes.forEach(function (cb) {
-        cb.addEventListener('change', updateCount);
+    Array.from(checkboxes).forEach(cb => {
+        cb.addEventListener('change', updateUI);
     });
 
     if (actionSelect) {
-        actionSelect.addEventListener('change', syncSubmit);
-        syncSubmit();
+        actionSelect.addEventListener('change', updateUI);
+        updateUI(); // инициализация
     }
 
-    form.addEventListener('submit', function (e) {
-        var n = checkedCount();
+    form.addEventListener('submit', function(e) {
+        var n = countChecked();
         if (n === 0) {
             e.preventDefault();
             alert('Не выбрано ни одного события.');
             return;
         }
-        if (!actionSelect || !actionSelect.value) {
+        if (!actionSelect.value) {
             e.preventDefault();
             alert('Выберите действие.');
             return;
         }
 
-        // Мягкое удаление в корзину.
         if (actionSelect.value === 'delete') {
             if (!confirm('Удалить ' + n + ' событий в корзину? Их можно будет восстановить.')) {
                 e.preventDefault();
+                return;
             }
-            return;
-        }
-
-        // Жёсткое удаление из корзины.
-        if (actionSelect.value === 'hard_delete') {
+        } else if (actionSelect.value === 'hard_delete') {
             var ok = confirm('Удалить ' + n + ' событий НАВСЕГДА? Восстановить будет НЕВОЗМОЖНО.');
             if (!ok) {
                 e.preventDefault();
@@ -365,7 +291,6 @@
                     return;
                 }
             }
-            // Ставим confirm=yes, чтобы серверная проверка пропустила.
             var hidden = document.createElement('input');
             hidden.type = 'hidden';
             hidden.name = 'confirm';
@@ -373,8 +298,6 @@
             form.appendChild(hidden);
         }
     });
-
-    updateCount();
 })();
 </script>
 {% endblock %}
