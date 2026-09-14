@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Афиша Искитима — события в ДК «Молодость»{% endblock %}
+
+{% block content %}
+  <main class="main-content">
+    <div class="container">
+      <!-- Хлебные крошки -->
+      <nav class="breadcrumbs">
+        <a href="/">Главная</a>
+        <span class="breadcrumbs__sep">/</span>
+        <a href="{% url 'iskitim_events' %}">Афиша Искитима</a>
+      </nav>
+
+      <!-- Форма фильтрации -->
+      <form method="get" class="filter-form" style="margin-bottom: 24px;">
+        <label for="date" class="text-secondary" style="display: block; margin-bottom: 8px;">Дата:</label>
+        <input
+          type="date"
+          id="date"
+          name="date"
+          value="{{ today|date:'Y-m-d' }}"
+          class="input"
+          style="padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary);"
+        />
+        <button type="submit" class="btn-register" style="margin-left: 12px;">Показать</button>
+        <a href="{% url 'iskitim_events' %}" class="btn-login" style="vertical-align: middle;">Сбросить</a>
+      </form>
+
+      {% if events %}
+        <!-- Сетка событий -->
+        <div class="events-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+          {% for event in events %}
+            <article class="event-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: 0 4px 12px rgba(20, 24, 26, 0.06);">
+              <h2 style="margin: 0 0 8px; font-size: 1.25rem; color: var(--text-primary);">{{ event.title }}</h2>
+
+              <p class="venue" style="margin: 0 0 6px; font-size: 0.9rem; color: var(--text-secondary);">
+                {{ event.venue.name }}, {{ event.venue.city }}
+              </p>
+
+              <p class="date-time" style="margin: 0 0 12px; font-size: 0.95rem; color: var(--text-muted);">
+                {{ event.start_date|date:"d.m.Y" }}
+                {% if event.start_time %} в {{ event.start_time|time:"H:i" }}{% endif %}
+              </p>
+
+              {% if event.price_text %}
+                <p class="price" style="margin: 0 0 12px; font-weight: 600; color: var(--accent);">{{ event.price_text }}</p>
+              {% else %}
+                <p class="price" style="margin: 0 0 12px; color: var(--text-muted);">Цена уточняется</p>
+              {% endif %}
+
+              {% if event.age_restriction %}
+                <span class="age-badge" style="display: inline-block; background: var(--accent-light); color: var(--accent-dark); padding: 4px 8px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600;">
+                  {{ event.age_restriction }}
+                </span>
+              {% endif %}
+
+              <p class="description" style="margin: 12px 0; color: var(--text-secondary); line-height: 1.5;">{{ event.description|truncatechars:120 }}</p>
+
+              <a
+                href="{{ event.kassir_url }}"
+                class="btn-register"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="display: block; text-align: center; margin-top: 12px;"
+              >
+                Купить билет
+              </a>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted);">На выбранную дату событий нет.</p>
+      {% endif %}
+    </div>
+  </main>
+{% endblock %}

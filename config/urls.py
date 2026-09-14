@@ -42,6 +42,8 @@ urlpatterns = [
     # ---------------------------------------------------------
     path('', include('events.urls')),
     path('', include('pages.urls')),
+    path('events/', include('tours.urls')),
+
 ]
 
 

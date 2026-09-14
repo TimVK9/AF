@@ -105,6 +105,20 @@ class Event(TimestampedModel):
         verbose_name='ВКонтакте организатора',
         help_text='Полная ссылка, например https://vk.com/club12345',
     )
+    external_id = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        db_index=True,
+        verbose_name='ID из внешнего источника',
+        help_text='Например, slug события с kassir.ru',
+    )
+    external_url = models.URLField(
+        blank=True,
+        default='',
+        verbose_name='Ссылка на покупку билета',
+        help_text='Например, ссылка на kassir.ru',
+    )
 
     class Meta:
         ordering = ['start_date', 'start_time']

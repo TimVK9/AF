@@ -123,6 +123,7 @@ class EventList(ListView):
         category_slug = self.request.GET.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
+        
 
         # ---------- Приоритет «идёт сейчас» ----------
         if date_filter != 'past':
