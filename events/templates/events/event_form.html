@@ -252,13 +252,6 @@
                     <h2 class="form-section__title">Источник и билеты</h2>
 
                     <div class="form-row">
-                        <label class="form-label" for="{{ form.external_id.id_for_label }}">{{ form.external_id.label }}</label>
-                        {{ form.external_id }}
-                        {% if form.external_id.help_text %}<span class="form-help">{{ form.external_id.help_text }}</span>{% endif %}
-                        {% if form.external_id.errors %}<span class="form-error">{{ form.external_id.errors.0 }}</span>{% endif %}
-                    </div>
-
-                    <div class="form-row">
                         <label class="form-label" for="{{ form.external_url.id_for_label }}">{{ form.external_url.label }}</label>
                         {{ form.external_url }}
                         {% if form.external_url.help_text %}<span class="form-help">{{ form.external_url.help_text }}</span>{% endif %}

@@ -36,4 +36,4 @@ def querystring(context, **kwargs):
         query.pop('page', None)
 
     encoded = query.urlencode()
-    return f'?{encoded}' if encoded else ''
+    return f'?{encoded}'

@@ -35,7 +35,7 @@ class EventImage(TimestampedModel):
         """Автопорядок: если order=0 — ставим в конец списка."""
         if not self.order and self.event_id:
             last = (
-                EventImage.all_objects
+                EventImage.objects
                 .filter(event_id=self.event_id)
                 .exclude(pk=self.pk)
                 .order_by('-order')

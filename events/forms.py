@@ -64,7 +64,6 @@ class EventForm(forms.ModelForm):
             'organizer_email',
             'organizer_phone',
             'organizer_vk',
-            'external_id',
             'external_url',
         ]
         widgets = {
@@ -116,10 +115,6 @@ class EventForm(forms.ModelForm):
                 'placeholder': 'https://vk.com/club12345',
                 'inputmode': 'url',
             }),
-            'external_id': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Например: kassir_iskitim_12345',
-            }),
             'external_url': forms.URLInput(attrs={
                 'class': 'form-input',
                 'placeholder': 'https://nsk.kassir.ru/...',
@@ -143,7 +138,6 @@ class EventForm(forms.ModelForm):
             'organizer_email': 'Email организатора',
             'organizer_phone': 'Телефон организатора',
             'organizer_vk': 'ВКонтакте',
-            'external_id': 'ID из внешнего источника',
             'external_url': 'Ссылка на покупку билета',
         }
         help_texts = {
@@ -164,13 +158,9 @@ class EventForm(forms.ModelForm):
             'organizer_email': 'Необязательно. Показывается на странице события.',
             'organizer_phone': 'Необязательно. Показывается на странице события.',
             'organizer_vk': 'Полная ссылка, например https://vk.com/club12345.',
-            'external_id': 'Заполняется автоматически парсером. Используется для поиска дубликатов.',
             'external_url': 'Ссылка на страницу события на сайте-источнике (kassir.ru, kassy.ru и т.п.).',
         }
 
-    # ------------------------------------------------------------------
-    #  Очистка отдельных полей
-    # ------------------------------------------------------------------
     def clean_title(self):
         title = (self.cleaned_data.get('title') or '').strip()
         if len(title) < 5:
@@ -178,20 +168,11 @@ class EventForm(forms.ModelForm):
         return title
 
     def clean_price(self):
-        """
-        Три состояния цены:
-          None  — «уточняется» (поле пустое);
-          0     — «бесплатно»;
-          > 0   — указанная цена.
-        """
         price = self.cleaned_data.get('price')
         if price is not None and price < 0:
             raise ValidationError('Цена не может быть отрицательной.')
         return price
 
-    # ------------------------------------------------------------------
-    #  Общая валидация формы
-    # ------------------------------------------------------------------
     def clean(self):
         cleaned = super().clean()
 
@@ -200,18 +181,15 @@ class EventForm(forms.ModelForm):
         start_time = cleaned.get('start_time')
         end_time = cleaned.get('end_time')
 
-        # 1. Дата окончания не раньше даты начала.
         if start_date and end_date and end_date < start_date:
             self.add_error('end_date', 'Дата окончания не может быть раньше даты начала.')
 
-        # 2. Время окончания — только в один день.
         if (
             start_date and end_date and start_date == end_date
             and start_time and end_time and end_time < start_time
         ):
             self.add_error('end_time', 'Время окончания не может быть раньше времени начала.')
 
-        # 3. Без времени начала время окончания бессмысленно.
         if end_time and not start_time:
             self.add_error('end_time', 'Укажите время начала, прежде чем задавать время окончания.')
 

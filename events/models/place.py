@@ -57,11 +57,10 @@ class Place(TimestampedModel):
     def save(self, *args, **kwargs):
         """Автогенерация уникального slug."""
         if not self.slug:
-            # Оставляем запас под суффикс '-xxxx' при max_length=270.
-            base = slugify(self.name)[:250] or 'place'
+            base = slugify(self.name, allow_unicode=True)[:250] or 'place'
             slug = base
             while (
-                Place.all_objects
+                Place.objects
                 .filter(slug=slug)
                 .exclude(pk=self.pk)
                 .exists()

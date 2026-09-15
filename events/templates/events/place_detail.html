@@ -128,7 +128,7 @@
                     Расписание
                     {% if total_upcoming %}
                         <span class="place-detail__count">
-                            {{ total_upcoming }}&nbsp;событ{{ total_upcoming|pluralize:",ие,ия,ий" }}
+                            {{ total_upcoming }} событий
                         </span>
                     {% endif %}
                 </h2>
@@ -255,27 +255,6 @@
                     <h2 class="place-detail__info-title">Адрес</h2>
                     <div class="place-detail__info-text">
                         {{ place.full_address }}
-                    </div>
-                </div>
-            {% endif %}
-
-            {# Карта #}
-            {% if place.latitude and place.longitude %}
-                <div class="place-detail__info-block">
-                    <h2 class="place-detail__info-title">На карте</h2>
-                    <div class="place-detail__map-wrapper">
-                        <a href="https://yandex.ru/maps/?pt={{ place.longitude }},{{ place.latitude }}&z=16&l=map"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="place-detail__map-link">
-                            <div class="place-detail__map-placeholder">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                    <circle cx="12" cy="10" r="3"/>
-                                </svg>
-                                <span>Открыть на карте</span>
-                            </div>
-                        </a>
                     </div>
                 </div>
             {% endif %}

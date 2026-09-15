@@ -1,12 +1,10 @@
 """Основная модель события."""
 from decimal import Decimal
-
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.utils.text import slugify
-
 from .category import Category
 from .place import Place
 from .servis_models import TimestampedModel
@@ -14,111 +12,30 @@ from .servis_models import TimestampedModel
 
 class Event(TimestampedModel):
     """Основная модель события."""
-
-    place = models.ForeignKey(
-        Place,
-        on_delete=models.CASCADE,
-        related_name='events',
-        verbose_name='Площадка',
-    )
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='events',
-        verbose_name='Категория',
-    )
-
-    class Status(models.TextChoices):
-        DRAFT = 'draft', 'Черновик'
-        MODERATION = 'moderation', 'На модерации'
-        PUBLISHED = 'published', 'Опубликовано'
-        CANCELLED = 'cancelled', 'Отменено'
-        FINISHED = 'finished', 'Завершено'
-
     class AgeRestriction(models.TextChoices):
         ZERO = '0+', '0+'
         SIX = '6+', '6+'
         TWELVE = '12+', '12+'
         SIXTEEN = '16+', '16+'
         EIGHTEEN = '18+', '18+'
-
+    place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name='events', verbose_name='Площадка')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='events', verbose_name='Категория',)
     title = models.CharField(max_length=200, verbose_name='Название')
-    slug = models.SlugField(
-        unique=True,
-        max_length=220,
-        blank=True,
-        verbose_name='URL',
-    )
+    slug = models.SlugField(unique=True, max_length=220, blank=True, verbose_name='URL')
     description_short = models.CharField(max_length=500, verbose_name='Краткое описание')
     description = models.TextField(verbose_name='Полное описание')
-    status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.DRAFT,
-        db_index=True,
-        verbose_name='Статус',
-    )
-    age_restriction = models.CharField(
-        max_length=5,
-        choices=AgeRestriction.choices,
-        default=AgeRestriction.SIXTEEN,
-        verbose_name='Возрастное ограничение',
-    )
-
+    age_restriction = models.CharField(max_length=5, choices=AgeRestriction.choices, default=AgeRestriction.SIXTEEN, verbose_name='Возрастное ограничение',)
     start_date = models.DateField(db_index=True, verbose_name='Дата начала')
-    end_date = models.DateField(
-        null=True,
-        blank=True,
-        db_index=True,
-        verbose_name='Дата окончания',
-    )
+    end_date = models.DateField(null=True, blank=True, db_index=True, verbose_name='Дата окончания')
     start_time = models.TimeField(null=True, blank=True, verbose_name='Время начала')
     end_time = models.TimeField(null=True, blank=True, verbose_name='Время окончания')
-
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(Decimal('0'))],
-        verbose_name='Цена',
-    )
-    main_image = models.ImageField(
-        upload_to='events/%Y/%m/',
-        null=True,
-        blank=True,
-        verbose_name='Главное изображение',
-    )
-
-    organizer_name = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name='Организатор',
-        help_text='Название организации или имя. Необязательно.',
-    )
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(Decimal('0'))], verbose_name='Цена')
+    main_image = models.ImageField(upload_to='events/%Y/%m/', null=True, blank=True, verbose_name='Главное изображение')
+    organizer_name = models.CharField(max_length=255,  blank=True, verbose_name='Организатор', help_text='Название организации или имя. Необязательно.')
     organizer_email = models.EmailField(blank=True, verbose_name='Email организатора')
     organizer_phone = models.CharField(max_length=30, blank=True, verbose_name='Телефон организатора')
-    organizer_vk = models.URLField(
-        blank=True,
-        verbose_name='ВКонтакте организатора',
-        help_text='Полная ссылка, например https://vk.com/club12345',
-    )
-    external_id = models.CharField(
-        max_length=200,
-        blank=True,
-        default='',
-        db_index=True,
-        verbose_name='ID из внешнего источника',
-        help_text='Например, slug события с kassir.ru',
-    )
-    external_url = models.URLField(
-        blank=True,
-        default='',
-        verbose_name='Ссылка на покупку билета',
-        help_text='Например, ссылка на kassir.ru',
-    )
+    organizer_vk = models.URLField(blank=True, verbose_name='ВКонтакте организатора', help_text='Полная ссылка, например https://vk.com/club12345')
+    external_url = models.URLField(blank=True, default='', verbose_name='Ссылка на покупку билета', help_text='Например, ссылка на kassir.ru')
 
     class Meta:
         ordering = ['start_date', 'start_time']
@@ -205,18 +122,3 @@ class Event(TimestampedModel):
 
         super().save(*args, **kwargs)
 
-    # ==================================================================
-    #  Мягкое удаление с сбросом статуса
-    # ==================================================================
-    def delete(self, using=None, keep_parents=False):
-        """
-        Мягкое удаление события.
-
-        Отличается от базового TimestampedModel.delete():
-        дополнительно сбрасывает статус в DRAFT, чтобы после
-        восстановления из корзины событие вернулось черновиком,
-        а не опубликованным.
-        """
-        self.is_deleted = True
-        self.status = self.Status.DRAFT
-        self.save(update_fields=['is_deleted', 'status', 'updated_at'])

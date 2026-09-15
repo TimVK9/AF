@@ -10,20 +10,20 @@ JS — в _scripts.html.
 {% endcomment %}
 <div class="event-detail__actions">
 
-    {# Купить билет — если есть external_url #}
-{% if event.external_url and event.price and event.price > 0 %}
-    <a href="{{ event.external_url }}"
-       target="_blank"
-       rel="noopener"
-       class="btn-buy-ticket">
-        Купить билет на {{ event.external_url|domain }}
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-        </svg>
-    </a>
+    {# Купить билет — если есть external_url и цена больше нуля #}
+    {% if event.external_url and event.price and event.price > 0 %}
+        <a href="{{ event.external_url }}"
+           target="_blank"
+           rel="noopener"
+           class="btn-buy-ticket">
+            Купить билет на {{ event.external_url|domain }}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+            </svg>
+        </a>
     {% endif %}
 
     <div class="event-detail__share">
@@ -82,7 +82,7 @@ JS — в _scripts.html.
     </div>
 
     {# Кнопка редактирования — только для staff/superuser #}
-    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+    {% if user.is_staff or user.is_superuser %}
         <a href="{% url 'events:event_update' event.slug %}"
            class="event-detail__edit-btn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

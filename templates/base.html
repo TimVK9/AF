@@ -87,12 +87,12 @@
     {% include 'includes/footer.html' %}
 
     {# ===================================================== #}
-    {# МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ                            #}
+    {# МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ — три кнопки               #}
     {# ===================================================== #}
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
 
         <a href="{% url 'events:home' %}"
-           class="mobile-nav-item {% if request.resolver_match.url_name == 'home' and not request.GET.date_filter and not request.GET.search and not request.GET.category %}active{% endif %}">
+           class="mobile-nav-item {% if request.resolver_match.url_name == 'home' and not request.GET.date_filter and not request.GET.search and not request.GET.category and not request.GET.start_date and not request.GET.end_date %}active{% endif %}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
@@ -121,19 +121,7 @@
                 <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
                 <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
             </svg>
-            <span>Фильтр</span>
-        </button>
-
-        <button type="button"
-                class="mobile-nav-item"
-                onclick="openOverlay('datesOverlay')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <span>Даты</span>
+            <span>Фильтры</span>
         </button>
 
     </nav>

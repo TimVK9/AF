@@ -1,104 +1,86 @@
-"""
-Админка приложения events.
+"""Админка приложения events."""
+from django.contrib import admin
 
-Совместимо с Django 5.x и 6.x.
-
-ПРАВИЛА (иначе падает):
-1. format_html() требует args или kwargs.
-   - Нужны подстановки → format_html('...{}...', value)
-   - Подстановок нет   → mark_safe('...')
-2. Event.objects скрывает мягко удалённые (SoftDeleteManager).
-   Чтобы видеть корзину — используем Event.all_objects.
-3. Поля schedule_type, is_free, views_count, favorites_count,
-   latitude, longitude, landmark, entrance — НЕ существуют
-   в моделях. Не добавлять.
-"""
-from django.contrib import admin, messages
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
-
-from .models import Event, EventImage, Place, Category, SiteSettings
-from .forms import EventForm
+from .models import Category, Place, Event, EventImage
 
 
-# =====================================================================
-#  INLINE: ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ
-# =====================================================================
 class EventImageInline(admin.TabularInline):
-    """Inline-галерея изображений внутри карточки события."""
+    """Галерея внутри карточки события."""
     model = EventImage
     extra = 1
-    fields = ('image', 'caption', 'order', 'preview')
-    readonly_fields = ('preview',)
+    fields = ('image', 'caption', 'order')
     ordering = ('order', 'id')
 
-    @admin.display(description='Превью')
-    def preview(self, obj):
-        if not obj.image:
-            return '—'
-        return format_html(
-            '<img src="{}" style="height:60px;border-radius:6px;" />',
-            obj.image.url,
-        )
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'icon', 'is_active', 'order', 'status', 'created_at')
+    list_editable = ('is_active', 'order')
+    list_filter = ('is_active', 'status', 'created_at')
+    search_fields = ('name', 'slug', 'description')
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ('order', 'name')
+    readonly_fields = ('created_at', 'updated_at')
 
 
-# =====================================================================
-#  СОБЫТИЕ
-# =====================================================================
+@admin.register(Place)
+class PlaceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'city', 'street', 'house_number', 'status', 'created_at')
+    list_filter = ('city', 'status', 'created_at')
+    search_fields = ('name', 'city', 'street', 'house_number', 'phone', 'email')
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ('name',)
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Основное', {
+            'fields': ('name', 'slug', 'description', 'status', 'main_image'),
+        }),
+        ('Контакты', {
+            'fields': ('phone', 'email', 'website', 'vk_url'),
+        }),
+        ('Адрес', {
+            'fields': (
+                'city', 'street', 'house_number', 'building',
+                'office', 'floor', 'postal_code',
+            ),
+        }),
+        ('Служебное', {
+            'fields': ('created_at', 'updated_at'),
+        }),
+    )
+
+
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    form = EventForm
-
     list_display = (
-        'title', 'organizer_name', 'category', 'place',
-        'start_date', 'status_badge', 'deleted_badge', 'created_at',
+        'title', 'place', 'category', 'start_date', 'end_date',
+        'status', 'price', 'age_restriction', 'updated_at',
     )
     list_filter = (
-        'status', 'category', 'place', 'age_restriction',
-        'start_date', 'is_deleted',
+        'status', 'age_restriction', 'category', 'place',
+        'start_date', 'created_at',
     )
-    search_fields = (
-        'title', 'description_short', 'description',
-        'organizer_name', 'organizer_email', 'organizer_phone', 'place__name',
-        'external_id', 'external_url',
-    )
+    search_fields = ('title', 'description_short', 'description', 'slug')
     prepopulated_fields = {'slug': ('title',)}
     date_hierarchy = 'start_date'
-    ordering = ('-start_date', '-created_at')
-    save_on_top = True
+    ordering = ('-start_date', '-start_time')
+    readonly_fields = ('created_at', 'updated_at')
     inlines = [EventImageInline]
-    list_per_page = 30
-
-    actions = (
-        'action_publish',
-        'action_draft',
-        'action_cancel',
-        'action_soft_delete',
-        'action_restore',
-    )
-
+    autocomplete_fields = ('place', 'category')
+    list_select_related = ('place', 'category')
     fieldsets = (
         ('Основное', {
             'fields': (
                 'title', 'slug', 'category', 'place',
                 'description_short', 'description',
+                'status', 'age_restriction', 'main_image',
             ),
         }),
-        ('Статус и ограничения', {
-            'fields': ('status', 'age_restriction'),
-        }),
-        ('Дата и время', {
+        ('Даты и время', {
             'fields': ('start_date', 'end_date', 'start_time', 'end_time'),
         }),
-        ('Цена', {
-            'fields': ('price',),
-            'description': (
-                'Оставьте пустым, если цена «уточняется». '
-                'Если цена 0 — событие считается бесплатным.'
-            ),
-        }),
-        ('Медиа', {
-            'fields': ('main_image', 'main_image_preview'),
+        ('Цена и билеты', {
+            'fields': ('price', 'external_url'),
         }),
         ('Организатор', {
             'fields': (
@@ -106,245 +88,34 @@ class EventAdmin(admin.ModelAdmin):
                 'organizer_phone', 'organizer_vk',
             ),
         }),
-        ('Внешние данные', {
-            'fields': ('external_id', 'external_url'),
-            'classes': ('collapse',),
-            'description': (
-                'Заполняется парсером. ID — для поиска дубликатов, '
-                'URL — ссылка на покупку билета на сайте-источнике.'
-            ),
-        }),
         ('Служебное', {
-            'fields': ('is_deleted',),
-            'classes': ('collapse',),
-            'description': (
-                'Поле is_deleted управляется мягким удалением. '
-                'Меняйте вручную только при необходимости.'
-            ),
+            'fields': ('created_at', 'updated_at'),
         }),
     )
 
-    readonly_fields = ('main_image_preview',)
-
-    @admin.display(description='Превью')
-    def main_image_preview(self, obj):
-        if not obj.main_image:
-            return '—'
-        return format_html(
-            '<img src="{}" style="max-height:200px;border-radius:8px;" />',
-            obj.main_image.url,
-        )
-
-    @admin.display(description='Статус', ordering='status')
-    def status_badge(self, obj):
-        colors = {
-            'draft': '#6b767a',
-            'moderation': '#b45309',
-            'published': '#0f766e',
-            'cancelled': '#b91c1c',
-            'finished': '#14181a',
-        }
-        color = colors.get(obj.status, '#6b767a')
-        return format_html(
-            '<span style="display:inline-block;padding:3px 10px;'
-            'border-radius:10px;background:{}20;color:{};font-size:11px;'
-            'font-weight:700;text-transform:uppercase;letter-spacing:0.3px;">'
-            '{}</span>',
-            color, color, obj.get_status_display(),
-        )
-
-    @admin.display(description='В корзине', ordering='is_deleted')
-    def deleted_badge(self, obj):
-        if obj.is_deleted:
-            return mark_safe(
-                '<span style="display:inline-block;padding:2px 8px;'
-                'border-radius:8px;background:rgba(220,38,38,0.15);'
-                'color:#b91c1c;font-size:11px;font-weight:700;'
-                'text-transform:uppercase;">В корзине</span>'
-            )
-        return '—'
+    actions = ('action_publish', 'action_moderation', 'action_draft')
 
     @admin.action(description='Опубликовать выбранные')
     def action_publish(self, request, queryset):
-        updated = queryset.filter(is_deleted=False).update(
-            status=Event.Status.PUBLISHED
-        )
-        self.message_user(
-            request, f'Опубликовано: {updated}.', level=messages.SUCCESS,
-        )
+        updated = queryset.update(status=Event.Status.PUBLISHED)
+        self.message_user(request, f'Опубликовано: {updated}')
+
+    @admin.action(description='Отправить на модерацию')
+    def action_moderation(self, request, queryset):
+        updated = queryset.update(status=Event.Status.MODERATION)
+        self.message_user(request, f'Отправлено на модерацию: {updated}')
 
     @admin.action(description='Снять в черновики')
     def action_draft(self, request, queryset):
-        updated = queryset.filter(is_deleted=False).update(
-            status=Event.Status.DRAFT
-        )
-        self.message_user(
-            request, f'Снято в черновики: {updated}.', level=messages.SUCCESS,
-        )
-
-    @admin.action(description='Отменить выбранные')
-    def action_cancel(self, request, queryset):
-        updated = queryset.filter(is_deleted=False).update(
-            status=Event.Status.CANCELLED
-        )
-        self.message_user(
-            request, f'Отменено: {updated}.', level=messages.SUCCESS,
-        )
-
-    @admin.action(description='Удалить в корзину (мягко)')
-    def action_soft_delete(self, request, queryset):
-        count = queryset.filter(is_deleted=False).update(
-            is_deleted=True,
-            status=Event.Status.DRAFT,
-        )
-        self.message_user(
-            request, f'Удалено в корзину: {count}.', level=messages.SUCCESS,
-        )
-
-    @admin.action(description='Восстановить из корзины')
-    def action_restore(self, request, queryset):
-        count = queryset.filter(is_deleted=True).update(is_deleted=False)
-        self.message_user(
-            request, f'Восстановлено: {count}.', level=messages.SUCCESS,
-        )
-
-    def get_queryset(self, request):
-        return (
-            Event.all_objects
-            .select_related('category', 'place')
-        )
-
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
-        return actions
+        updated = queryset.update(status=Event.Status.DRAFT)
+        self.message_user(request, f'Снято в черновики: {updated}')
 
 
-# =====================================================================
-#  ГАЛЕРЕЯ (отдельная страница)
-# =====================================================================
 @admin.register(EventImage)
 class EventImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'event', 'caption', 'order', 'preview')
-    list_filter = ('event',)
+    list_display = ('id', 'event', 'caption', 'order', 'created_at')
+    list_filter = ('created_at',)
     search_fields = ('caption', 'event__title')
+    autocomplete_fields = ('event',)
     ordering = ('event', 'order', 'id')
-    readonly_fields = ('preview',)
-
-    @admin.display(description='Превью')
-    def preview(self, obj):
-        if not obj.image:
-            return '—'
-        return format_html(
-            '<img src="{}" style="height:60px;border-radius:6px;" />',
-            obj.image.url,
-        )
-
-
-# =====================================================================
-#  ПЛОЩАДКА
-# =====================================================================
-@admin.register(Place)
-class PlaceAdmin(admin.ModelAdmin):
-    list_display = (
-        'name', 'city', 'street', 'house_number',
-        'phone', 'main_image_preview',
-    )
-    search_fields = ('name', 'city', 'street', 'house_number')
-    list_filter = ('city',)
-    prepopulated_fields = {'slug': ('name',)}
-    ordering = ('name',)
-
-    fieldsets = (
-        ('Основное', {
-            'fields': ('name', 'slug', 'description'),
-        }),
-        ('Контакты', {
-            'fields': ('website', 'phone', 'vk_url', 'email'),
-        }),
-        ('Адрес', {
-            'fields': (
-                'city', 'street', 'house_number',
-                'building', 'office', 'floor', 'postal_code',
-            ),
-        }),
-        ('Медиа', {
-            'fields': ('main_image', 'main_image_preview'),
-        }),
-    )
-    readonly_fields = ('main_image_preview',)
-
-    @admin.display(description='Фото')
-    def main_image_preview(self, obj):
-        if not obj.main_image:
-            return '—'
-        return format_html(
-            '<img src="{}" style="height:60px;border-radius:6px;" />',
-            obj.main_image.url,
-        )
-
-
-# =====================================================================
-#  КАТЕГОРИЯ
-# =====================================================================
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'order', 'is_active', 'events_count')
-    list_filter = ('is_active',)
-    search_fields = ('name', 'description')
-    prepopulated_fields = {'slug': ('name',)}
-    ordering = ('order', 'name')
-
-    @admin.display(description='Событий')
-    def events_count(self, obj):
-        return obj.events.filter(is_deleted=False).count()
-
-
-# =====================================================================
-#  НАСТРОЙКИ САЙТА (СИНГЛТОН)
-# =====================================================================
-@admin.register(SiteSettings)
-class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ('coming_soon_badge', 'updated_at')
-    readonly_fields = ('updated_at',)
-
-    fieldsets = (
-        ('Режим заглушки', {
-            'fields': ('coming_soon', 'coming_soon_message'),
-            'description': (
-                'Включите «Скоро запуск», чтобы все посетители '
-                '(кроме staff и superuser) видели страницу-заглушку. '
-                'Админы видят сайт как обычно.'
-            ),
-        }),
-        ('Служебное', {
-            'fields': ('updated_at',),
-        }),
-    )
-
-    @admin.display(description='Заглушка')
-    def coming_soon_badge(self, obj):
-        if obj.coming_soon:
-            return mark_safe(
-                '<span style="display:inline-block;padding:3px 10px;'
-                'border-radius:10px;background:rgba(220,38,38,0.15);'
-                'color:#b91c1c;font-weight:700;font-size:11px;'
-                'text-transform:uppercase;">Включено</span>'
-            )
-        return mark_safe(
-            '<span style="display:inline-block;padding:3px 10px;'
-            'border-radius:10px;background:rgba(15,118,110,0.15);'
-            'color:#0f766e;font-weight:700;font-size:11px;'
-            'text-transform:uppercase;">Выключено</span>'
-        )
-
-    def has_add_permission(self, request):
-        return not SiteSettings.objects.exists()
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def changelist_view(self, request, extra_context=None):
-        SiteSettings.load()
-        return super().changelist_view(request, extra_context)
+    readonly_fields = ('created_at', 'updated_at')

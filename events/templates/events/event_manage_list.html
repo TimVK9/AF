@@ -17,11 +17,7 @@
         <div>
             <h1>Управление событиями</h1>
             <p class="manage-header__subtitle">
-                {% if show_deleted %}
-                    В корзине: {{ counts.deleted }}
-                {% else %}
-                    Всего: {{ counts.all }} · опубликовано: {{ counts.published }}
-                {% endif %}
+                Всего: {{ counts.all }} · опубликовано: {{ counts.published }}
             </p>
         </div>
 
@@ -45,18 +41,10 @@
 
     <!-- Табы статусов -->
     <div class="manage-status-tabs">
-        {% if show_deleted %}
-            <a href="{% url 'events:event_list_manage' %}" class="manage-status-tab">Активные <span>{{ counts.all }}</span></a>
-            <a href="{% querystring show_deleted=1 %}" class="manage-status-tab manage-status-tab--deleted active">В корзине <span>{{ counts.deleted }}</span></a>
-        {% else %}
-            <a href="{% querystring status='' %}" class="manage-status-tab {% if not status_filter %}active{% endif %}">Все <span>{{ counts.all }}</span></a>
-            <a href="{% querystring status='draft' %}" class="manage-status-tab {% if status_filter == 'draft' %}active{% endif %}">Черновики <span>{{ counts.draft }}</span></a>
-            <a href="{% querystring status='moderation' %}" class="manage-status-tab {% if status_filter == 'moderation' %}active{% endif %}">На модерации <span>{{ counts.moderation }}</span></a>
-            <a href="{% querystring status='published' %}" class="manage-status-tab {% if status_filter == 'published' %}active{% endif %}">Опубликованные <span>{{ counts.published }}</span></a>
-            <a href="{% querystring status='cancelled' %}" class="manage-status-tab {% if status_filter == 'cancelled' %}active{% endif %}">Отменённые <span>{{ counts.cancelled }}</span></a>
-            <a href="{% querystring status='finished' %}" class="manage-status-tab {% if status_filter == 'finished' %}active{% endif %}">Завершённые <span>{{ counts.finished }}</span></a>
-            <a href="{% querystring show_deleted=1 status='' %}" class="manage-status-tab manage-status-tab--deleted">В корзине <span>{{ counts.deleted }}</span></a>
-        {% endif %}
+        <a href="{% querystring status='' %}" class="manage-status-tab {% if not status_filter %}active{% endif %}">Все <span>{{ counts.all }}</span></a>
+        <a href="{% querystring status='draft' %}" class="manage-status-tab {% if status_filter == 'draft' %}active{% endif %}">Черновики <span>{{ counts.draft }}</span></a>
+        <a href="{% querystring status='moderation' %}" class="manage-status-tab {% if status_filter == 'moderation' %}active{% endif %}">На модерации <span>{{ counts.moderation }}</span></a>
+        <a href="{% querystring status='published' %}" class="manage-status-tab {% if status_filter == 'published' %}active{% endif %}">Опубликованные <span>{{ counts.published }}</span></a>
     </div>
 
     <!-- Фильтры -->
@@ -94,7 +82,6 @@
             </select>
 
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
-            {% if show_deleted %}<input type="hidden" name="show_deleted" value="1">{% endif %}
 
             <button type="submit" class="form-btn form-btn--ghost manage-filters__submit">Применить</button>
         </div>
@@ -104,7 +91,6 @@
     {% if events %}
         <form method="post" action="{% url 'events:event_bulk' %}" id="bulkForm">
             {% csrf_token %}
-            <input type="hidden" name="source" value="{% if show_deleted %}deleted{% else %}active{% endif %}">
 
             <div class="manage-bulk-bar">
                 <label class="manage-bulk-bar__select-all">
@@ -114,15 +100,10 @@
 
                 <select name="action" class="manage-bulk-bar__select" required>
                     <option value="">— Действие —</option>
-                    {% if show_deleted %}
-                        <option value="restore">Восстановить</option>
-                        <option value="hard_delete">Удалить навсегда</option>
-                    {% else %}
-                        <option value="publish">Опубликовать</option>
-                        <option value="draft">В черновики</option>
-                        <option value="cancel">Отменить</option>
-                        <option value="delete">Удалить в корзину</option>
-                    {% endif %}
+                    <option value="publish">Опубликовать</option>
+                    <option value="moderation">На модерацию</option>
+                    <option value="draft">В черновики</option>
+                    <option value="delete">Удалить</option>
                 </select>
 
                 <button type="submit" class="form-btn form-btn--danger" id="bulkSubmit">Применить</button>
@@ -145,7 +126,7 @@
                     </thead>
                     <tbody>
                         {% for event in events %}
-                            <tr class="{% if event.is_deleted %}manage-table__row--deleted{% endif %}">
+                            <tr>
                                 <td class="manage-table__check">
                                     <input type="checkbox" name="ids" value="{{ event.pk }}" class="bulk-checkbox">
                                 </td>
@@ -197,17 +178,9 @@
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            <h3>{% if show_deleted %}Корзина пуста{% else %}Пока нет ни одного события{% endif %}</h3>
-            <p>
-                {% if show_deleted %}
-                    Здесь будут события, которые вы удалили. Восстановить можно в любой момент.
-                {% else %}
-                    Создайте первое — и оно появится в афише.
-                {% endif %}
-            </p>
-            {% if not show_deleted %}
-                <a href="{% url 'events:event_create' %}" class="form-btn form-btn--primary">Создать событие</a>
-            {% endif %}
+            <h3>Пока нет ни одного события</h3>
+            <p>Создайте первое — и оно появится в афише.</p>
+            <a href="{% url 'events:event_create' %}" class="form-btn form-btn--primary">Создать событие</a>
         </div>
     {% endif %}
 </div>
@@ -235,7 +208,7 @@
         var n = countChecked();
         if (counter) counter.textContent = 'Выбрано: ' + n;
         if (selectAll) {
-            var all = n === checkboxes.length;
+            var all = checkboxes.length > 0 && n === checkboxes.length;
             selectAll.checked = all;
             selectAll.indeterminate = !all && n > 0;
         }
@@ -257,7 +230,7 @@
 
     if (actionSelect) {
         actionSelect.addEventListener('change', updateUI);
-        updateUI(); // инициализация
+        updateUI();
     }
 
     form.addEventListener('submit', function(e) {
@@ -274,28 +247,10 @@
         }
 
         if (actionSelect.value === 'delete') {
-            if (!confirm('Удалить ' + n + ' событий в корзину? Их можно будет восстановить.')) {
+            if (!confirm('Удалить ' + n + ' событий? Восстановить будет невозможно.')) {
                 e.preventDefault();
                 return;
             }
-        } else if (actionSelect.value === 'hard_delete') {
-            var ok = confirm('Удалить ' + n + ' событий НАВСЕГДА? Восстановить будет НЕВОЗМОЖНО.');
-            if (!ok) {
-                e.preventDefault();
-                return;
-            }
-            if (n > 5) {
-                var typed = prompt('Для подтверждения введите слово УДАЛИТЬ (заглавными):');
-                if (typed !== 'УДАЛИТЬ') {
-                    e.preventDefault();
-                    return;
-                }
-            }
-            var hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = 'confirm';
-            hidden.value = 'yes';
-            form.appendChild(hidden);
         }
     });
 })();

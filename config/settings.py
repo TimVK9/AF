@@ -107,7 +107,6 @@ INSTALLED_APPS = [
     'accounts',
     "events",
     "pages",
-    'tours',
 
 ]
 

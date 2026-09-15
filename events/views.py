@@ -1,3 +1,4 @@
+"""Представления приложения events."""
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -24,12 +25,13 @@ from .models import Event, Category, Place
 
 
 # ======================================================================
-#  ВСПОМОГАТЕЛЬНЫЕ
+#  Кэш
 # ======================================================================
 
 def invalidate_event_cache():
-    """Сброс кэша счётчиков на главной афише."""
+    """Сбрасывает кэш счётчиков."""
     cache.delete('events_published_count')
+    cache.delete('categories_active_count')
 
 
 # ======================================================================
@@ -37,22 +39,21 @@ def invalidate_event_cache():
 # ======================================================================
 
 class EventList(ListView):
-    """
-    Афиша событий с пагинацией, фильтрами и сортировкой.
-
-    Событие может длиться несколько дней (start_date ... end_date).
-    Если end_date пустой — считаем однодневным (event_end = start_date).
-    """
+    """Афиша событий с пагинацией, фильтрами и сортировкой."""
     model = Event
     template_name = 'events/event_list.html'
     context_object_name = 'events'
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(status=Event.Status.PUBLISHED)
-        queryset = queryset.annotate(
-            event_end=Coalesce('end_date', 'start_date', output_field=DateField())
+        queryset = (
+            Event.objects
+            .filter(status=Event.Status.PUBLISHED)
+            .annotate(
+                event_end=Coalesce(
+                    'end_date', 'start_date', output_field=DateField()
+                )
+            )
         )
 
         today = timezone.localdate()
@@ -103,9 +104,13 @@ class EventList(ListView):
             queryset = overlaps(queryset, saturday, sunday)
         elif date_filter == 'month':
             if today.month == 12:
-                end_of_month = today.replace(year=today.year + 1, month=1, day=1) - timedelta(days=1)
+                end_of_month = today.replace(
+                    year=today.year + 1, month=1, day=1
+                ) - timedelta(days=1)
             else:
-                end_of_month = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
+                end_of_month = today.replace(
+                    month=today.month + 1, day=1
+                ) - timedelta(days=1)
             queryset = overlaps(queryset, today, end_of_month)
         else:
             queryset = queryset.filter(event_end__gte=today)
@@ -123,7 +128,6 @@ class EventList(ListView):
         category_slug = self.request.GET.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
-        
 
         # ---------- Приоритет «идёт сейчас» ----------
         if date_filter != 'past':
@@ -136,7 +140,6 @@ class EventList(ListView):
                 )
             )
 
-        # ---------- Связанные объекты ----------
         queryset = queryset.select_related('category', 'place')
 
         # ---------- Сортировка ----------
@@ -146,9 +149,10 @@ class EventList(ListView):
             queryset = queryset.order_by('-start_date', '-start_time', 'id')
         else:
             if sort == 'popular':
-                queryset = queryset.order_by('ongoing', 'start_date', 'start_time', 'id')
+                queryset = queryset.order_by(
+                    'ongoing', 'start_date', 'start_time', 'id'
+                )
             elif sort == 'price_asc':
-                # Бесплатные (0) → по цене ↑ → цена уточняется (None) последними.
                 queryset = queryset.order_by(
                     'ongoing',
                     Case(
@@ -161,7 +165,6 @@ class EventList(ListView):
                     'start_date', 'start_time', 'id',
                 )
             elif sort == 'price_desc':
-                # По цене ↓ → бесплатные (0) → цена уточняется (None) последними.
                 queryset = queryset.order_by(
                     'ongoing',
                     Case(
@@ -174,7 +177,9 @@ class EventList(ListView):
                     'start_date', 'start_time', 'id',
                 )
             else:
-                queryset = queryset.order_by('ongoing', 'start_date', 'start_time', 'id')
+                queryset = queryset.order_by(
+                    'ongoing', 'start_date', 'start_time', 'id'
+                )
 
         return queryset
 
@@ -185,7 +190,9 @@ class EventList(ListView):
 
         events_count = cache.get('events_published_count')
         if events_count is None:
-            events_count = Event.objects.filter(status=Event.Status.PUBLISHED).count()
+            events_count = Event.objects.filter(
+                status=Event.Status.PUBLISHED
+            ).count()
             cache.set('events_published_count', events_count, 300)
         context['events_count'] = events_count
 
@@ -219,12 +226,6 @@ class EventDetailView(DetailView):
             .select_related('category', 'place')
         )
 
-    def get_object(self, queryset=None):
-        if queryset is None:
-            queryset = self.get_queryset()
-        slug = self.kwargs.get(self.slug_url_kwarg)
-        return get_object_or_404(queryset, slug=slug)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = self.object
@@ -236,9 +237,16 @@ class EventDetailView(DetailView):
         if event.category_id:
             similar = list(
                 Event.objects
-                .filter(status=Event.Status.PUBLISHED, category_id=event.category_id)
+                .filter(
+                    status=Event.Status.PUBLISHED,
+                    category_id=event.category_id,
+                )
                 .exclude(pk=event.pk)
-                .annotate(event_end=Coalesce('end_date', 'start_date', output_field=DateField()))
+                .annotate(
+                    event_end=Coalesce(
+                        'end_date', 'start_date', output_field=DateField()
+                    )
+                )
                 .filter(event_end__gte=today)
                 .select_related('category', 'place')
                 .order_by('start_date', 'start_time')[:similar_limit]
@@ -250,7 +258,11 @@ class EventDetailView(DetailView):
                 Event.objects
                 .filter(status=Event.Status.PUBLISHED)
                 .exclude(pk__in=exclude_ids)
-                .annotate(event_end=Coalesce('end_date', 'start_date', output_field=DateField()))
+                .annotate(
+                    event_end=Coalesce(
+                        'end_date', 'start_date', output_field=DateField()
+                    )
+                )
                 .filter(event_end__gte=today)
                 .select_related('category', 'place')
                 .order_by('-created_at')[:similar_limit - len(similar)]
@@ -258,7 +270,6 @@ class EventDetailView(DetailView):
             similar.extend(fallback)
 
         context['similar_events'] = similar
-
         context['categories'] = Category.objects.filter(is_active=True)
         context['selected_category'] = self.request.GET.get('category', '')
         context['search_query'] = self.request.GET.get('search', '')
@@ -289,25 +300,14 @@ class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 
 
 class EventManageListView(StaffRequiredMixin, ListView):
-    """
-    Список событий для управления.
-
-    Показывает только активные (is_deleted=False).
-    Корзина — через ?show_deleted=1.
-    """
+    """Список событий для управления (staff)."""
     model = Event
     template_name = 'events/event_manage_list.html'
     context_object_name = 'events'
     paginate_by = 25
 
     def get_queryset(self):
-        qs = Event.all_objects.select_related('category', 'place')
-
-        show_deleted = self.request.GET.get('show_deleted') == '1'
-        if show_deleted:
-            qs = qs.filter(is_deleted=True)
-        else:
-            qs = qs.filter(is_deleted=False)
+        qs = Event.objects.select_related('category', 'place')
 
         search = self.request.GET.get('search', '').strip()
         if search:
@@ -317,10 +317,9 @@ class EventManageListView(StaffRequiredMixin, ListView):
                 Q(place__name__icontains=search)
             )
 
-        if not show_deleted:
-            status = self.request.GET.get('status', '').strip()
-            if status in dict(Event.Status.choices):
-                qs = qs.filter(status=status)
+        status = self.request.GET.get('status', '').strip()
+        if status:
+            qs = qs.filter(status=status)
 
         category = self.request.GET.get('category', '').strip()
         if category:
@@ -338,10 +337,7 @@ class EventManageListView(StaffRequiredMixin, ListView):
         return qs
 
     def paginate_queryset(self, queryset, page_size):
-        """
-        Переопределение: при выходе страницы за диапазон
-        показываем последнюю, а не 404.
-        """
+        """При выходе страницы за диапазон — последняя, а не 404."""
         paginator = self.get_paginator(
             queryset,
             page_size,
@@ -369,17 +365,11 @@ class EventManageListView(StaffRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        show_deleted = self.request.GET.get('show_deleted') == '1'
-        context['show_deleted'] = show_deleted
-
-        counts = Event.all_objects.aggregate(
-            all=Count('id', filter=Q(is_deleted=False)),
-            draft=Count('id', filter=Q(status=Event.Status.DRAFT, is_deleted=False)),
-            moderation=Count('id', filter=Q(status=Event.Status.MODERATION, is_deleted=False)),
-            published=Count('id', filter=Q(status=Event.Status.PUBLISHED, is_deleted=False)),
-            cancelled=Count('id', filter=Q(status=Event.Status.CANCELLED, is_deleted=False)),
-            finished=Count('id', filter=Q(status=Event.Status.FINISHED, is_deleted=False)),
-            deleted=Count('id', filter=Q(is_deleted=True)),
+        counts = Event.objects.aggregate(
+            all=Count('id'),
+            draft=Count('id', filter=Q(status=Event.Status.DRAFT)),
+            moderation=Count('id', filter=Q(status=Event.Status.MODERATION)),
+            published=Count('id', filter=Q(status=Event.Status.PUBLISHED)),
         )
 
         context['search_query'] = self.request.GET.get('search', '')
@@ -440,7 +430,7 @@ class EventUpdateView(StaffRequiredMixin, UpdateView):
     slug_url_kwarg = 'slug'
 
     def get_queryset(self):
-        return Event.all_objects.all()
+        return Event.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -481,27 +471,22 @@ class EventBulkActionView(StaffRequiredMixin, View):
     """
     Массовые действия над выбранными событиями.
 
-    Обычный список (source=active):
-    - publish  — опубликовать;
-    - draft    — снять в черновики;
-    - cancel   — отменить;
-    - delete   — мягко удалить в корзину + сбросить статус в DRAFT.
-
-    Корзина (source=deleted):
-    - restore     — восстановить из корзины;
-    - hard_delete — удалить из БД навсегда.
+    Действия:
+    - publish   — опубликовать;
+    - moderation — на модерацию;
+    - draft     — в черновик;
+    - delete    — удалить (реально, безвозвратно).
     """
 
     MAX_BULK = 20
 
     def post(self, request, *args, **kwargs):
         action = request.POST.get('action', '')
-        source = request.POST.get('source', 'active')
         ids = request.POST.getlist('ids')
 
         if not ids:
             messages.warning(request, 'Ничего не выбрано.')
-            return self._redirect_back(request, source)
+            return self._redirect_back(request)
 
         if len(ids) > self.MAX_BULK:
             messages.error(
@@ -509,79 +494,48 @@ class EventBulkActionView(StaffRequiredMixin, View):
                 f'За раз можно обработать не более {self.MAX_BULK} событий. '
                 f'Выбрано: {len(ids)}.'
             )
-            return self._redirect_back(request, source)
+            return self._redirect_back(request)
 
-        now = timezone.now()
-
-        # ---------- Корзина ----------
-        if source == 'deleted':
-            qs_deleted = Event.all_objects.filter(pk__in=ids, is_deleted=True)
-
-            if action == 'restore':
-                restored = qs_deleted.update(is_deleted=False, updated_at=now)
-                invalidate_event_cache()
-                messages.success(request, f'Восстановлено: {restored}.')
-                return self._redirect_back(request, source)
-
-            if action == 'hard_delete':
-                if request.POST.get('confirm') != 'yes':
-                    messages.error(request, 'Не подтверждено удаление навсегда.')
-                    return self._redirect_back(request, source)
-
-                count, _ = qs_deleted.hard_delete()
-                invalidate_event_cache()
-                messages.success(request, f'Удалено навсегда: {count}.')
-                return self._redirect_back(request, source)
-
-            messages.error(request, 'Неизвестное действие для корзины.')
-            return self._redirect_back(request, source)
-
-        # ---------- Обычный список ----------
-        qs_active = Event.all_objects.filter(pk__in=ids, is_deleted=False)
+        qs = Event.objects.filter(pk__in=ids)
 
         if action == 'publish':
-            updated = qs_active.update(status=Event.Status.PUBLISHED, updated_at=now)
+            updated = qs.update(
+                status=Event.Status.PUBLISHED, updated_at=timezone.now()
+            )
             invalidate_event_cache()
             messages.success(request, f'Опубликовано: {updated}.')
 
+        elif action == 'moderation':
+            updated = qs.update(
+                status=Event.Status.MODERATION, updated_at=timezone.now()
+            )
+            invalidate_event_cache()
+            messages.success(request, f'Отправлено на модерацию: {updated}.')
+
         elif action == 'draft':
-            updated = qs_active.update(status=Event.Status.DRAFT, updated_at=now)
+            updated = qs.update(
+                status=Event.Status.DRAFT, updated_at=timezone.now()
+            )
             invalidate_event_cache()
             messages.success(request, f'Снято в черновики: {updated}.')
 
-        elif action == 'cancel':
-            updated = qs_active.update(status=Event.Status.CANCELLED, updated_at=now)
-            invalidate_event_cache()
-            messages.success(request, f'Отменено: {updated}.')
-
         elif action == 'delete':
-            count = qs_active.update(
-                is_deleted=True,
-                status=Event.Status.DRAFT,
-                updated_at=now,
-            )
+            count, _ = qs.delete()
             invalidate_event_cache()
-            messages.success(request, f'Удалено в корзину: {count}.')
+            messages.success(request, f'Удалено: {count}.')
 
         else:
             messages.error(request, 'Неизвестное действие.')
 
-        return self._redirect_back(request, source)
+        return self._redirect_back(request)
 
     @staticmethod
-    def _redirect_back(request, source):
-        """
-        Возврат на страницу управления с сохранением фильтров.
-        Использует Referer, если он ведёт на event_list_manage.
-        """
+    def _redirect_back(request):
+        """Возврат на страницу управления с сохранением фильтров."""
         referer = request.META.get('HTTP_REFERER', '')
         if referer and 'manage' in referer:
             return redirect(referer)
-
-        manage_url = reverse('events:event_list_manage')
-        if source == 'deleted':
-            return redirect(f'{manage_url}?show_deleted=1')
-        return redirect(manage_url)
+        return redirect(reverse('events:event_list_manage'))
 
 
 # ======================================================================
@@ -589,10 +543,7 @@ class EventBulkActionView(StaffRequiredMixin, View):
 # ======================================================================
 
 class PlaceDetailView(DetailView):
-    """
-    Страница площадки: описание, адрес, контакты,
-    расписание предстоящих событий по дням.
-    """
+    """Страница площадки: описание, адрес, расписание предстоящих событий."""
     model = Place
     template_name = 'events/place_detail.html'
     context_object_name = 'place'
@@ -617,7 +568,11 @@ class PlaceDetailView(DetailView):
         events = list(
             Event.objects
             .filter(status=Event.Status.PUBLISHED, place=place)
-            .annotate(event_end=Coalesce('end_date', 'start_date', output_field=DateField()))
+            .annotate(
+                event_end=Coalesce(
+                    'end_date', 'start_date', output_field=DateField()
+                )
+            )
             .filter(event_end__gte=today, start_date__lte=horizon)
             .select_related('category', 'place')
             .order_by('start_date', 'start_time')
@@ -627,11 +582,12 @@ class PlaceDetailView(DetailView):
 
         past = (
             Event.objects
-            .filter(
-                status__in=[Event.Status.PUBLISHED, Event.Status.FINISHED],
-                place=place,
+            .filter(status=Event.Status.PUBLISHED, place=place)
+            .annotate(
+                event_end=Coalesce(
+                    'end_date', 'start_date', output_field=DateField()
+                )
             )
-            .annotate(event_end=Coalesce('end_date', 'start_date', output_field=DateField()))
             .filter(event_end__lt=today)
             .select_related('category', 'place')
             .order_by('-start_date', '-start_time')[:6]

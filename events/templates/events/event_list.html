@@ -16,10 +16,47 @@
 
 {# ===================================================== #}
 {# ОВЕРЛЕЙ 2: ФИЛЬТР (мобильные)                         #}
+{# Единая карточка: заголовок + категории + даты + период #}
 {# ===================================================== #}
 {% block filter %}
-    {% include "events/components/filter/_categories.html" with categories=categories %}
-    {% include "events/components/filter/_date_chips.html" %}
+<div class="filter-card">
+
+    <div class="filter-card__header">
+        <span class="filter-card__title">Фильтр мероприятий</span>
+        <button type="button"
+                class="filter-card__close"
+                onclick="closeOverlay('filterOverlay')"
+                aria-label="Закрыть фильтр">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="filter-card__body">
+
+        {# Секция: категории #}
+        <section class="filter-card__section">
+            <h3 class="filter-card__section-title">Категория</h3>
+            {% include "events/components/filter/_categories.html" with categories=categories %}
+        </section>
+
+        {# Секция: быстрые даты #}
+        <section class="filter-card__section">
+            <h3 class="filter-card__section-title">Когда</h3>
+            {% include "events/components/filter/_date_chips.html" %}
+        </section>
+
+        {# Секция: свой период #}
+        <section class="filter-card__section">
+            <h3 class="filter-card__section-title">Свой период</h3>
+            {% include "events/components/filter/_date_range.html" %}
+        </section>
+
+    </div>
+
+</div>
 {% endblock %}
 
 {# ===================================================== #}
