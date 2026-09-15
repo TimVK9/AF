@@ -97,7 +97,7 @@
     height: 15px;
 }
 
-/* ---------- ПАНЕЛЬ ПОИСКА (мобильный оверлей) ---------- */
+/* ---------- ПАНЕЛЬ ПОИСКА (только мобильный оверлей) ---------- */
 .search-panel {
     display: flex;
     flex-direction: column;
@@ -456,15 +456,26 @@
         margin: 0 0 24px;
     }
 
-    /* Заголовок и крестик карточки в десктопе не нужны */
+    /* Шапка карточки в десктопе не нужна */
     .desktop-filter .filter-card__header {
         display: none;
     }
 
+    /* Обёртки карточки «растворяются», дети становятся прямыми
+       детьми .desktop-filter */
     .desktop-filter .filter-card,
     .desktop-filter .filter-card__body,
     .desktop-filter .filter-card__section {
         display: contents;
+    }
+
+    /* На всякий случай: если где-то случайно вставили _search.html
+       (с шапкой и крестиком) — скрываем шапку */
+    .desktop-filter .search-panel {
+        display: contents;
+    }
+    .desktop-filter .search-panel__header {
+        display: none;
     }
 }
 
