@@ -105,20 +105,31 @@ class Event(TimestampedModel):
     # ==================================================================
     #  Сохранение
     # ==================================================================
-    def save(self, *args, **kwargs):
-        # 1. Автогенерация slug.
-        if not self.slug:
-            base = slugify(self.title)[:200] or 'event'
-            slug = base
-            while (
-                Event.all_objects
-                .filter(slug=slug)
-                .exclude(pk=self.pk)
-                .exists()
-            ):
-                slug = f"{base}-{get_random_string(4).lower()}"
-            self.slug = slug
+def save(self, *args, **kwargs):
+    """Автогенерация slug с гарантией уникальности."""
+    if not self.slug:
+        base = slugify(self.title, allow_unicode=True)[:180].strip('-')
 
+        # Если из title ничего осмысленного не вышло — используем дату
+        if not base or len(base) < 3:
+            date_part = self.start_date.strftime('%Y%m%d') if self.start_date else 'x'
+            base = f'event-{date_part}'
 
-        super().save(*args, **kwargs)
+        slug = base
+        counter = 0
+        while (
+            Event.objects
+            .filter(slug=slug)
+            .exclude(pk=self.pk)
+            .exists()
+        ):
+            counter += 1
+            if counter > 50:
+                slug = f'event-{get_random_string(8).lower()}'
+                break
+            slug = f'{base[:175]}-{get_random_string(4).lower()}'
+
+        self.slug = slug
+
+    super().save(*args, **kwargs)
 
