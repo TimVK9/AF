@@ -1,8 +1,9 @@
 {% comment %}
-Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
+Schema.org Event (JSON-LD) — расширенные rich results Google/Яндекс.
 
-ВАЖНО: у Place нет `address` и `latitude/longitude` —
-берём street / city / postal_code напрямую.
+url — фиксированный, без GET-параметров.
+image — массив (несколько размеров).
+eventStatus — берётся из статуса модели.
 {% endcomment %}
 <script type="application/ld+json">
 {
@@ -10,7 +11,7 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
     "@type": "Event",
     "name": "{{ event.title|escapejs }}",
     "description": "{{ event.description_short|default:event.title|truncatechars:180|escapejs }}",
-    "url": "{{ request.build_absolute_uri }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}",
     {% if event.main_image %}
     "image": [
         "{{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url }}"
@@ -28,6 +29,7 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
     "datePublished": "{{ event.created_at|date:'c' }}",
     "dateModified": "{{ event.updated_at|date:'c' }}",
+    "inLanguage": "ru-RU",
     {% if event.place %}
     "location": {
         "@type": "Place",
@@ -55,7 +57,7 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
         "price": "0",
         "priceCurrency": "RUB",
         "availability": "https://schema.org/InStock",
-        "url": "{{ request.build_absolute_uri }}"
+        "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}"
     },
     {% elif event.price %}
     "offers": {
@@ -63,12 +65,12 @@ Schema.org Event (JSON-LD) — для rich results Google/Яндекс.
         "price": "{{ event.price|floatformat:0 }}",
         "priceCurrency": "RUB",
         "availability": "https://schema.org/InStock",
-        "url": "{{ request.build_absolute_uri }}"
+        "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}"
     },
     {% endif %}
     "organizer": {
         "@type": "Organization",
-        "name": "{{ event.organizer_name|default:'АФИША ИСКИТИМ'|escapejs }}",
+        "name": "{{ event.organizer_name|default:'Афиша Искитим'|escapejs }}",
         {% if event.organizer_vk %}"url": "{{ event.organizer_vk|escapejs }}",{% else %}"url": "{{ request.scheme }}://{{ request.get_host }}",{% endif %}
         {% if event.organizer_email %}"email": "{{ event.organizer_email|escapejs }}",{% endif %}
         {% if event.organizer_phone %}"telephone": "{{ event.organizer_phone|escapejs }}",{% endif %}

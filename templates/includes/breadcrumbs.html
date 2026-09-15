@@ -1,32 +1,24 @@
 {% comment %}
-Универсальные хлебные крошки.
-
-Определяют свой путь по URL name и request.GET.
-
-Используется в:
-- events/event_list.html (главная афиши)
-- events/components/detail/_breadcrumbs.html
-- других страницах через {% include "includes/breadcrumbs.html" %}
+Универсальные хлебные крошки + Schema.org BreadcrumbList.
 
 Правила:
-1. Если мы не на главной — первой ссылкой идёт «Афиша».
+1. Не на главной — первой ссылкой «Афиша».
 2. На главной с GET-параметрами — «Афиша» + текущий фильтр.
-3. На главной без фильтров — просто «Все события».
+3. На главной без фильтров — «Все события».
 4. На детальной события — категория → название.
 5. На детальной площадки — название площадки.
-6. На служебных страницах — их человекочитаемый заголовок.
+6. На служебных страницах — их заголовок.
 {% endcomment %}
 
 {% if request.resolver_match %}
 <nav class="breadcrumbs" aria-label="Хлебные крошки">
 
-    {# Ссылка «Афиша» — всегда, кроме случая «мы уже на главной без фильтров» #}
     {% if request.resolver_match.url_name != "home" or request.GET %}
         <a href="{% url 'events:home' %}">Афиша</a>
         <span class="breadcrumbs__sep" aria-hidden="true">/</span>
     {% endif %}
 
-    {# ---------- ГЛАВНАЯ (список событий) ---------- #}
+    {# ---------- ГЛАВНАЯ ---------- #}
     {% if request.resolver_match.url_name == "home" %}
 
         {% if request.GET.category %}
@@ -83,7 +75,7 @@
         <span class="breadcrumbs__sep" aria-hidden="true">/</span>
         <span class="breadcrumbs__current">Редактирование</span>
 
-    {# ---------- ПРАВОВЫЕ И ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ---------- #}
+    {# ---------- ПРАВОВЫЕ СТРАНИЦЫ ---------- #}
     {% else %}
         <span class="breadcrumbs__current">
             {% if request.resolver_match.url_name == 'privacy' %}Политика конфиденциальности
@@ -98,4 +90,35 @@
     {% endif %}
 
 </nav>
+
+{# Schema.org BreadcrumbList #}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Афиша",
+            "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:home' %}"
+        }
+        {% if request.resolver_match.url_name == "event_detail" and event %}
+        ,{
+            "@type": "ListItem",
+            "position": 2,
+            "name": "{{ event.title|escapejs }}",
+            "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}"
+        }
+        {% elif request.resolver_match.url_name == "place_detail" and place %}
+        ,{
+            "@type": "ListItem",
+            "position": 2,
+            "name": "{{ place.name|escapejs }}",
+            "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:place_detail' place.slug %}"
+        }
+        {% endif %}
+    ]
+}
+</script>
 {% endif %}

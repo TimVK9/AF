@@ -1,27 +1,29 @@
 {% load static %}
+{% load thumbnail %}
 
 {% comment %}
-OpenGraph / Twitter / Canonical.
-Все данные берутся из объекта `event`.
-
-ВАЖНО: у модели Place нет `address`. Используем поля напрямую.
+OpenGraph / Twitter / Canonical для страницы события.
+Canonical и og:url — фиксированные, без GET-параметров.
+og:image — уменьшенный thumbnail 1200×630 (не оригинал).
 {% endcomment %}
 
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="АФИША ИСКИТИМ">
+<meta property="og:site_name" content="Афиша Искитим">
 <meta property="og:title" content="{{ event.title }}">
 <meta property="og:description" content="{{ event.description_short|default:event.title|truncatechars:180 }}">
-<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}">
 
 {% if event.main_image %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url }}">
-    <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ event.main_image.url }}">
+    {% thumbnail event.main_image "og" crop="smart" quality=85 as og_img %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+    <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{{ event.title }}">
 {% elif event.place.main_image %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.place.main_image.url }}">
-    <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ event.place.main_image.url }}">
+    {% thumbnail event.place.main_image "og" crop="smart" quality=85 as og_img %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+    <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{{ event.place.name }}">
@@ -33,7 +35,6 @@ OpenGraph / Twitter / Canonical.
     <meta property="og:image:alt" content="{{ event.title }}">
 {% endif %}
 
-{# Адрес — берём прямо из place, а не из place.address #}
 {% if event.place and event.place.short_address %}
     <meta property="og:street-address" content="{{ event.place.short_address }}">
 {% endif %}
@@ -48,11 +49,26 @@ OpenGraph / Twitter / Canonical.
 <meta name="twitter:title" content="{{ event.title }}">
 <meta name="twitter:description" content="{{ event.description_short|default:event.title|truncatechars:180 }}">
 {% if event.main_image %}
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.main_image.url }}">
+    {% thumbnail event.main_image "og" crop="smart" quality=85 as tw_img %}
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ tw_img.url }}">
+    <meta name="twitter:image:alt" content="{{ event.title }}">
 {% elif event.place.main_image %}
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.place.main_image.url }}">
+    {% thumbnail event.place.main_image "og" crop="smart" quality=85 as tw_img %}
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ tw_img.url }}">
+    <meta name="twitter:image:alt" content="{{ event.place.name }}">
 {% else %}
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+    <meta name="twitter:image:alt" content="{{ event.title }}">
 {% endif %}
 
-<link rel="canonical" href="{{ request.build_absolute_uri }}">
+{# RSS-фиды, связанные с этим событием #}
+{% if event.category %}
+    <link rel="alternate" type="application/rss+xml"
+          title="Афиша Искитим — {{ event.category.name }}"
+          href="{% url 'events:rss_category' event.category.slug %}">
+{% endif %}
+{% if event.place %}
+    <link rel="alternate" type="application/rss+xml"
+          title="Афиша Искитим — {{ event.place.name }}"
+          href="{% url 'events:rss_place' event.place.slug %}">
+{% endif %}

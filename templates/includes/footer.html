@@ -45,6 +45,12 @@
                 </svg>
             </a> {% endcomment %}
 
+            <div class="footer-categories">
+    {% for cat in all_categories %}
+        <a href="{% url 'events:home' %}?category={{ cat.slug }}">{{ cat.name }}</a>
+    {% endfor %}
+</div>
+
         </div>
 
     </div>

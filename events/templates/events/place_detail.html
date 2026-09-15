@@ -2,26 +2,45 @@
 {% load static %}
 {% load placeholders %}
 
-{% block title %}{{ place.name }} — АФИША ИСКИТИМ{% endblock %}
+{% block title %}{{ place.name }}{% if place.short_address %} — {{ place.short_address }}{% endif %} — Афиша Искитим{% endblock %}
+
+{% block description %}{{ place.description|striptags|default:place.name|truncatechars:160 }}{% endblock %}
+
+{% block canonical %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'events:place_detail' place.slug %}">{% endblock %}
 
 {% block meta %}
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="АФИША ИСКИТИМ">
-    <meta property="og:title" content="{{ place.name }}">
+    <meta property="og:site_name" content="Афиша Искитим">
+    <meta property="og:title" content="{{ place.name }}{% if place.short_address %} — {{ place.short_address }}{% endif %}">
     <meta property="og:description" content="{{ place.description|striptags|default:place.name|truncatechars:180 }}">
-    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'events:place_detail' place.slug %}">
     {% if place.main_image %}
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}">
-        <meta property="og:image:width" content="{{ place.main_image.width }}">
-        <meta property="og:image:height" content="{{ place.main_image.height }}">
+        <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ place.main_image.url }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
         <meta property="og:image:alt" content="{{ place.name }}">
     {% else %}
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+        <meta property="og:image:secure_url" content="https://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="{{ place.name }}">
     {% endif %}
 
-    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ place.name }}">
+    <meta name="twitter:description" content="{{ place.description|striptags|default:place.name|truncatechars:180 }}">
+    {% if place.main_image %}
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}">
+        <meta name="twitter:image:alt" content="{{ place.name }}">
+    {% else %}
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+        <meta name="twitter:image:alt" content="{{ place.name }}">
+    {% endif %}
+    <link rel="alternate" type="application/rss+xml"
+      title="Афиша Искитим — {{ place.name }}"
+      href="{% url 'events:rss_place' place.slug %}">
 {% endblock %}
 
 {% block schema %}
@@ -30,12 +49,15 @@
     "@context": "https://schema.org",
     "@type": "Place",
     "name": "{{ place.name|escapejs }}",
-    "url": "{{ request.build_absolute_uri }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:place_detail' place.slug %}",
+    "inLanguage": "ru-RU",
     {% if place.description %}
     "description": "{{ place.description|striptags|truncatechars:250|escapejs }}",
     {% endif %}
     {% if place.main_image %}
-    "image": ["{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}"],
+    "image": [
+        "{{ request.scheme }}://{{ request.get_host }}{{ place.main_image.url }}"
+    ],
     {% endif %}
     {% if place.short_address %}
     "address": {
@@ -48,6 +70,9 @@
     {% endif %}
     {% if place.phone %}
     "telephone": "{{ place.phone|escapejs }}",
+    {% endif %}
+    {% if place.email %}
+    "email": "{{ place.email|escapejs }}",
     {% endif %}
     {% if place.website or place.vk_url %}
     "sameAs": [

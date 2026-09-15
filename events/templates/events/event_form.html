@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ page_title }} — АФИША ИСКИТИМ{% endblock %}
+{% block title %}{{ page_title }} — Афиша Искитим{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'events/css/event_form.css' %}">
 {% endblock %}
+
 
 {% block content %}
 <div class="container event-form-page">

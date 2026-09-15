@@ -2,13 +2,13 @@
 {% load static %}
 {% load query_tags %}
 
-{% block title %}Управление событиями — АФИША ИСКИТИМ{% endblock %}
+{% block title %}Управление событиями — Афиша Искитим{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'events/css/event_form.css' %}">
 <link rel="stylesheet" href="{% static 'events/css/event_list.css' %}">
 {% endblock %}
-
 {% block content %}
 <div class="container manage-page">
 

@@ -5,54 +5,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <title>{% block title %}АФИША ИСКИТИМ{% endblock %}</title>
+    {# ЗАГОЛОВОК #}
+    <title>{% block title %}Афиша Искитим — события, концерты и выставки города{% endblock %}</title>
+
+    {# ОПИСАНИЕ #}
+    <meta name="description" content="{% block description %}Афиша событий Искитима: концерты, спектакли, выставки, фестивали. Удобный поиск по датам и категориям. Актуальное расписание городских мероприятий.{% endblock %}">
+
+    {# ROBOTS #}
+    {% block robots %}<meta name="robots" content="index, follow">{% endblock %}
+
+    {# CANONICAL #}
+    {% block canonical %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'events:home' %}">{% endblock %}
 
     {# FAVICON #}
-    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicon/favicon-96x96.png' %}">
+    <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}" sizes="any">
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon/favicon.svg' %}">
-    <link rel="shortcut icon" href="{% static 'images/favicon/favicon.ico' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon/apple-touch-icon.png' %}">
     <meta name="apple-mobile-web-app-title" content="Афиша Искитим">
     <meta name="theme-color" content="#0f766e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    {# RSS-фиды #}
+    <link rel="alternate" type="application/rss+xml"
+          title="Афиша Искитим — новые события"
+          href="{% url 'events:rss' %}">
     {# PWA #}
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
 
-    {# OPEN GRAPH / TWITTER — общие значения, страница может переопределить #}
+    {# OPEN GRAPH / TWITTER #}
     {% block meta %}
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="АФИША ИСКИТИМ">
-    <meta property="og:title" content="Афиша мероприятий Искитима">
-    <meta property="og:description" content="Афиша событий вашего города: концерты, спектакли, выставки, фестивали. Удобный поиск и фильтры.">
-    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="Афиша Искитим">
+    <meta property="og:title" content="Афиша Искитим — события, концерты и выставки города">
+    <meta property="og:description" content="Афиша событий Искитима: концерты, спектакли, выставки, фестивали. Удобный поиск по датам и категориям.">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'events:home' %}">
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Афиша Искитим — события города">
     <meta property="og:locale" content="ru_RU">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Афиша мероприятий Искитима">
-    <meta name="twitter:description" content="Афиша событий вашего города: концерты, спектакли, выставки, фестивали.">
+    <meta name="twitter:title" content="Афиша Искитим — события, концерты и выставки города">
+    <meta name="twitter:description" content="Афиша событий Искитима: концерты, спектакли, выставки, фестивали.">
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
-
-    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    <meta name="twitter:image:alt" content="Афиша Искитим — события города">
     {% endblock %}
 
-    {# SCHEMA.ORG JSON-LD — по умолчанию WebSite, страница может переопределить #}
+    {# SCHEMA.ORG JSON-LD #}
     {% block schema %}
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "АФИША ИСКИТИМ",
+        "name": "Афиша Искитим",
+        "alternateName": "АФИША ИСКИТИМ",
         "url": "{{ request.scheme }}://{{ request.get_host }}",
+        "inLanguage": "ru-RU",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Афиша Искитим",
+            "url": "{{ request.scheme }}://{{ request.get_host }}",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/favicon/favicon-96x96.png' %}"
+            }
+        },
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "{{ request.scheme }}://{{ request.get_host }}/?search={search_term_string}",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "{{ request.scheme }}://{{ request.get_host }}/?search={search_term_string}"
+            },
             "query-input": "required name=search_term_string"
         }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Афиша Искитим",
+        "url": "{{ request.scheme }}://{{ request.get_host }}",
+        "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/favicon/favicon-96x96.png' %}"
     }
     </script>
     {% endblock %}
@@ -66,7 +101,7 @@
     {% include 'includes/header.html' %}
 
     {# ===================================================== #}
-    {# МОБИЛЬНЫЕ ОВЕРЛЕИ (поиск, фильтр, даты)               #}
+    {# МОБИЛЬНЫЕ ОВЕРЛЕИ                                     #}
     {# ===================================================== #}
     <div class="search-container" id="searchOverlay">
         {% block search %}{% endblock %}
@@ -87,7 +122,7 @@
     {% include 'includes/footer.html' %}
 
     {# ===================================================== #}
-    {# МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ — три кнопки               #}
+    {# МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ                            #}
     {# ===================================================== #}
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
 
