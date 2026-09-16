@@ -535,6 +535,8 @@ class EventBulkActionView(StaffRequiredMixin, View):
 # ======================================================================
 #  ПЛОЩАДКА
 # ======================================================================
+from datetime import date
+from calendar import monthrange
 
 class PlaceDetailView(DetailView):
     """Страница площадки: описание, адрес, расписание предстоящих событий."""
@@ -557,8 +559,17 @@ class PlaceDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         place = self.object
         today = timezone.localdate()
-        horizon = today + timedelta(days=60)
 
+        # ---------- Параметр месяца ----------
+        month_param = self.request.GET.get('month', '').strip()
+        selected_year, selected_month = self._parse_month(month_param, today)
+
+        # Границы выбранного месяца
+        month_start = date(selected_year, selected_month, 1)
+        _, last_day = monthrange(selected_year, selected_month)
+        month_end = date(selected_year, selected_month, last_day)
+
+        # ---------- События выбранного месяца ----------
         events = list(
             Event.objects
             .filter(status=Event.Status.PUBLISHED, place=place)
@@ -567,13 +578,17 @@ class PlaceDetailView(DetailView):
                     'end_date', 'start_date', output_field=DateField()
                 )
             )
-            .filter(event_end__gte=today, start_date__lte=horizon)
+            .filter(
+                event_end__gte=month_start,
+                start_date__lte=month_end,
+            )
             .select_related('category', 'place')
             .order_by('start_date', 'start_time')
         )
 
         schedule = self._group_by_date(events, today)
 
+        # ---------- Прошедшие события ----------
         past = (
             Event.objects
             .filter(status=Event.Status.PUBLISHED, place=place)
@@ -587,10 +602,70 @@ class PlaceDetailView(DetailView):
             .order_by('-start_date', '-start_time')[:6]
         )
 
+        # ---------- Доступные месяцы (с событиями) ----------
+        available_months = self._get_available_months(place, today)
+
         context['schedule'] = schedule
         context['past_events'] = past
         context['total_upcoming'] = len(events)
+        context['selected_month'] = f'{selected_year:04d}-{selected_month:02d}'
+        context['available_months'] = available_months
+        context['month_label'] = self._month_label(selected_year, selected_month)
         return context
+
+    # ------------------------------------------------------------------
+    #  Хелперы
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _parse_month(raw, today):
+        """Парсит 'YYYY-MM'. Если невалидно — текущий месяц."""
+        if raw:
+            try:
+                year, month = map(int, raw.split('-'))
+                if 1 <= month <= 12 and year >= 2000:
+                    return year, month
+            except (ValueError, AttributeError):
+                pass
+        return today.year, today.month
+
+    @staticmethod
+    def _month_label(year, month):
+        MONTHS_GEN = [
+            '', 'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+            'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь',
+        ]
+        return f'{MONTHS_GEN[month]} {year}'
+
+    @staticmethod
+    def _get_available_months(place, today):
+        """Возвращает список месяцев, в которых есть события (от сегодня вперёд)."""
+        months_raw = (
+            Event.objects
+            .filter(status=Event.Status.PUBLISHED, place=place)
+            .annotate(
+                event_end=Coalesce(
+                    'end_date', 'start_date', output_field=DateField()
+                )
+            )
+            .filter(event_end__gte=today)
+            .values_list('start_date__year', 'start_date__month')
+            .distinct()
+            .order_by('start_date__year', 'start_date__month')
+        )
+
+        MONTHS_NOM = [
+            '', 'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+            'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь',
+        ]
+
+        result = []
+        for year, month in months_raw:
+            result.append({
+                'value': f'{year:04d}-{month:02d}',
+                'label': f'{MONTHS_NOM[month]} {year}',
+            })
+        return result
 
     @staticmethod
     def _group_by_date(events, today):
@@ -605,8 +680,7 @@ class PlaceDetailView(DetailView):
 
             current = start
             while current <= end:
-                if current >= today:
-                    by_date[current].append(event)
+                by_date[current].append(event)
                 current += timedelta(days=1)
 
         WEEKDAYS = [

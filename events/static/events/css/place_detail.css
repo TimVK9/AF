@@ -573,3 +573,59 @@
         font-size: 0.75rem;
     }
 }
+
+
+@media (max-width: 480px) {
+    .place-detail__month-filter {
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .month-filter__btn {
+        font-size: 0.78rem;
+        padding: 6px 12px;
+    }
+}
+
+/* =========================================================
+   ФИЛЬТР ПО МЕСЯЦАМ
+   ========================================================= */
+
+.place-detail__month-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.month-filter__btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 15px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.month-filter__btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
+}
+
+.month-filter__btn--active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.month-filter__btn--active:hover {
+    background: var(--accent);
+    color: #fff;
+    opacity: 0.9;
+}

@@ -148,15 +148,26 @@
             {% endif %}
 
             {# Расписание по дням #}
-            <section class="place-detail__section">
+            <section class="place-detail__section" id="schedule">
                 <h2 class="place-detail__section-title">
-                    Расписание
+                    Расписание — {{ month_label }}
                     {% if total_upcoming %}
-                        <span class="place-detail__count">
-                            {{ total_upcoming }} событий
-                        </span>
+                        <span class="place-detail__count">{{ total_upcoming }} событий</span>
                     {% endif %}
                 </h2>
+
+                {# Фильтр по месяцам #}
+                {% if available_months %}
+                <div class="place-detail__month-filter">
+                    {% for m in available_months %}
+                        <a href="?month={{ m.value }}#schedule"
+                        class="month-filter__btn {% if m.value == selected_month %}month-filter__btn--active{% endif %}">
+                            {{ m.label }}
+                        </a>
+
+                    {% endfor %}
+                </div>
+                {% endif %}
 
                 {% if schedule %}
                     <div class="place-schedule">
@@ -219,7 +230,7 @@
                     </div>
                 {% else %}
                     <p class="place-detail__empty">
-                        Пока нет предстоящих событий на этой площадке.
+                        Нет событий на {{ month_label }}.
                     </p>
                 {% endif %}
             </section>
