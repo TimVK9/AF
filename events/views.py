@@ -591,7 +591,11 @@ class PlaceDetailView(DetailView):
             selected_year == today.year and selected_month == today.month
         )
         schedule = self._group_by_date(
-            events, today, hide_past=is_current_month, place=place
+            events, today,
+            hide_past=is_current_month,
+            place=place,
+            month_start=month_start,
+            month_end=month_end,
         )
 
         # ---------- Прошедшие события ----------
@@ -649,7 +653,7 @@ class PlaceDetailView(DetailView):
 
     @staticmethod
     def _get_available_months(place, today):
-        """Возвращает список месяцев, в которые есть предстоящие события.
+        """Возвращает список месяцев с предстоящими событиями.
 
         Учитывает длительные события: если start_date=01.09, end_date=30.11,
         то в фильтре появятся сентябрь, октябрь и ноябрь.
@@ -698,22 +702,39 @@ class PlaceDetailView(DetailView):
         return result
 
     @staticmethod
-    def _group_by_date(events, today, hide_past=False, place=None):
-        """Группирует события по дням.
+    def _group_by_date(events, today, hide_past=False, place=None,
+                       month_start=None, month_end=None):
+        """Группирует события по дням в пределах выбранного месяца.
+
+        Длинные события обрезаются границами месяца: если событие идёт
+        с 01.09 по 30.11, а выбран октябрь — в расписании будут только
+        дни с 01.10 по 31.10.
 
         Если hide_past=True — прошедшие дни не включаются в расписание.
         Длительные события показываются только в рабочие дни площадки.
-        Однодневные — всегда.
         """
         by_date = defaultdict(list)
 
         for event in events:
-            start = event.start_date
-            end = event.end_date or event.start_date
-            if end < start:
-                end = start
+            original_start = event.start_date
+            original_end = event.end_date or event.start_date
+            if original_end < original_start:
+                original_end = original_start
 
-            is_long = end > start
+            start = original_start
+            end = original_end
+
+            # Обрезаем диапазон события границами выбранного месяца
+            if month_start and start < month_start:
+                start = month_start
+            if month_end and end > month_end:
+                end = month_end
+
+            if start > end:
+                # Событие не пересекается с выбранным месяцем — пропускаем
+                continue
+
+            is_long = original_end > original_start
 
             current = start
             while current <= end:
@@ -721,7 +742,7 @@ class PlaceDetailView(DetailView):
                     current += timedelta(days=1)
                     continue
 
-                # Длительные события — только в рабочие дни
+                # Длительные события — только в рабочие дни площадки
                 if is_long and place and not place.is_open_on(current):
                     current += timedelta(days=1)
                     continue
