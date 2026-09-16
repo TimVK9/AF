@@ -48,6 +48,7 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = [
             'title',
+            
             'category',
             'place',
             'description_short',

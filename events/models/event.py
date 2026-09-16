@@ -102,34 +102,34 @@ class Event(TimestampedModel):
                 'organizer_vk': 'Ссылка должна начинаться с http:// или https://',
             })
 
-    # ==================================================================
-    #  Сохранение
-    # ==================================================================
-def save(self, *args, **kwargs):
-    """Автогенерация slug с гарантией уникальности."""
-    if not self.slug:
-        base = slugify(self.title, allow_unicode=True)[:180].strip('-')
+        # ==================================================================
+        #  Сохранение
+        # ==================================================================
+    def save(self, *args, **kwargs):
+        """Автогенерация slug с гарантией уникальности."""
+        if not self.slug:
+            base = slugify(self.title, allow_unicode=True)[:180].strip('-')
 
-        # Если из title ничего осмысленного не вышло — используем дату
-        if not base or len(base) < 3:
-            date_part = self.start_date.strftime('%Y%m%d') if self.start_date else 'x'
-            base = f'event-{date_part}'
+            # Если из title ничего осмысленного не вышло — используем дату
+            if not base or len(base) < 3:
+                date_part = self.start_date.strftime('%Y%m%d') if self.start_date else 'x'
+                base = f'event-{date_part}'
 
-        slug = base
-        counter = 0
-        while (
-            Event.objects
-            .filter(slug=slug)
-            .exclude(pk=self.pk)
-            .exists()
-        ):
-            counter += 1
-            if counter > 50:
-                slug = f'event-{get_random_string(8).lower()}'
-                break
-            slug = f'{base[:175]}-{get_random_string(4).lower()}'
+            slug = base
+            counter = 0
+            while (
+                Event.objects
+                .filter(slug=slug)
+                .exclude(pk=self.pk)
+                .exists()
+            ):
+                counter += 1
+                if counter > 50:
+                    slug = f'event-{get_random_string(8).lower()}'
+                    break
+                slug = f'{base[:175]}-{get_random_string(4).lower()}'
 
-        self.slug = slug
+            self.slug = slug
 
-    super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 

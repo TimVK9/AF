@@ -304,7 +304,7 @@ class EventManageListView(StaffRequiredMixin, ListView):
     model = Event
     template_name = 'events/event_manage_list.html'
     context_object_name = 'events'
-    paginate_by = 25
+    paginate_by = 50
 
     def get_queryset(self):
         qs = Event.objects.select_related('category', 'place')
@@ -470,15 +470,9 @@ class EventUpdateView(StaffRequiredMixin, UpdateView):
 class EventBulkActionView(StaffRequiredMixin, View):
     """
     Массовые действия над выбранными событиями.
-
-    Действия:
-    - publish   — опубликовать;
-    - moderation — на модерацию;
-    - draft     — в черновик;
-    - delete    — удалить (реально, безвозвратно).
     """
 
-    MAX_BULK = 20
+    MAX_BULK = 100
 
     def post(self, request, *args, **kwargs):
         action = request.POST.get('action', '')
