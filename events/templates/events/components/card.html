@@ -4,11 +4,14 @@
 Карточка события — сборка из инклюдов.
 Используется в event_list.html, event_detail.html (похожие),
 а также везде, где нужна карточка.
+
+wrapper_mod — опциональный CSS-класс ориентации изображения.
+Если не передан снаружи — пустая строка (адаптивная высота).
 {% endcomment %}
 
 <a href="{% url 'events:event_detail' event.slug %}" class="event-card">
 
-    {% include "events/components/card/_image.html" %}
+    {% include "events/components/card/_image.html" with wrapper_mod=wrapper_mod|default:"" %}
     {% include "events/components/card/_content.html" %}
     {% include "events/components/card/_footer.html" %}
 

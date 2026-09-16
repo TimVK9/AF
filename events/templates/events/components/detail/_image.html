@@ -9,28 +9,51 @@
   2. event.place.main_image (фото площадки);
   3. SVG-заглушка, стабильная для этого события (seed=event.pk).
 
-Бейдж даты — слева внизу, как в карточке.
+Пропорции СОХРАНЯЮТСЯ:
+  - размер задан одним числом "1200" — sorl масштабирует по большей стороне;
+  - crop НЕ используется, поэтому вертикальная афиша остаётся вертикальной,
+    горизонтальная — горизонтальной.
+
+Бейдж даты — слева внизу.
 Бейджи цены/возраста — справа сверху.
+
+ВАЖНО: {% thumbnail %} — блочный тег sorl, закрывается {% endthumbnail %}.
 {% endcomment %}
 <div class="event-detail__image-wrapper">
 
     {% if event.main_image %}
-        {% thumbnail event.main_image "detail" crop="smart" quality=85 as thumb %}
-        <img src="{{ thumb.url }}"
-             alt="{{ event.title }}"
-             class="event-detail__image"
-             loading="eager"
-             width="{{ thumb.width }}"
-             height="{{ thumb.height }}">
+        {% thumbnail event.main_image "1200" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.title }}"
+                 class="event-detail__image"
+                 loading="eager"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% empty %}
+            <img src="{% random_placeholder event.pk %}"
+                 alt="{{ event.title }}"
+                 class="event-detail__image"
+                 loading="eager"
+                 width="1200"
+                 height="675">
+        {% endthumbnail %}
 
     {% elif event.place.main_image %}
-        {% thumbnail event.place.main_image "detail" crop="smart" quality=85 as thumb %}
-        <img src="{{ thumb.url }}"
-             alt="{{ event.place.name }}"
-             class="event-detail__image"
-             loading="eager"
-             width="{{ thumb.width }}"
-             height="{{ thumb.height }}">
+        {% thumbnail event.place.main_image "1200" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.place.name }}"
+                 class="event-detail__image"
+                 loading="eager"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% empty %}
+            <img src="{% random_placeholder event.pk %}"
+                 alt="{{ event.title }}"
+                 class="event-detail__image"
+                 loading="eager"
+                 width="1200"
+                 height="675">
+        {% endthumbnail %}
 
     {% else %}
         <img src="{% random_placeholder event.pk %}"

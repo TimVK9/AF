@@ -1,32 +1,57 @@
-{% load static %}
 {% load thumbnail %}
+{% load static %}
 
 {% comment %}
-OpenGraph / Twitter / Canonical для страницы события.
-Canonical и og:url — фиксированные, без GET-параметров.
-og:image — уменьшенный thumbnail 1200×630 (не оригинал).
+OG-мета для страницы события.
+
+Блок og:image имеет три ветки:
+  1. event.main_image
+  2. event.place.main_image
+  3. дефолтная картинка static/images/og-default.jpg
+
+ВАЖНО: {% thumbnail %} — блочный тег sorl-thumbnail.
+Он ОБЯЗАН закрываться {% endthumbnail %}.
+Размер задаётся числом ("1200") или "WxH" ("1200x630").
+Алиасы easy-thumbnails ("og", "card", "detail" и т.п.) sorl НЕ понимает.
 {% endcomment %}
 
+{# --- Базовые OG-теги (если у тебя уже были — оставь свои) --- #}
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="Афиша Искитим">
 <meta property="og:title" content="{{ event.title }}">
 <meta property="og:description" content="{{ event.description_short|default:event.title|truncatechars:180 }}">
 <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}">
 
+{# --- OG-картинка --- #}
 {% if event.main_image %}
-    {% thumbnail event.main_image "og" crop="smart" quality=85 as og_img %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
-    <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="{{ event.title }}">
+    {% thumbnail event.main_image "1200x630" crop="smart" quality=85 as og_img %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+        <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
+        <meta property="og:image:width" content="{{ og_img.width }}">
+        <meta property="og:image:height" content="{{ og_img.height }}">
+        <meta property="og:image:alt" content="{{ event.title }}">
+    {% empty %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+        <meta property="og:image:secure_url" content="https://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="{{ event.title }}">
+    {% endthumbnail %}
+
 {% elif event.place.main_image %}
-    {% thumbnail event.place.main_image "og" crop="smart" quality=85 as og_img %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
-    <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="{{ event.place.name }}">
+    {% thumbnail event.place.main_image "1200x630" crop="smart" quality=85 as og_img %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+        <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
+        <meta property="og:image:width" content="{{ og_img.width }}">
+        <meta property="og:image:height" content="{{ og_img.height }}">
+        <meta property="og:image:alt" content="{{ event.place.name }}">
+    {% empty %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+        <meta property="og:image:secure_url" content="https://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="{{ event.title }}">
+    {% endthumbnail %}
+
 {% else %}
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
     <meta property="og:image:secure_url" content="https://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
@@ -35,40 +60,7 @@ og:image — уменьшенный thumbnail 1200×630 (не оригинал).
     <meta property="og:image:alt" content="{{ event.title }}">
 {% endif %}
 
-{% if event.place and event.place.short_address %}
-    <meta property="og:street-address" content="{{ event.place.short_address }}">
-{% endif %}
-
-<meta property="article:published_time" content="{{ event.created_at|date:'c' }}">
-<meta property="article:modified_time" content="{{ event.updated_at|date:'c' }}">
-{% if event.category %}
-    <meta property="article:section" content="{{ event.category.name }}">
-{% endif %}
-
+{# --- Twitter Card (опционально, но полезно) --- #}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ event.title }}">
 <meta name="twitter:description" content="{{ event.description_short|default:event.title|truncatechars:180 }}">
-{% if event.main_image %}
-    {% thumbnail event.main_image "og" crop="smart" quality=85 as tw_img %}
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ tw_img.url }}">
-    <meta name="twitter:image:alt" content="{{ event.title }}">
-{% elif event.place.main_image %}
-    {% thumbnail event.place.main_image "og" crop="smart" quality=85 as tw_img %}
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ tw_img.url }}">
-    <meta name="twitter:image:alt" content="{{ event.place.name }}">
-{% else %}
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
-    <meta name="twitter:image:alt" content="{{ event.title }}">
-{% endif %}
-
-{# RSS-фиды, связанные с этим событием #}
-{% if event.category %}
-    <link rel="alternate" type="application/rss+xml"
-          title="Афиша Искитим — {{ event.category.name }}"
-          href="{% url 'events:rss_category' event.category.slug %}">
-{% endif %}
-{% if event.place %}
-    <link rel="alternate" type="application/rss+xml"
-          title="Афиша Искитим — {{ event.place.name }}"
-          href="{% url 'events:rss_place' event.place.slug %}">
-{% endif %}

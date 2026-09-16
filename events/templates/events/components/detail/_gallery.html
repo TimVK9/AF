@@ -2,6 +2,10 @@
 
 {% comment %}
 Галерея изображений события.
+
+ВАЖНО: {% thumbnail %} — блочный тег sorl, закрывается {% endthumbnail %}.
+Алиасы "gallery" / "gallery_thumb" sorl НЕ понимает —
+используем "1200x750" и "200x150".
 {% endcomment %}
 {% if event.images.all %}
 <section class="event-detail__section event-detail__gallery">
@@ -9,18 +13,25 @@
 
     <div class="event-gallery" data-gallery>
 
-        {# ---------- Основное большое фото ---------- #}
         <div class="event-gallery__main">
             {% for img in event.images.all %}
-                {% thumbnail img.image "gallery" crop="smart" quality=85 as g_thumb %}
-                <img src="{{ g_thumb.url }}"
-                     alt="{{ img.caption|default:event.title }}"
-                     class="event-gallery__main-image {% if forloop.first %}is-active{% endif %}"
-                     data-gallery-main
-                     data-index="{{ forloop.counter0 }}"
-                     loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                     width="{{ g_thumb.width }}"
-                     height="{{ g_thumb.height }}">
+                {% thumbnail img.image "1200x750" crop="smart" quality=85 as g_thumb %}
+                    <img src="{{ g_thumb.url }}"
+                         alt="{{ img.caption|default:event.title }}"
+                         class="event-gallery__main-image {% if forloop.first %}is-active{% endif %}"
+                         data-gallery-main
+                         data-index="{{ forloop.counter0 }}"
+                         loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                         width="{{ g_thumb.width }}"
+                         height="{{ g_thumb.height }}">
+                {% empty %}
+                    <img src="{{ img.image.url }}"
+                         alt="{{ img.caption|default:event.title }}"
+                         class="event-gallery__main-image {% if forloop.first %}is-active{% endif %}"
+                         data-gallery-main
+                         data-index="{{ forloop.counter0 }}"
+                         loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+                {% endthumbnail %}
             {% endfor %}
 
             {% if event.images.all|length > 1 %}
@@ -47,7 +58,6 @@
             {% endif %}
         </div>
 
-        {# ---------- Миниатюры ---------- #}
         {% if event.images.all|length > 1 %}
             <div class="event-gallery__thumbs">
                 {% for img in event.images.all %}
@@ -56,12 +66,17 @@
                             data-gallery-thumb
                             data-index="{{ forloop.counter0 }}"
                             aria-label="Показать фото {{ forloop.counter }}">
-                        {% thumbnail img.image "gallery_thumb" crop="smart" quality=80 as gt %}
-                        <img src="{{ gt.url }}"
-                             alt="{{ img.caption|default:event.title }}"
-                             loading="lazy"
-                             width="{{ gt.width }}"
-                             height="{{ gt.height }}">
+                        {% thumbnail img.image "200x150" crop="smart" quality=80 as gt %}
+                            <img src="{{ gt.url }}"
+                                 alt="{{ img.caption|default:event.title }}"
+                                 loading="lazy"
+                                 width="{{ gt.width }}"
+                                 height="{{ gt.height }}">
+                        {% empty %}
+                            <img src="{{ img.image.url }}"
+                                 alt="{{ img.caption|default:event.title }}"
+                                 loading="lazy">
+                        {% endthumbnail %}
                     </button>
                 {% endfor %}
             </div>

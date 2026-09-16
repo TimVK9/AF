@@ -15,6 +15,8 @@
     position: relative;
     isolation: isolate;
     box-shadow: 0 1px 2px rgba(20, 24, 26, 0.04);
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    animation-fill-mode: both;
 }
 
 .event-card::before {
@@ -30,9 +32,7 @@
     z-index: 1;
 }
 
-.event-card:hover::before {
-    opacity: 1;
-}
+.event-card:hover::before { opacity: 1; }
 
 .event-card:hover {
     border-color: rgba(15, 118, 110, 0.35);
@@ -40,74 +40,59 @@
                 0 0 16px rgba(15, 118, 110, 0.08);
 }
 
+.event-card:nth-child(2) { animation-delay: 0.05s; }
+.event-card:nth-child(3) { animation-delay: 0.1s; }
+.event-card:nth-child(4) { animation-delay: 0.15s; }
+.event-card:nth-child(5) { animation-delay: 0.2s; }
+.event-card:nth-child(6) { animation-delay: 0.25s; }
+
 /* ===== ИЗОБРАЖЕНИЕ ===== */
 .event-card__image-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 16/10;
     overflow: hidden;
     background: #04201c;
+}
+
+/* Опциональные модификаторы ориентации.
+   Передаются через {% include ... with wrapper_mod="..." %}.
+   По умолчанию — адаптивная высота (height: auto). */
+.event-card__image-wrapper--portrait {
+    aspect-ratio: 3 / 4;
+}
+.event-card__image-wrapper--portrait .event-card__image {
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-card__image-wrapper--square {
+    aspect-ratio: 1 / 1;
+}
+.event-card__image-wrapper--square .event-card__image {
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-card__image-wrapper--landscape {
+    aspect-ratio: 16 / 9;
+}
+.event-card__image-wrapper--landscape .event-card__image {
+    height: 100%;
+    object-fit: cover;
 }
 
 .event-card__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .event-card:hover .event-card__image {
-    transform: scale(1.04);
+    transform: scale(1.02);
 }
 
-/* Плейсхолдер (SVG «ночная сцена») */
-.event-card__image-placeholder {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #04201c;
-    isolation: isolate;
-}
-
-.event-card__placeholder-sky {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, #04201c 0%, #064e46 55%, #0b5e57 100%);
-    z-index: 0;
-}
-
-.event-card__placeholder-glow {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-        ellipse 80% 60% at 50% 100%,
-        rgba(94, 234, 212, 0.45) 0%,
-        rgba(94, 234, 212, 0.10) 40%,
-        rgba(94, 234, 212, 0) 75%
-    );
-    z-index: 1;
-    pointer-events: none;
-}
-
-.event-card__placeholder-art {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    z-index: 2;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
-}
-
-.event-card:hover .event-card__placeholder-art {
-    transform: scale(1.05);
-}
-
-/* ===== БЕЙДЖ ДАТЫ (слева внизу поверх изображения) ===== */
+/* ===== БЕЙДЖ ДАТЫ ===== */
 .event-card__date-badge {
     position: absolute;
     left: 12px;
@@ -159,7 +144,7 @@
     white-space: nowrap;
 }
 
-/* ===== БЕЙДЖИ ЦЕНЫ/ВОЗРАСТА (справа вверху поверх изображения) ===== */
+/* ===== БЕЙДЖИ ЦЕНЫ/ВОЗРАСТА ===== */
 .event-card__badges {
     position: absolute;
     top: 12px;
@@ -201,6 +186,12 @@
     color: #ffffff;
     font-weight: 700;
     border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.badge--unknown {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--text-muted);
+    font-weight: 600;
 }
 
 /* ===== СТАТУС ОТМЕНЫ ===== */
@@ -325,7 +316,6 @@
     white-space: nowrap;
 }
 
-/* Место — прижимается вниз */
 .event-card__meta-row--place {
     margin-top: auto;
     padding-top: 8px;
@@ -343,10 +333,6 @@
     z-index: 2;
 }
 
-/*
- * Подсказка слева в футере: «Вход свободный» / «от N ₽» / «Цена уточняется».
- * Пришла на смену счётчику просмотров.
- */
 .event-card__meta-hint {
     font-size: 12px;
     font-weight: 600;
@@ -356,16 +342,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-}
-
-/* Совместимость: старый класс больше не используется в шаблоне,
-   но оставлен, если где-то ещё встречается. */
-.event-card__views {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--text-muted);
 }
 
 .event-card__link {
@@ -402,17 +378,6 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-.event-card {
-    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    animation-fill-mode: both;
-}
-
-.event-card:nth-child(2) { animation-delay: 0.05s; }
-.event-card:nth-child(3) { animation-delay: 0.1s; }
-.event-card:nth-child(4) { animation-delay: 0.15s; }
-.event-card:nth-child(5) { animation-delay: 0.2s; }
-.event-card:nth-child(6) { animation-delay: 0.25s; }
-
 /* ===== АДАПТИВ ===== */
 @media (max-width: 1024px) {
     .event-card__content { padding: 16px 18px 18px; }
@@ -420,7 +385,6 @@
 }
 
 @media (max-width: 768px) {
-    .event-card__image-wrapper { aspect-ratio: 16/9; }
     .event-card__content { padding: 14px 16px 16px; gap: 6px; }
     .event-card__title { font-size: 16px; }
     .event-card__description { font-size: 12px; }
@@ -440,14 +404,13 @@
 
 @media (max-width: 480px) {
     .event-card { border-radius: 14px; }
-    .event-card__image-wrapper { aspect-ratio: 16/9; }
+
     .event-card__content { padding: 12px 14px 14px; gap: 6px; }
     .event-card__title { font-size: 15px; }
     .event-card__description { font-size: 12px; }
     .event-card__meta-row { font-size: 11px; }
     .event-card__footer { padding: 10px 14px; }
     .event-card__meta-hint,
-    .event-card__views,
     .event-card__link { font-size: 11px; }
 
     .event-card__badges { top: 8px; right: 8px; gap: 4px; }
@@ -477,10 +440,8 @@
         page-break-inside: avoid;
         border: 1px solid #ddd !important;
         box-shadow: none !important;
+        animation: none !important;
     }
-
-    .event-card__placeholder-art { display: none !important; }
-    .event-card__image-placeholder { background: #f0f0f0 !important; }
 
     .badge {
         -webkit-print-color-adjust: exact !important;

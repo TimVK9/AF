@@ -56,11 +56,13 @@
     user-select: none;
 }
 
-/* ===== ИЗОБРАЖЕНИЕ ===== */
+/* ===== ИЗОБРАЖЕНИЕ =====
+   Рамка подстраивается под пропорции картинки.
+   Никакого aspect-ratio и никакого object-fit: cover —
+   вертикальная афиша остаётся вертикальной. */
 .event-detail__image-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
     border-radius: var(--radius-lg);
     overflow: hidden;
     background: #04201c;
@@ -69,10 +71,9 @@
 }
 
 .event-detail__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     display: block;
+    width: 100%;
+    height: auto;
 }
 
 .event-detail__image-placeholder {
@@ -262,9 +263,9 @@
     justify-content: center;
     gap: 10px;
     width: 100%;
-    padding: 12px 16px;          /* было 16px 32px → стало компактнее */
+    padding: 12px 16px;
     border-radius: var(--radius-sm);
-    font-size: 1rem;             /* можно чуть уменьшить шрифт */
+    font-size: 1rem;
     font-weight: 700;
     text-decoration: none;
     color: #fff;
@@ -272,7 +273,6 @@
     box-shadow: 0 4px 14px rgba(15, 118, 110, 0.3);
     transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
-
 
 .btn-buy-ticket:hover {
     background: var(--accent-hover);
@@ -850,11 +850,13 @@
     .event-detail__headline { gap: 10px; }
     .event-detail__title { font-size: 1.35rem; letter-spacing: -0.2px; }
     .event-detail__subtitle { font-size: 0.82rem; }
+
+    /* aspect-ratio НЕ задаём — рамка подстраивается под картинку */
     .event-detail__image-wrapper {
-        aspect-ratio: 16 / 10;
         border-radius: var(--radius);
         box-shadow: 0 2px 8px rgba(20, 24, 26, 0.04);
     }
+
     .event-detail__badges { top: 12px; left: 12px; gap: 6px; }
     .event-detail__badges .badge { font-size: 10px; padding: 4px 9px; }
     .event-detail__date-badge {

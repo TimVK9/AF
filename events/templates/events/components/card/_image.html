@@ -2,43 +2,50 @@
 {% load placeholders %}
 
 {% comment %}
-Изображение карточки.
+Изображение карточки события.
 
-Приоритет:
-  1. event.main_image (титульное изображение события);
-  2. event.place.main_image (фото площадки);
-  3. SVG-заглушка, стабильная для этого события (seed=event.pk).
+wrapper_mod — CSS-класс ориентации обёртки (может быть пустым).
+
+Размер "1200" — масштабирует по большей стороне до 1200px,
+пропорции сохраняются (вертикальная афиша остаётся вертикальной).
+Без crop — ничего не обрезается.
+
+ВАЖНО: {% thumbnail %} — блочный тег sorl, закрывается {% endthumbnail %}.
 {% endcomment %}
-<div class="event-card__image-wrapper">
+<div class="event-card__image-wrapper {{ wrapper_mod }}">
 
     {% if event.main_image %}
-        {% thumbnail event.main_image "card" crop="smart" quality=85 as thumb %}
-        <img src="{{ thumb.url }}"
-             alt="{{ event.title }}"
-             class="event-card__image"
-             loading="lazy"
-             width="{{ thumb.width }}"
-             height="{{ thumb.height }}">
+{% thumbnail event.main_image "1200x750" crop="smart" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.title }}"
+                 class="event-card__image"
+                 loading="lazy"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% empty %}
+            <div class="event-card__image-placeholder"></div>
+        {% endthumbnail %}
 
     {% elif event.place.main_image %}
-        {% thumbnail event.place.main_image "card" crop="smart" quality=85 as thumb %}
-        <img src="{{ thumb.url }}"
-             alt="{{ event.place.name }}"
-             class="event-card__image"
-             loading="lazy"
-             width="{{ thumb.width }}"
-             height="{{ thumb.height }}">
+{% thumbnail event.main_image "1200x750" crop="smart" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.place.name }}"
+                 class="event-card__image"
+                 loading="lazy"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% empty %}
+            <div class="event-card__image-placeholder"></div>
+        {% endthumbnail %}
 
     {% else %}
         <img src="{% random_placeholder event.pk %}"
              alt="{{ event.title }}"
              class="event-card__image"
-             loading="lazy"
-             width="600"
-             height="400">
+             loading="lazy">
     {% endif %}
 
-    {# Бейдж с датой — поверх картинки, слева внизу #}
+    {# Бейдж с датой — слева внизу #}
     <div class="event-card__date-badge">
         {% if event.end_date and event.end_date != event.start_date %}
             <span class="event-card__date-range">

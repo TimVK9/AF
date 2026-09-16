@@ -5,21 +5,7 @@ Django settings — единый файл для dev и prod.
   - DJANGO_DEBUG=True  (или не задана) → режим разработки
   - DJANGO_DEBUG=False                  → продакшен
 
-Все значения читаются из .env в корне проекта (см. load_dotenv ниже).
-
-Уведомления об ошибках:
-  • 500 (Internal Server Error)  → письмо на ADMINS + всем staff с email.
-  • 404 (Not Found)              → письмо на ADMINS + staff.
-  • 403 (Forbidden, в т.ч. CSRF) → письмо на ADMINS + staff.
-  • 400 (Bad Request)            → письмо на ADMINS + staff.
-  • Любая ошибка через logger    → письмо на ADMINS + staff.
-
-В dev (DEBUG=True) письма НЕ уходят — печатаются в консоль.
-Чтобы получать письма и в dev: уберите фильтр require_debug_false
-в handler'е mail_admins и настройте реальный SMTP в .env.
-
-ВАЖНО: письма о 404/403/400 могут быстро заспамить почту при атаках
-ботов. Если начнётся флуд — верните для них уровень ERROR (только 500).
+Все значения читаются из .env в корне проекта.
 """
 import os
 from pathlib import Path
@@ -42,14 +28,12 @@ IS_PROD = not DEBUG
 # БЕЗОПАСНОСТЬ
 # =========================================================
 if IS_PROD:
-    # В проде ключ обязателен — падаем, если не задан.
     SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 else:
     SECRET_KEY = os.environ.get(
         "DJANGO_SECRET_KEY",
         "django-insecure-dev-key-change-me-in-production",
     )
-
 
 _default_hosts = "127.0.0.1,localhost"
 ALLOWED_HOSTS = [
@@ -101,13 +85,12 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
 
     # Сторонние
-    "easy_thumbnails",
+    "sorl.thumbnail",
 
     # Локальные
-    'accounts',
+    "accounts",
     "events",
     "pages",
-
 ]
 
 SITE_ID = 1
@@ -125,7 +108,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
 ]
 
 
@@ -142,7 +124,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -150,8 +132,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.media",
-                "django.template.context_processors.static",
             ],
         },
     },
@@ -202,8 +182,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Хранилища. В проде — ManifestStaticFilesStorage (хеширование имён).
-# Если collectstatic падает — временно замените на StaticFilesStorage.
 if IS_PROD:
     STORAGES = {
         "default": {
@@ -248,9 +226,6 @@ SUBSCRIBE_COOLDOWN_SECONDS = int(
 if IS_PROD:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 else:
-    # В dev по умолчанию письма печатаются в консоль.
-    # Чтобы тестировать реальный SMTP в dev — задайте EMAIL_BACKEND
-    # в .env, например: EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
     EMAIL_BACKEND = os.environ.get(
         "EMAIL_BACKEND",
         "django.core.mail.backends.console.EmailBackend",
@@ -263,28 +238,20 @@ EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").lower() == "true"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 
-# Единый домен для писем — afisha-iskitim.ru.
-# Меняйте только здесь, чтобы DEFAULT_FROM_EMAIL и SERVER_EMAIL
-# не разъезжались по разным доменам (иначе DMARC/SPF ломается).
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
     "Афиша Искитим <hello@afisha-iskitim.ru>",
 )
 
-# Адрес для писем об ошибках. Fallback — тот же домен.
 SERVER_EMAIL = os.environ.get(
     "SERVER_EMAIL",
     "hello@afisha-iskitim.ru",
 )
 
-# Кому слать письма об ошибках (django.request и т.п.).
-# Если подключён StaffEmailHandler (см. ниже) — дополнительно
-# разошлём всем is_staff=True с заполненным email.
 ADMINS = [
     ("Тимофей", "kalinin.timofei@mail.ru"),
 ]
 
-# MANAGERS по умолчанию равен ADMINS — удобно для писем о 500.
 MANAGERS = ADMINS
 
 
@@ -338,60 +305,42 @@ LOGGING = {
         "mail_admins": {
             "level": "WARNING",
             "filters": ["require_debug_false"],
-            # Стандартный AdminEmailHandler шлёт только на ADMINS/MANAGERS.
-            # Если нужен ещё и staff — раскомментируйте строку ниже
-            # и создайте pages/logging_handlers.py (см. пример в конце файла).
             "class": "django.utils.log.AdminEmailHandler",
-            # "class": "pages.logging_handlers.StaffEmailHandler",
             "include_html": True,
         },
     },
 
     "loggers": {
-        # Django пишет сюда все 4xx и 5xx.
         "django.request": {
             "handlers": ["console", "error_file", "mail_admins"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # CSRF, SuspiciousOperation и прочие security-события.
         "django.security": {
             "handlers": ["console", "error_file", "mail_admins"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Ошибки шаблонов.
         "django.template": {
             "handlers": ["console", "error_file"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Ошибки БД. Только ERROR — иначе SQLite засоряет errors.log
-        # WARNING'ами «database is locked» при массовых операциях.
         "django.db.backends": {
             "handlers": ["console"],
             "level": "ERROR",
             "propagate": False,
         },
-
-        # Прикладные логгеры проекта.
         "captcha": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Общий django-логгер — чтобы не сыпалось мимо.
         "django": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Root — всё, что не поймано выше.
         "": {
             "handlers": ["console", "error_file"],
             "level": "WARNING",
@@ -401,66 +350,25 @@ LOGGING = {
 }
 
 if IS_PROD:
-    # В проде console уходит в journald — делаем его потише,
-    # подробности всё равно пишутся в файлы.
     LOGGING["handlers"]["console"]["level"] = "WARNING"
 
 
 # =========================================================
-# EASY-THUMBNAILS
+# SORL-THUMBNAIL
 # =========================================================
-THUMBNAIL_ALIASES = {
-    "": {
-        "card": {"size": (600, 400), "crop": "smart", "quality": 85},
-        "card_2x": {"size": (1200, 800), "crop": "smart", "quality": 80},
-        "detail": {"size": (1200, 750), "crop": "smart", "quality": 85},
-        "gallery": {"size": (1200, 750), "crop": "smart", "quality": 85},
-        "gallery_thumb": {"size": (200, 150), "crop": "smart", "quality": 80},
-        "admin_thumb": {"size": (80, 60), "crop": "smart", "quality": 80},
-    },
-}
-
-THUMBNAIL_OPTIMIZE = True
+# Документация: https://sorl-thumbnail.readthedocs.io/en/latest/reference/settings.html
+#
+# THUMBNAIL_DEBUG           — в dev показывает ошибки генерации,
+#                             в prod молчит (чтобы не светить пути).
+# THUMBNAIL_QUALITY         — качество JPEG (1..100).
+# THUMBNAIL_FORMAT          — формат превью. WEBP компактнее JPEG,
+#                             поддерживается всеми актуальными браузерами.
+# THUMBNAIL_PRESERVE_FORMAT — PNG/GIF остаются собой (важно для прозрачности).
+# THUMBNAIL_HIGH_RESOLUTION — генерит @2x для retina.
+# THUMBNAIL_CACHE_TIMEOUT   — сколько секунд sorl верит записи в БД-кэше.
+THUMBNAIL_DEBUG = DEBUG
 THUMBNAIL_QUALITY = 85
-THUMBNAIL_PRESERVE_EXTENSIONS = ("png",)
+THUMBNAIL_FORMAT = "WEBP"
+THUMBNAIL_PRESERVE_FORMAT = True
 THUMBNAIL_HIGH_RESOLUTION = True
-THUMBNAIL_EXTENSION = "webp"
-
-
-# =========================================================
-# ОПЦИОНАЛЬНО: кастомный handler для staff
-# =========================================================
-# Если хотите, чтобы письма об ошибках дополнительно уходили
-# всем is_staff=True с email — создайте pages/logging_handlers.py
-# с классом StaffEmailHandler и замените class в mail_admins выше.
-#
-# Пример pages/logging_handlers.py:
-#
-# import logging
-# from django.conf import settings
-# from django.contrib.auth import get_user_model
-# from django.core.mail import send_mail
-# from django.utils.log import AdminEmailHandler
-#
-# class StaffEmailHandler(AdminEmailHandler):
-#     """Шлёт письма об ошибках на ADMINS + всех is_staff с email."""
-#     def send_mail(self, subject, message, *args, **kwargs):
-#         User = get_user_model()
-#         staff_emails = list(
-#             User.objects
-#             .filter(is_staff=True)
-#             .exclude(email="")
-#             .values_list("email", flat=True)
-#             .distinct()
-#         )
-#         recipient_list = [email for _, email in settings.ADMINS] + staff_emails
-#         recipient_list = list(dict.fromkeys(recipient_list))  # дедуп
-#         if not recipient_list:
-#             return
-#         send_mail(
-#             subject,
-#             message,
-#             settings.SERVER_EMAIL,
-#             recipient_list,
-#             fail_silently=True,
-#         )
+THUMBNAIL_CACHE_TIMEOUT = 60 * 60 * 24 * 30  # 30 дней
