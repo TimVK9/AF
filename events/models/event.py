@@ -108,7 +108,7 @@ class Event(TimestampedModel):
     def save(self, *args, **kwargs):
         """Автогенерация slug с гарантией уникальности."""
         if not self.slug:
-            base = slugify(self.title, allow_unicode=True)[:180].strip('-')
+            base = slugify(self.title)[:180].strip('-')
 
             # Если из title ничего осмысленного не вышло — используем дату
             if not base or len(base) < 3:
