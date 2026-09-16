@@ -1,6 +1,6 @@
 from .servis_models import TimestampedModel
 from .category import Category
-from .place import Place
+from .place import Place, WorkingSeason
 from .event import Event
 from .event_image import EventImage
 
@@ -11,4 +11,5 @@ __all__ = [
     'Place',
     'Event',
     'EventImage',
+    'WorkingSeason',
 ]

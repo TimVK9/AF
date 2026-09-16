@@ -531,12 +531,12 @@ class EventBulkActionView(StaffRequiredMixin, View):
             return redirect(referer)
         return redirect(reverse('events:event_list_manage'))
 
-
 # ======================================================================
 #  ПЛОЩАДКА
 # ======================================================================
 from datetime import date
 from calendar import monthrange
+
 
 class PlaceDetailView(DetailView):
     """Страница площадки: описание, адрес, расписание событий."""
@@ -590,7 +590,9 @@ class PlaceDetailView(DetailView):
         is_current_month = (
             selected_year == today.year and selected_month == today.month
         )
-        schedule = self._group_by_date(events, today, hide_past=is_current_month)
+        schedule = self._group_by_date(
+            events, today, hide_past=is_current_month, place=place
+        )
 
         # ---------- Прошедшие события ----------
         past = (
@@ -609,12 +611,16 @@ class PlaceDetailView(DetailView):
         # ---------- Доступные месяцы ----------
         available_months = self._get_available_months(place, today)
 
+        # ---------- Часы работы ----------
+        working_hours = place.working_hours_display()
+
         context['schedule'] = schedule
         context['past_events'] = past
         context['total_upcoming'] = len(events)
         context['selected_month'] = f'{selected_year:04d}-{selected_month:02d}'
         context['available_months'] = available_months
         context['month_label'] = self._month_label(selected_year, selected_month)
+        context['working_hours'] = working_hours
         return context
 
     # ------------------------------------------------------------------
@@ -643,7 +649,12 @@ class PlaceDetailView(DetailView):
 
     @staticmethod
     def _get_available_months(place, today):
-        """Возвращает список месяцев с предстоящими событиями (от старых к новым)."""
+        """Возвращает список месяцев с предстоящими событиями (от старых к новым).
+
+        Длительные события, начавшиеся в прошлом, отображаются по текущему
+        месяцу, а не по месяцу старта — чтобы прошедшие месяцы не появлялись
+        в фильтре.
+        """
         months_raw = (
             Event.objects
             .filter(status=Event.Status.PUBLISHED, place=place)
@@ -663,8 +674,12 @@ class PlaceDetailView(DetailView):
             'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь',
         ]
 
+        current_ym = (today.year, today.month)
+
         result = []
         for year, month in months_raw:
+            if (year, month) < current_ym:
+                continue
             result.append({
                 'value': f'{year:04d}-{month:02d}',
                 'label': f'{MONTHS_NOM[month]} {year}',
@@ -672,10 +687,12 @@ class PlaceDetailView(DetailView):
         return result
 
     @staticmethod
-    def _group_by_date(events, today, hide_past=False):
+    def _group_by_date(events, today, hide_past=False, place=None):
         """Группирует события по дням.
 
         Если hide_past=True — прошедшие дни не включаются в расписание.
+        Длительные события показываются только в рабочие дни площадки.
+        Однодневные — всегда.
         """
         by_date = defaultdict(list)
 
@@ -685,10 +702,20 @@ class PlaceDetailView(DetailView):
             if end < start:
                 end = start
 
+            is_long = end > start
+
             current = start
             while current <= end:
-                if not hide_past or current >= today:
-                    by_date[current].append(event)
+                if hide_past and current < today:
+                    current += timedelta(days=1)
+                    continue
+
+                # Длительные события — только в рабочие дни
+                if is_long and place and not place.is_open_on(current):
+                    current += timedelta(days=1)
+                    continue
+
+                by_date[current].append(event)
                 current += timedelta(days=1)
 
         WEEKDAYS = [

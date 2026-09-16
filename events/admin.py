@@ -1,7 +1,7 @@
 """Админка приложения events."""
 from django.contrib import admin
 
-from .models import Category, Place, Event, EventImage
+from .models import Category, Place, Event, EventImage, WorkingSeason
 
 
 class EventImageInline(admin.TabularInline):
@@ -9,6 +9,24 @@ class EventImageInline(admin.TabularInline):
     model = EventImage
     extra = 1
     fields = ('image', 'caption', 'order')
+    ordering = ('order', 'id')
+
+
+class WorkingSeasonInline(admin.StackedInline):
+    """Сезоны работы площадки — галочки дней недели и выпадающие месяцы."""
+    model = WorkingSeason
+    extra = 0
+    fields = (
+        'name',
+        ('start_month', 'start_day'),
+        ('end_month', 'end_day'),
+        ('open_mon', 'open_tue', 'open_wed'),
+        ('open_thu', 'open_fri', 'open_sat', 'open_sun'),
+        'time',
+        'order',
+    )
+    verbose_name = 'Сезон работы'
+    verbose_name_plural = 'Сезоны работы'
     ordering = ('order', 'id')
 
 
@@ -31,6 +49,7 @@ class PlaceAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     ordering = ('name',)
     readonly_fields = ('created_at', 'updated_at')
+    inlines = [WorkingSeasonInline]
     fieldsets = (
         ('Основное', {
             'fields': ('name', 'slug', 'description', 'status', 'main_image'),

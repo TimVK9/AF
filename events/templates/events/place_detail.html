@@ -295,6 +295,18 @@
                 </div>
             {% endif %}
 
+            {# Время работы #}
+            {% if working_hours %}
+                <div class="place-detail__info-block">
+                    <h2 class="place-detail__info-title">Время работы</h2>
+                    <div class="place-detail__info-text place-detail__working-hours">
+                        {% for line in working_hours %}
+                            <p>{{ line }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
             {# Контакты #}
             {% if place.phone or place.email or place.website or place.vk_url %}
                 <div class="place-detail__info-block">
