@@ -1,47 +1,7 @@
 /* =========================================================
    BASE.CSS — базовые стили, переменные, хедер, футер, breadcrumbs
-   Шрифт: Manrope (локальный, 5 весов)
+   Шрифт: Manrope (Google Fonts, подключён в base.html)
    ========================================================= */
-
-@font-face {
-    font-family: 'Manrope';
-    src: url('/static/fonts/manrope/Manrope-Regular.woff2') format('woff2');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Manrope';
-    src: url('/static/fonts/manrope/Manrope-Medium.woff2') format('woff2');
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Manrope';
-    src: url('/static/fonts/manrope/Manrope-SemiBold.woff2') format('woff2');
-    font-weight: 600;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Manrope';
-    src: url('/static/fonts/manrope/Manrope-Bold.woff2') format('woff2');
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Manrope';
-    src: url('/static/fonts/manrope/Manrope-ExtraBold.woff2') format('woff2');
-    font-weight: 800;
-    font-style: normal;
-    font-display: swap;
-}
 
 /* ===== ПЕРЕМЕННЫЕ ===== */
 :root {
@@ -96,7 +56,6 @@ html {
 body {
     font-family: var(--font-sans);
     font-weight: 400;
-    font-feature-settings: "ss01", "cv11";
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.55;
