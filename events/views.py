@@ -539,7 +539,7 @@ from datetime import date
 from calendar import monthrange
 
 class PlaceDetailView(DetailView):
-    """Страница площадки: описание, адрес, расписание предстоящих событий."""
+    """Страница площадки: описание, адрес, расписание событий."""
     model = Place
     template_name = 'events/place_detail.html'
     context_object_name = 'place'
@@ -586,7 +586,13 @@ class PlaceDetailView(DetailView):
             .order_by('start_date', 'start_time')
         )
 
-        schedule = self._group_by_date(events, today)
+        # ---------- Группировка ----------
+        # Если выбран текущий месяц — не показываем прошедшие дни.
+        # Если выбран прошлый месяц — показываем все дни.
+        is_current_month = (
+            selected_year == today.year and selected_month == today.month
+        )
+        schedule = self._group_by_date(events, today, is_current_month)
 
         # ---------- Прошедшие события ----------
         past = (
@@ -602,8 +608,8 @@ class PlaceDetailView(DetailView):
             .order_by('-start_date', '-start_time')[:6]
         )
 
-        # ---------- Доступные месяцы (с событиями) ----------
-        available_months = self._get_available_months(place, today)
+        # ---------- Доступные месяцы ----------
+        available_months = self._get_available_months(place)
 
         context['schedule'] = schedule
         context['past_events'] = past
@@ -638,17 +644,11 @@ class PlaceDetailView(DetailView):
         return f'{MONTHS_GEN[month]} {year}'
 
     @staticmethod
-    def _get_available_months(place, today):
-        """Возвращает список месяцев, в которых есть события (от сегодня вперёд)."""
+    def _get_available_months(place):
+        """Возвращает список всех месяцев, в которых есть события."""
         months_raw = (
             Event.objects
             .filter(status=Event.Status.PUBLISHED, place=place)
-            .annotate(
-                event_end=Coalesce(
-                    'end_date', 'start_date', output_field=DateField()
-                )
-            )
-            .filter(event_end__gte=today)
             .values_list('start_date__year', 'start_date__month')
             .distinct()
             .order_by('start_date__year', 'start_date__month')
@@ -668,8 +668,11 @@ class PlaceDetailView(DetailView):
         return result
 
     @staticmethod
-    def _group_by_date(events, today):
-        """Группирует события по каждому дню их интервала."""
+    def _group_by_date(events, today, hide_past=False):
+        """Группирует события по дням.
+
+        Если hide_past=True — прошедшие дни не включаются в расписание.
+        """
         by_date = defaultdict(list)
 
         for event in events:
@@ -680,7 +683,8 @@ class PlaceDetailView(DetailView):
 
             current = start
             while current <= end:
-                by_date[current].append(event)
+                if not hide_past or current >= today:
+                    by_date[current].append(event)
                 current += timedelta(days=1)
 
         WEEKDAYS = [
@@ -723,3 +727,4 @@ class PlaceDetailView(DetailView):
             })
 
         return schedule
+
