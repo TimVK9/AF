@@ -140,7 +140,7 @@ class Place(TimestampedModel):
         return True
 
     def working_hours_display(self):
-        """Возвращает список строк с человекочитаемым расписанием."""
+        """Возвращает список словарей: [{'name': 'Летний период', 'time': 'Пн-Вс 10:00—17:00'}]."""
         seasons = self.working_seasons.all().order_by('order')
         if not seasons:
             return []
@@ -151,7 +151,7 @@ class Place(TimestampedModel):
         }
         ALL_DAYS = list(range(7))
 
-        lines = []
+        result = []
         for season in seasons:
             open_days = [d for d in ALL_DAYS if season.is_open_on_weekday(d)]
 
@@ -175,17 +175,17 @@ class Place(TimestampedModel):
                         f'{WEEKDAYS_SHORT[g[0]]}-{WEEKDAYS_SHORT[g[-1]]}'
                     )
 
-            line = ', '.join(day_labels)
+            schedule_line = ', '.join(day_labels)
             if season.time:
-                line += f'  {season.time}'
+                schedule_line += f'  {season.time}'
 
-            if season.name:
-                lines.append(f'{season.name}:')
-                lines.append(line)
-            else:
-                lines.append(line)
+            result.append({
+                'name': season.name,
+                'time': schedule_line,
+            })
 
-        return lines
+        return result
+
 
 
 class WorkingSeason(TimestampedModel):
