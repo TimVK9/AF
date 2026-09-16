@@ -587,12 +587,10 @@ class PlaceDetailView(DetailView):
         )
 
         # ---------- Группировка ----------
-        # Если выбран текущий месяц — не показываем прошедшие дни.
-        # Если выбран прошлый месяц — показываем все дни.
         is_current_month = (
             selected_year == today.year and selected_month == today.month
         )
-        schedule = self._group_by_date(events, today, is_current_month)
+        schedule = self._group_by_date(events, today, hide_past=is_current_month)
 
         # ---------- Прошедшие события ----------
         past = (
@@ -609,7 +607,7 @@ class PlaceDetailView(DetailView):
         )
 
         # ---------- Доступные месяцы ----------
-        available_months = self._get_available_months(place)
+        available_months = self._get_available_months(place, today)
 
         context['schedule'] = schedule
         context['past_events'] = past
@@ -644,11 +642,17 @@ class PlaceDetailView(DetailView):
         return f'{MONTHS_GEN[month]} {year}'
 
     @staticmethod
-    def _get_available_months(place):
-        """Возвращает список всех месяцев, в которых есть события."""
+    def _get_available_months(place, today):
+        """Возвращает список месяцев с предстоящими событиями (от старых к новым)."""
         months_raw = (
             Event.objects
             .filter(status=Event.Status.PUBLISHED, place=place)
+            .annotate(
+                event_end=Coalesce(
+                    'end_date', 'start_date', output_field=DateField()
+                )
+            )
+            .filter(event_end__gte=today)
             .values_list('start_date__year', 'start_date__month')
             .distinct()
             .order_by('start_date__year', 'start_date__month')
@@ -727,4 +731,3 @@ class PlaceDetailView(DetailView):
             })
 
         return schedule
-
