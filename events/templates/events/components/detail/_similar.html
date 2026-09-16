@@ -4,10 +4,10 @@
 {% if similar_events %}
 <section class="event-detail__similar">
     <h2 class="event-detail__section-title">Похожие события</h2>
-    <div class="events-grid events-grid--similar">
-        {% for similar in similar_events %}
-            {% include "events/components/card.html" with event=similar %}
-        {% endfor %}
-    </div>
+    <div class="similar-grid">
+    {% for similar in similar_events %}
+        {% include "events/components/card.html" with event=similar %}
+    {% endfor %}
+</div>
 </section>
 {% endif %}

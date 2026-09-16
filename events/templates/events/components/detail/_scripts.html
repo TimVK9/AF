@@ -1,27 +1,15 @@
-{% comment %}
-JS страницы события:
-  1. Кнопка «Поделиться» (navigator.share на мобильных)
-  2. Кнопка «Скопировать ссылку»
-  3. Копирование в буфер (с фолбэком для http)
-  4. Тост снизу экрана
-{% endcomment %}
 <script>
 (function () {
     'use strict';
 
     function ready(fn) {
-        if (document.readyState !== 'loading') {
-            fn();
-        } else {
-            document.addEventListener('DOMContentLoaded', fn);
-        }
+        if (document.readyState !== 'loading') fn();
+        else document.addEventListener('DOMContentLoaded', fn);
     }
 
     ready(function () {
 
-        // -----------------------------------------------------------
         // 1. Нативная кнопка «Поделиться»
-        // -----------------------------------------------------------
         var nativeBtn = document.querySelector('.js-share-native');
 
         if (nativeBtn && !nativeBtn.dataset.bound) {
@@ -55,12 +43,11 @@ JS страницы события:
             }
         }
 
-        // -----------------------------------------------------------
-        // 2. Кнопка «Скопировать ссылку»
-        // -----------------------------------------------------------
+        // 2. Кнопка «Скопировать ссылку» — делегирование
         document.addEventListener('click', function (e) {
             var btn = e.target.closest('.js-copy-btn');
-            if (!btn || btn.dataset.bound) return;
+            if (!btn) return;
+            e.preventDefault();
 
             var url = btn.getAttribute('data-share-url') || window.location.href;
 
@@ -69,9 +56,7 @@ JS страницы события:
             });
         });
 
-        // -----------------------------------------------------------
-        // 3. Копирование в буфер
-        // -----------------------------------------------------------
+        // 3. Копирование
         function copyToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
                 return navigator.clipboard.writeText(text)
@@ -95,14 +80,10 @@ JS страницы события:
                 var ok = document.execCommand('copy');
                 document.body.removeChild(ta);
                 return ok;
-            } catch (err) {
-                return false;
-            }
+            } catch (err) { return false; }
         }
 
-        // -----------------------------------------------------------
-        // 4. Тост снизу экрана
-        // -----------------------------------------------------------
+        // 4. Тост
         var toastTimer = null;
 
         function showToast(message) {

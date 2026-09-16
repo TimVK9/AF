@@ -1,75 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 
-{# ===================================================== #}
-{# SEO: title, description, canonical, robots            #}
-{# ===================================================== #}
-
-{% block title %}
-    {% if selected_category_name %}
-        {{ selected_category_name }} — афиша Искитима
-    {% elif date_filter == 'today' %}
-        Афиша Искитима на сегодня
-    {% elif date_filter == 'tomorrow' %}
-        Афиша Искитима на завтра
-    {% elif date_filter == 'week' %}
-        Афиша Искитима на неделю
-    {% elif date_filter == 'weekend' %}
-        Афиша Искитима на выходные
-    {% elif date_filter == 'month' %}
-        Афиша Искитима на месяц
-    {% elif date_filter == 'past' %}
-        Прошедшие события Искитима
-    {% elif search_query %}
-        Поиск: {{ search_query }} — афиша Искитима
-    {% else %}
-        Афиша Искитим — события, концерты и выставки города
-    {% endif %}
-{% endblock %}
-
-{% block description %}
-    {% if selected_category_name %}
-        {{ selected_category_name }} в Искитиме: актуальные события, даты, места проведения и цены. Афиша на сегодня, завтра и ближайшие дни.
-    {% elif date_filter == 'today' %}
-        Что посмотреть в Искитиме сегодня: концерты, спектакли, выставки и другие события. Актуальное расписание на текущий день.
-    {% elif date_filter == 'tomorrow' %}
-        Афиша Искитима на завтра: концерты, спектакли, выставки и другие события. Расписание и места проведения.
-    {% elif date_filter == 'week' %}
-        Афиша Искитима на неделю: концерты, спектакли, выставки и другие события. Полное расписание на 7 дней.
-    {% elif date_filter == 'weekend' %}
-        Куда пойти в Искитиме в выходные: концерты, спектакли, выставки и другие события. Расписание на субботу и воскресенье.
-    {% elif date_filter == 'month' %}
-        Афиша Искитима на месяц: концерты, спектакли, выставки и другие события. Полное расписание на текущий месяц.
-    {% elif date_filter == 'past' %}
-        Прошедшие события Искитима: архив концертов, спектаклей, выставок и других мероприятий города.
-    {% elif search_query %}
-        Результаты поиска «{{ search_query }}» по афише Искитима: концерты, спектакли, выставки и другие события.
-    {% else %}
-        Афиша событий Искитима: концерты, спектакли, выставки, фестивали. Удобный поиск по датам и категориям. Актуальное расписание городских мероприятий.
-    {% endif %}
-{% endblock %}
-
-{% block canonical %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'events:home' %}">{% endblock %}
-
-{% block meta %}
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Афиша Искитим">
-    <meta property="og:title" content="{% block og_title %}Афиша Искитим — события города{% endblock %}">
-    <meta property="og:description" content="Афиша событий Искитима: концерты, спектакли, выставки, фестивали. Удобный поиск по датам и категориям.">
-    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'events:home' %}">
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Афиша Искитим — события города">
-    <meta property="og:locale" content="ru_RU">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Афиша Искитим — события города">
-    <meta name="twitter:description" content="Афиша событий Искитима: концерты, спектакли, выставки, фестивали.">
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
-    <meta name="twitter:image:alt" content="Афиша Искитим — события города">
-{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'events/css/event_list.css' %}">
 <link rel="stylesheet" href="{% static 'events/css/filter_panel.css' %}">
@@ -77,61 +8,19 @@
 {% endblock %}
 
 {# ===================================================== #}
-{# ОВЕРЛЕЙ 1: ПОИСК (мобильные)                          #}
+{# МОБИЛЬНЫЕ ОВЕРЛЕИ                                     #}
 {# ===================================================== #}
 {% block search %}
-    {% include "events/components/filter/_search.html" %}
+    {% include "events/components/filter/_search.html" with uid="mobile" %}
 {% endblock %}
 
-{# ===================================================== #}
-{# ОВЕРЛЕЙ 2: ФИЛЬТР (мобильные)                         #}
-{# ===================================================== #}
 {% block filter %}
-<div class="filter-card">
-
-    <div class="filter-card__header">
-        <span class="filter-card__title">Фильтр мероприятий</span>
-        <button type="button"
-                class="filter-card__close"
-                onclick="closeOverlay('filterOverlay')"
-                aria-label="Закрыть фильтр">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-        </button>
-    </div>
-
-    <div class="filter-card__body">
-
-        {# Секция: категории #}
-        <section class="filter-card__section">
-            <h3 class="filter-card__section-title">Категория</h3>
-            {% include "events/components/filter/_categories.html" with categories=categories %}
-        </section>
-
-        {# Секция: быстрые даты #}
-        <section class="filter-card__section">
-            <h3 class="filter-card__section-title">Когда</h3>
-            {% include "events/components/filter/_date_chips.html" %}
-        </section>
-
-        {# Секция: свой период #}
-        <section class="filter-card__section">
-            <h3 class="filter-card__section-title">Свой период</h3>
-            {% include "events/components/filter/_date_range.html" %}
-        </section>
-
-    </div>
-
-</div>
+    {% include "events/components/filter/_categories.html" with categories=categories %}
+    {% include "events/components/filter/_date_chips.html" %}
 {% endblock %}
 
-{# ===================================================== #}
-{# ОВЕРЛЕЙ 3: ДАТЫ (мобильные)                           #}
-{# ===================================================== #}
 {% block dates %}
-    {% include "events/components/filter/_date_range.html" %}
+    {% include "events/components/filter/_date_range.html" with uid="mobile" %}
 {% endblock %}
 
 {% block content %}
@@ -143,10 +32,10 @@
     {# ПАНЕЛЬ ФИЛЬТРА (десктоп)                              #}
     {# ===================================================== #}
     <div class="desktop-filter">
-        {% include "events/components/filter/_search_inline.html" %}
+        {% include "events/components/filter/_search.html" with uid="desktop" %}
         {% include "events/components/filter/_categories.html" with categories=categories %}
         {% include "events/components/filter/_date_chips.html" %}
-        {% include "events/components/filter/_date_range.html" %}
+        {% include "events/components/filter/_date_range.html" with uid="desktop" %}
     </div>
 
     {% include "events/components/list/_header.html" %}

@@ -1,13 +1,18 @@
 {% load static %}
 {% load query_tags %}
 
+{% comment %}
+Панель поиска. Уникальные ID через параметр `uid`.
+Использование: {% include ".../_search.html" with uid="mobile" %}
+{% endcomment %}
+
 <div class="search-panel">
 
     <div class="search-panel__header">
         <span class="search-panel__title">Поиск мероприятий</span>
         <button type="button"
                 class="search-panel__close"
-                onclick="closeOverlay('searchOverlay')"
+                data-overlay-close="searchOverlay"
                 aria-label="Закрыть поиск">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
@@ -16,7 +21,13 @@
         </button>
     </div>
 
-    <form method="get" class="search-form" id="searchForm">
+    <form method="get" class="search-form" id="searchForm-{{ uid|default:'main' }}">
+        {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+        {% if date_filter %}<input type="hidden" name="date_filter" value="{{ date_filter }}">{% endif %}
+        {% if start_date %}<input type="hidden" name="start_date" value="{{ start_date }}">{% endif %}
+        {% if end_date %}<input type="hidden" name="end_date" value="{{ end_date }}">{% endif %}
+        {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -27,11 +38,11 @@
                value="{{ search_query }}"
                placeholder="Поиск мероприятий..."
                class="search-input"
-               id="searchInput"
+               id="searchInput-{{ uid|default:'main' }}"
                autocomplete="off">
 
         {% if search_query %}
-            <a href="{% querystring search='' %}"
+            <a href="{% querystring search='' page='' %}"
                class="search-clear" aria-label="Очистить поиск">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>

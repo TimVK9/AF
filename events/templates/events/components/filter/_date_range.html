@@ -1,6 +1,10 @@
 {% load query_tags %}
 
-<form method="get" class="date-range-form" id="dateRangeForm">
+{% comment %}
+Диапазон дат. Уникальные ID через параметр `uid`.
+{% endcomment %}
+
+<form method="get" class="date-range-form" id="dateRangeForm-{{ uid|default:'main' }}">
 
     {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
     {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
@@ -36,7 +40,7 @@
     <button type="submit" class="apply-btn">Применить</button>
 
     {% if start_date or end_date %}
-        <a href="{% querystring start_date='' end_date='' %}" class="clear-btn">Сбросить даты</a>
+        <a href="{% querystring start_date='' end_date='' page='' %}" class="clear-btn">Сбросить даты</a>
     {% endif %}
 
 </form>

@@ -1,7 +1,3 @@
-{% comment %}
-JS для галереи: переключение фото, миниатюры, стрелки, свайп.
-Без библиотек.
-{% endcomment %}
 <script>
 (function () {
     'use strict';
@@ -9,6 +5,9 @@ JS для галереи: переключение фото, миниатюры,
     document.addEventListener('DOMContentLoaded', function () {
         var galleries = document.querySelectorAll('[data-gallery]');
         if (!galleries.length) return;
+
+        var activeGallery = null;
+        var activeState = null;
 
         galleries.forEach(function (gallery) {
             var mains = gallery.querySelectorAll('[data-gallery-main]');
@@ -22,66 +21,66 @@ JS для галереи: переключение фото, миниатюры,
             var current = 0;
             var total = mains.length;
 
-            function show(index) {
-                if (index < 0) index = total - 1;
-                if (index >= total) index = 0;
-                current = index;
+            var state = {
+                show: function (index) {
+                    if (index < 0) index = total - 1;
+                    if (index >= total) index = 0;
+                    current = index;
 
-                mains.forEach(function (img, i) {
-                    img.classList.toggle('is-active', i === current);
-                });
+                    mains.forEach(function (img, i) {
+                        img.classList.toggle('is-active', i === current);
+                    });
+                    thumbs.forEach(function (t, i) {
+                        t.classList.toggle('is-active', i === current);
+                    });
+                    if (counter) counter.textContent = String(current + 1);
+                },
+                next: function () { state.show(current + 1); },
+                prev: function () { state.show(current - 1); }
+            };
 
-                thumbs.forEach(function (t, i) {
-                    t.classList.toggle('is-active', i === current);
-                });
+            gallery._galleryState = state;
 
-                if (counter) {
-                    counter.textContent = String(current + 1);
-                }
-            }
-
-            if (prevBtn) {
-                prevBtn.addEventListener('click', function () {
-                    show(current - 1);
-                });
-            }
-
-            if (nextBtn) {
-                nextBtn.addEventListener('click', function () {
-                    show(current + 1);
-                });
-            }
+            if (prevBtn) prevBtn.addEventListener('click', state.prev);
+            if (nextBtn) nextBtn.addEventListener('click', state.next);
 
             thumbs.forEach(function (thumb) {
                 thumb.addEventListener('click', function () {
                     var idx = parseInt(thumb.getAttribute('data-index'), 10) || 0;
-                    show(idx);
+                    state.show(idx);
                 });
             });
 
-            /* Свайп на мобильных */
+            // Свайп
             var touchStartX = 0;
-            var touchEndX = 0;
-
             gallery.addEventListener('touchstart', function (e) {
                 touchStartX = e.changedTouches[0].screenX;
             }, { passive: true });
 
             gallery.addEventListener('touchend', function (e) {
-                touchEndX = e.changedTouches[0].screenX;
-                var diff = touchStartX - touchEndX;
+                var diff = touchStartX - e.changedTouches[0].screenX;
                 if (Math.abs(diff) > 40) {
-                    if (diff > 0) show(current + 1);
-                    else show(current - 1);
+                    if (diff > 0) state.next();
+                    else state.prev();
                 }
             }, { passive: true });
 
-            /* Клавиатура */
-            document.addEventListener('keydown', function (e) {
-                if (!gallery.offsetParent) return;
-                if (e.key === 'ArrowLeft') show(current - 1);
-                if (e.key === 'ArrowRight') show(current + 1);
+            // Активация при наведении/тапе
+            gallery.addEventListener('mouseenter', function () {
+                activeGallery = gallery;
+                activeState = state;
             });
+            gallery.addEventListener('touchstart', function () {
+                activeGallery = gallery;
+                activeState = state;
+            }, { passive: true });
+        });
+
+        // Единый обработчик клавиатуры
+        document.addEventListener('keydown', function (e) {
+            if (!activeState || !activeGallery || !activeGallery.offsetParent) return;
+            if (e.key === 'ArrowLeft') activeState.prev();
+            if (e.key === 'ArrowRight') activeState.next();
         });
     });
 })();
