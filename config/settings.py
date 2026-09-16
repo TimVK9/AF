@@ -412,15 +412,20 @@ if IS_PROD:
 THUMBNAIL_ALIASES = {
     "": {
         # Карточка события — постер 3:4, кроп по верхней трети
-        "card":    {"size": (600, 800),  "crop": "50%,25%", "quality": 85},
+        "card":    {"size": (600, 800),   "crop": "50%,25%", "quality": 85},
         "card_2x": {"size": (1200, 1600), "crop": "50%,25%", "quality": 80},
 
-        # Детальная события — горизонтальный 16:10
-        "detail":  {"size": (1200, 750), "crop": "center", "quality": 85},
+        # Главное изображение на детальной — тот же постер 3:4
+        "detail":    {"size": (1200, 1600), "crop": "50%,25%", "quality": 85},
+        "detail_2x": {"size": (1800, 2400), "crop": "50%,25%", "quality": 80},
 
-        # Галерея — горизонтальные кадры
-        "gallery":       {"size": (1200, 750), "crop": "center", "quality": 85},
-        "gallery_thumb": {"size": (200, 150),  "crop": "center", "quality": 80},
+        # Галерея — квадраты 1:1
+        "gallery":       {"size": (1200, 1200), "crop": "50%,25%", "quality": 85},
+        "gallery_2x":    {"size": (1800, 1800), "crop": "50%,25%", "quality": 80},
+        "gallery_thumb": {"size": (200, 200),   "crop": "50%,25%", "quality": 80},
+
+        # Open Graph — 1200×630 (стандарт соцсетей, не трогаем)
+        "og": {"size": (1200, 630), "crop": "center", "quality": 85},
 
         # Админка
         "admin_thumb": {"size": (80, 60), "crop": "center", "quality": 80},
