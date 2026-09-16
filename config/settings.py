@@ -411,12 +411,19 @@ if IS_PROD:
 # =========================================================
 THUMBNAIL_ALIASES = {
     "": {
-        "card": {"size": (600, 400), "crop": "smart", "quality": 85},
-        "card_2x": {"size": (1200, 800), "crop": "smart", "quality": 80},
-        "detail": {"size": (1200, 750), "crop": "smart", "quality": 85},
-        "gallery": {"size": (1200, 750), "crop": "smart", "quality": 85},
-        "gallery_thumb": {"size": (200, 150), "crop": "smart", "quality": 80},
-        "admin_thumb": {"size": (80, 60), "crop": "smart", "quality": 80},
+        # Карточка события — постер 3:4, кроп по верхней трети
+        "card":    {"size": (600, 800),  "crop": "50%,25%", "quality": 85},
+        "card_2x": {"size": (1200, 1600), "crop": "50%,25%", "quality": 80},
+
+        # Детальная события — горизонтальный 16:10
+        "detail":  {"size": (1200, 750), "crop": "center", "quality": 85},
+
+        # Галерея — горизонтальные кадры
+        "gallery":       {"size": (1200, 750), "crop": "center", "quality": 85},
+        "gallery_thumb": {"size": (200, 150),  "crop": "center", "quality": 80},
+
+        # Админка
+        "admin_thumb": {"size": (80, 60), "crop": "center", "quality": 80},
     },
 }
 

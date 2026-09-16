@@ -26,7 +26,7 @@
 .event-card:hover { opacity: 0.92; }
 .event-card:active { opacity: 0.85; }
 
-/* ===== ИЗОБРАЖЕНИЕ ===== */
+/* ===== ИЗОБРАЖЕНИЕ — 3:4 ===== */
 .event-card__image-wrapper {
     position: relative;
     width: 100%;
@@ -42,12 +42,13 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center top;
     display: block;
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
 }
 
-.event-card:hover .event-card__image { transform: scale(1.04); }
+.event-card:hover .event-card__image { transform: scale(1.03); }
 
 /* ===== БЕЙДЖ ДАТЫ ===== */
 .event-card__date-badge {
@@ -209,7 +210,7 @@
     color: var(--text-primary);
     line-height: 1.25;
     margin: 0;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.02em;
     overflow-wrap: anywhere;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -279,7 +280,7 @@
     .event-card__title {
         font-size: 0.92rem;
         line-height: 1.3;
-        letter-spacing: -0.2px;
+        letter-spacing: -0.01em;
     }
 
     .event-card__category { font-size: 0.68rem; }
