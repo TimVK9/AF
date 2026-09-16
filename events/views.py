@@ -647,44 +647,55 @@ class PlaceDetailView(DetailView):
         ]
         return f'{MONTHS_GEN[month]} {year}'
 
-    @staticmethod
-    def _get_available_months(place, today):
-        """Возвращает список месяцев с предстоящими событиями (от старых к новым).
+@staticmethod
+def _get_available_months(place, today):
+    """Возвращает список месяцев, в которые есть предстоящие события.
 
-        Длительные события, начавшиеся в прошлом, отображаются по текущему
-        месяцу, а не по месяцу старта — чтобы прошедшие месяцы не появлялись
-        в фильтре.
-        """
-        months_raw = (
-            Event.objects
-            .filter(status=Event.Status.PUBLISHED, place=place)
-            .annotate(
-                event_end=Coalesce(
-                    'end_date', 'start_date', output_field=DateField()
-                )
+    Учитывает длительные события: если start_date=01.09, end_date=30.11,
+    то в фильтре появятся сентябрь, октябрь и ноябрь.
+    """
+    events = (
+        Event.objects
+        .filter(status=Event.Status.PUBLISHED, place=place)
+        .annotate(
+            event_end=Coalesce(
+                'end_date', 'start_date', output_field=DateField()
             )
-            .filter(event_end__gte=today)
-            .values_list('start_date__year', 'start_date__month')
-            .distinct()
-            .order_by('start_date__year', 'start_date__month')
         )
+        .filter(event_end__gte=today)
+        .values_list('start_date', 'event_end')
+    )
 
-        MONTHS_NOM = [
-            '', 'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
-            'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь',
-        ]
+    MONTHS_NOM = [
+        '', 'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+        'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь',
+    ]
 
-        current_ym = (today.year, today.month)
+    current_ym = (today.year, today.month)
+    months_set = set()
 
-        result = []
-        for year, month in months_raw:
-            if (year, month) < current_ym:
-                continue
-            result.append({
-                'value': f'{year:04d}-{month:02d}',
-                'label': f'{MONTHS_NOM[month]} {year}',
-            })
-        return result
+    for start, end in events:
+        if end < start:
+            end = start
+
+        y, m = start.year, start.month
+        end_ym = (end.year, end.month)
+
+        while (y, m) <= end_ym:
+            if (y, m) >= current_ym:
+                months_set.add((y, m))
+            if m == 12:
+                y, m = y + 1, 1
+            else:
+                m += 1
+
+    result = []
+    for year, month in sorted(months_set):
+        result.append({
+            'value': f'{year:04d}-{month:02d}',
+            'label': f'{MONTHS_NOM[month]} {year}',
+        })
+    return result
 
     @staticmethod
     def _group_by_date(events, today, hide_past=False, place=None):
