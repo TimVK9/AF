@@ -1,34 +1,46 @@
-# accounts/adapter.py
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from django.utils.dateparse import parse_date
+
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def populate_user(self, request, sociallogin, data):
-        # Сначала сохраняем базовые данные (имя, email) через родителя
         user = super().populate_user(request, sociallogin, data)
-        
-        # Получаем или создаем профиль
-        profile, created = user.profile.get_or_create(user=user)
-        
-        # 1. Дата рождения (VK присылает в формате DD.MM.YYYY)
-        bdate_str = data.get('bdate')
-        if bdate_str:
-            # parse_date умеет работать с форматом YYYY-MM-DD, VK шлет DD.MM.YYYY
-            try:
-                day, month, year = map(int, bdate_str.split('.'))
-                profile.date_of_birth = f"{year}-{month}-{day}"
-            except ValueError:
-                pass # Если формат не тот, игнорируем
-        
-        # 2. Пол (VK: 1 - женский, 2 - мужской, 0 - не указан)
-        sex = data.get('sex')
-        if sex:
-            profile.gender = int(sex)
-            
-        # 3. Аватар (VK присылает поле 'photo', это маленькая картинка)
-        photo_url = data.get('photo')
-        if photo_url:
-            profile.avatar_url = photo_url
-            
-        profile.save()
+        # Здесь НЕ трогаем profile — пользователь ещё не сохранён.
+        # Данные из VK сохраняем в extra_data, достанем позже.
         return user
+
+    def pre_social_login(self, request, sociallogin):
+        # Здесь пользователь уже сохранён в БД.
+        # Сохраняем данные из VK в профиль.
+        user = sociallogin.user
+        if not user.pk:
+            return
+
+        from accounts.models import UserProfile
+        profile, created = UserProfile.objects.get_or_create(user=user)
+
+        extra = sociallogin.account.extra_data if sociallogin.account else {}
+
+        # Аватар
+        photo = extra.get('photo') or extra.get('photo_200')
+        if photo:
+            profile.avatar_url = photo
+
+        # Дата рождения (VK: DD.MM.YYYY или DD.MM)
+        bdate = extra.get('bdate')
+        if bdate:
+            try:
+                parts = bdate.split('.')
+                if len(parts) == 3:
+                    profile.date_of_birth = f"{parts[2]}-{parts[1].zfill(2)}-{parts[0].zfill(2)}"
+                elif len(parts) == 2:
+                    # VK иногда не отдаёт год — пропускаем
+                    pass
+            except (ValueError, IndexError):
+                pass
+
+        # Пол (1 — женский, 2 — мужской)
+        sex = extra.get('sex')
+        if sex is not None:
+            profile.gender = int(sex)
+
+        profile.save()
