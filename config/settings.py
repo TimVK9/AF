@@ -19,14 +19,12 @@ IS_PROD = not DEBUG
 # БЕЗОПАСНОСТЬ
 # =========================================================
 if IS_PROD:
-    # В проде ключ обязателен — падаем, если не задан.
     SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 else:
     SECRET_KEY = os.environ.get(
         "DJANGO_SECRET_KEY",
         "django-insecure-dev-key-change-me-in-production",
     )
-
 
 _default_hosts = "127.0.0.1,localhost"
 ALLOWED_HOSTS = [
@@ -52,7 +50,7 @@ if IS_PROD:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = False  # JS должен читать CSRF-токен
+    CSRF_COOKIE_HTTPONLY = False
 
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
@@ -64,10 +62,18 @@ if IS_PROD:
 
 
 # =========================================================
+# ВКЛЮЧЕНИЕ КУКИ И МЕТРИКИ
+# Пока не подано уведомление в Роскомнадзор — False.
+# После подачи — поставить True в .env и перезапустить gunicorn.
+# =========================================================
+COOKIES_ENABLED = os.environ.get("COOKIES_ENABLED", "False").lower() in ("1", "true", "yes", "on")
+METRIKA_ENABLED = os.environ.get("METRIKA_ENABLED", "False").lower() in ("1", "true", "yes", "on")
+
+
+# =========================================================
 # ПРИЛОЖЕНИЯ
 # =========================================================
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -77,7 +83,6 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.sitemaps",
 
-    # Сторонние
     "easy_thumbnails",
     "allauth",
     "allauth.account",
@@ -86,18 +91,18 @@ INSTALLED_APPS = [
     "django_consent_152fz",
     "django_cookies_152fz",
 
-    # Локальные
     'accounts',
     "events",
     "pages",
 ]
+
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 DJANGO_CONSENT_152FZ = {"enable_core": True}
-DJANGO_COOKIES_152FZ = {"enable_cookies": True}
+DJANGO_COOKIES_152FZ = {"enable_cookies": COOKIES_ENABLED}
 
 SITE_ID = 1
 
@@ -115,8 +120,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-
-
 ]
 
 
@@ -143,7 +146,6 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.media",
                 "django.template.context_processors.static",
-
                 "config.context_processors.metrika_context",
             ],
         },
@@ -195,8 +197,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Хранилища. В проде — ManifestStaticFilesStorage (хеширование имён).
-# Если collectstatic падает — временно замените на StaticFilesStorage.
 if IS_PROD:
     STORAGES = {
         "default": {
@@ -241,9 +241,6 @@ SUBSCRIBE_COOLDOWN_SECONDS = int(
 if IS_PROD:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 else:
-    # В dev по умолчанию письма печатаются в консоль.
-    # Чтобы тестировать реальный SMTP в dev — задайте EMAIL_BACKEND
-    # в .env, например: EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
     EMAIL_BACKEND = os.environ.get(
         "EMAIL_BACKEND",
         "django.core.mail.backends.console.EmailBackend",
@@ -256,28 +253,20 @@ EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").lower() == "true"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 
-# Единый домен для писем — afisha-iskitim.ru.
-# Меняйте только здесь, чтобы DEFAULT_FROM_EMAIL и SERVER_EMAIL
-# не разъезжались по разным доменам (иначе DMARC/SPF ломается).
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
     "Афиша Искитим <hello@afisha-iskitim.ru>",
 )
 
-# Адрес для писем об ошибках. Fallback — тот же домен.
 SERVER_EMAIL = os.environ.get(
     "SERVER_EMAIL",
     "hello@afisha-iskitim.ru",
 )
 
-# Кому слать письма об ошибках (django.request и т.п.).
-# Если подключён StaffEmailHandler (см. ниже) — дополнительно
-# разошлём всем is_staff=True с заполненным email.
 ADMINS = [
     ("Тимофей", "kalinin.timofei@mail.ru"),
 ]
 
-# MANAGERS по умолчанию равен ADMINS — удобно для писем о 500.
 MANAGERS = ADMINS
 
 
@@ -331,60 +320,42 @@ LOGGING = {
         "mail_admins": {
             "level": "WARNING",
             "filters": ["require_debug_false"],
-            # Стандартный AdminEmailHandler шлёт только на ADMINS/MANAGERS.
-            # Если нужен ещё и staff — раскомментируйте строку ниже
-            # и создайте pages/logging_handlers.py (см. пример в конце файла).
             "class": "django.utils.log.AdminEmailHandler",
-            # "class": "pages.logging_handlers.StaffEmailHandler",
             "include_html": True,
         },
     },
 
     "loggers": {
-        # Django пишет сюда все 4xx и 5xx.
         "django.request": {
             "handlers": ["console", "error_file", "mail_admins"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # CSRF, SuspiciousOperation и прочие security-события.
         "django.security": {
             "handlers": ["console", "error_file", "mail_admins"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Ошибки шаблонов.
         "django.template": {
             "handlers": ["console", "error_file"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Ошибки БД. Только ERROR — иначе SQLite засоряет errors.log
-        # WARNING'ами «database is locked» при массовых операциях.
         "django.db.backends": {
             "handlers": ["console"],
             "level": "ERROR",
             "propagate": False,
         },
-
-        # Прикладные логгеры проекта.
         "captcha": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Общий django-логгер — чтобы не сыпалось мимо.
         "django": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
-
-        # Root — всё, что не поймано выше.
         "": {
             "handlers": ["console", "error_file"],
             "level": "WARNING",
@@ -394,8 +365,6 @@ LOGGING = {
 }
 
 if IS_PROD:
-    # В проде console уходит в journald — делаем его потише,
-    # подробности всё равно пишутся в файлы.
     LOGGING["handlers"]["console"]["level"] = "WARNING"
 
 
@@ -404,23 +373,14 @@ if IS_PROD:
 # =========================================================
 THUMBNAIL_ALIASES = {
     "": {
-        # Карточка события — постер 3:4, кроп по верхней трети
         "card":    {"size": (600, 800),   "crop": "50%,25%", "quality": 85},
         "card_2x": {"size": (1200, 1600), "crop": "50%,25%", "quality": 80},
-
-        # Главное изображение на детальной — тот же постер 3:4
         "detail":    {"size": (1200, 1600), "crop": "50%,25%", "quality": 85},
         "detail_2x": {"size": (1800, 2400), "crop": "50%,25%", "quality": 80},
-
-        # Галерея — квадраты 1:1
         "gallery":       {"size": (1200, 1200), "crop": "50%,25%", "quality": 85},
         "gallery_2x":    {"size": (1800, 1800), "crop": "50%,25%", "quality": 80},
         "gallery_thumb": {"size": (200, 200),   "crop": "50%,25%", "quality": 80},
-
-        # Open Graph — 1200×630 (стандарт соцсетей, не трогаем)
         "og": {"size": (1200, 630), "crop": "center", "quality": 85},
-
-        # Админка
         "admin_thumb": {"size": (80, 60), "crop": "center", "quality": 80},
     },
 }
@@ -431,6 +391,10 @@ THUMBNAIL_PRESERVE_EXTENSIONS = ("png",)
 THUMBNAIL_HIGH_RESOLUTION = True
 THUMBNAIL_EXTENSION = "jpg"
 
+
+# =========================================================
+# СОЦСЕТИ (allauth)
+# =========================================================
 SOCIALACCOUNT_PROVIDERS = {
     "vk": {
         "APP": {
@@ -441,7 +405,6 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# allauth: только для соцсетей, без своих страниц входа/регистрации
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
@@ -452,5 +415,8 @@ SOCIALACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSocialSignupForm',
 }
 
-# Yandex.Metrica
-YANDEX_METRIKA_ID = "112359122" 
+
+# =========================================================
+# YANDEX.METRIKA
+# =========================================================
+YANDEX_METRIKA_ID = "112359122" if METRIKA_ENABLED else None
