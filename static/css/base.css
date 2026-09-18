@@ -103,7 +103,36 @@ h1, h2, h3, h4, h5, h6 {
     justify-content: space-between;
     gap: 16px;
 }
+.btn-vk-login {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #0077FF;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
 
+.btn-vk-login:hover {
+    background: #0061CC;
+}
+.header-login-btn {
+    padding: 8px 18px;
+    background: #0f766e;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.header-login-btn:hover {
+    background: #0d635c;
+}
 .header-logo a {
     display: flex;
     align-items: center;

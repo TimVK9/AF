@@ -33,7 +33,7 @@ urlpatterns = [
     #  Имя короткое — удобно в reverse('sitemap').
     # ---------------------------------------------------------
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
-
+ path('accounts/', include('allauth.urls')),
 
     # ---------------------------------------------------------
     #  Приложения

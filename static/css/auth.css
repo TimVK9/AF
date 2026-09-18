@@ -117,6 +117,59 @@
     accent-color: var(--accent);
 }
 
+/* ===== Кнопка ВК ===== */
+.auth-btn-vk {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    background: #0077FF;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--transition), transform 0.1s;
+}
+
+.auth-btn-vk:hover { background: #0061CC; }
+.auth-btn-vk:active { transform: scale(0.98); }
+
+/* ===== Разделитель "или" ===== */
+.auth-divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 30px);
+    height: 1px;
+    background: var(--border);
+}
+
+.auth-divider::before { left: 0; }
+.auth-divider::after  { right: 0; }
+
+.auth-divider span {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-secondary);
+    padding: 0 12px;
+}
+
+/* ===== Кнопка входа ===== */
 .auth-btn {
     width: 100%;
     padding: 14px 20px;
@@ -151,6 +204,7 @@
 
 .auth-card__footer a:hover { text-decoration: underline; }
 
+/* ===== Адаптив ===== */
 @media (max-width: 480px) {
     .auth-page {
         padding: 24px 16px;
@@ -167,7 +221,7 @@
         letter-spacing: 8px;
         padding-left: 22px;
     }
-    .auth-btn { padding: 13px 18px; }
+    .auth-btn, .auth-btn-vk { padding: 13px 18px; }
 }
 
 @media (max-width: 360px) {

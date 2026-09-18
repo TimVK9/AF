@@ -1,26 +1,3 @@
-"""
-Django settings — единый файл для dev и prod.
-
-Режим определяется переменной окружения DJANGO_DEBUG:
-  - DJANGO_DEBUG=True  (или не задана) → режим разработки
-  - DJANGO_DEBUG=False                  → продакшен
-
-Все значения читаются из .env в корне проекта (см. load_dotenv ниже).
-
-Уведомления об ошибках:
-  • 500 (Internal Server Error)  → письмо на ADMINS + всем staff с email.
-  • 404 (Not Found)              → письмо на ADMINS + staff.
-  • 403 (Forbidden, в т.ч. CSRF) → письмо на ADMINS + staff.
-  • 400 (Bad Request)            → письмо на ADMINS + staff.
-  • Любая ошибка через logger    → письмо на ADMINS + staff.
-
-В dev (DEBUG=True) письма НЕ уходят — печатаются в консоль.
-Чтобы получать письма и в dev: уберите фильтр require_debug_false
-в handler'е mail_admins и настройте реальный SMTP в .env.
-
-ВАЖНО: письма о 404/403/400 могут быстро заспамить почту при атаках
-ботов. Если начнётся флуд — верните для них уровень ERROR (только 500).
-"""
 import os
 from pathlib import Path
 
@@ -102,13 +79,21 @@ INSTALLED_APPS = [
 
     # Сторонние
     "easy_thumbnails",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.vk",
 
     # Локальные
     'accounts',
     "events",
     "pages",
-
 ]
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
 
 SITE_ID = 1
 
@@ -125,6 +110,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+
 
 ]
 
@@ -436,5 +423,20 @@ THUMBNAIL_OPTIMIZE = True
 THUMBNAIL_QUALITY = 85
 THUMBNAIL_PRESERVE_EXTENSIONS = ("png",)
 THUMBNAIL_HIGH_RESOLUTION = True
-THUMBNAIL_EXTENSION = "webp"
+THUMBNAIL_EXTENSION = "jpg"
 
+SOCIALACCOUNT_PROVIDERS = {
+    "vk": {
+        "APP": {
+            "client_id": os.environ.get("VK_CLIENT_ID", "54778776"),
+            "secret": os.environ.get("VK_SECRET_KEY", ""),
+        },
+        "SCOPE": ["email"],
+    }
+}
+
+# allauth: только для соцсетей, без своих страниц входа/регистрации
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_REQUIRED = True

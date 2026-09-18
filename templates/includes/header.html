@@ -1,10 +1,12 @@
 {% load static %}
+{% load socialaccount %}
 
 {% comment %}
 Шапка сайта.
 
 - Логотип ведёт на главную афиши.
 - Справа — меню staff/superuser (создание, управление, админка, выход).
+- Для гостей — кнопка входа через ВК.
 - Дропдаун работает на JS из base.html.
 
 ВАЖНО: `user.is_authenticated and user.is_staff or user.is_superuser`
@@ -46,7 +48,6 @@
                         <hr>
                         <a href="{% url 'admin:index' %}">Админка</a>
 
-
                         {% if user.is_authenticated %}
                             <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
                                 {% csrf_token %}
@@ -55,7 +56,12 @@
                         {% endif %}
                     </div>
                 </div>
-            {% endif %}
+            {% elif not user.is_authenticated %}
+
+    <a href="{% url 'accounts:login' %}" class="header-login-btn">Войти</a>
+{% endif %}
+
+
         </div>
 
     </div>
