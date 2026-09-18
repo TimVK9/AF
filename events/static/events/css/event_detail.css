@@ -55,17 +55,15 @@
     user-select: none;
 }
 
-/* ===== ГЛАВНОЕ ИЗОБРАЖЕНИЕ — 3:4, постер ===== */
+/* ===== ГЛАВНОЕ ИЗОБРАЖЕНИЕ ===== */
 .event-detail__image-wrapper {
     position: relative;
     width: 100%;
-    max-width: 560px;
-    aspect-ratio: 3 / 4;
-    margin: 0 auto;
     border-radius: 20px;
     overflow: hidden;
     background: #e8e8e8;
     isolation: isolate;
+    margin-bottom: 24px;
 }
 
 .event-detail__image {
@@ -74,6 +72,19 @@
     object-fit: cover;
     object-position: center top;
     display: block;
+}
+
+/* Вертикальный постер — 3:4, центрированный */
+.event-detail__image--portrait {
+    aspect-ratio: 3 / 4;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+/* Горизонтальное изображение — 16:9 на всю ширину */
+.event-detail__image--landscape {
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
 }
 
 .event-detail__image-placeholder {
@@ -378,7 +389,6 @@
 
 .event-detail__fact-value--link:hover { color: var(--accent-light); }
 
-
 .event-detail__fact-sub {
     font-size: 0.8rem;
     color: var(--text-muted);
@@ -624,7 +634,6 @@
 
 /* =========================================================
    ПОХОЖИЕ СОБЫТИЯ — сетка
-   Карточки фиксированной ширины, как на главной.
    ========================================================= */
 
 .event-detail__similar {
@@ -925,10 +934,14 @@
 
     .event-detail__subtitle { font-size: 0.85rem; gap: 6px; }
 
-    /* Главное изображение — на всю ширину, остаётся 3:4 */
-    .event-detail__image-wrapper {
+    .event-detail__image--portrait {
         max-width: 100%;
         aspect-ratio: 3 / 4;
+        border-radius: 16px;
+    }
+
+    .event-detail__image--landscape {
+        aspect-ratio: 16 / 9;
         border-radius: 16px;
     }
 
@@ -974,7 +987,6 @@
         border-radius: 7px;
     }
 
-    /* Галерея на планшете — 4:5, чуть мягче квадрата */
     .event-gallery__main {
         aspect-ratio: 4 / 5;
         max-height: none;
@@ -1031,9 +1043,14 @@
     .event-detail__btn { padding: 11px 12px; font-size: 0.82rem; }
     .btn-buy-ticket { padding: 15px 18px; font-size: 0.95rem; border-radius: 12px; }
 
-    .event-detail__image-wrapper {
+    .event-detail__image--portrait {
         max-width: 100%;
         aspect-ratio: 3 / 4;
+        border-radius: 14px;
+    }
+
+    .event-detail__image--landscape {
+        aspect-ratio: 16 / 9;
         border-radius: 14px;
     }
 

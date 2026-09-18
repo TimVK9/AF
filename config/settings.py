@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.vk",
+    "django_consent_152fz",
+    "django_cookies_152fz",
 
     # Локальные
     'accounts',
@@ -94,6 +96,8 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+DJANGO_CONSENT_152FZ = {"enable_core": True}
+DJANGO_COOKIES_152FZ = {"enable_cookies": True}
 
 SITE_ID = 1
 
@@ -139,6 +143,8 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.media",
                 "django.template.context_processors.static",
+
+                "config.context_processors.metrika_context",
             ],
         },
     },
@@ -441,3 +447,10 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_ADAPTER = "accounts.adapter.SocialAccountAdapter"
+
+SOCIALACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSocialSignupForm',
+}
+
+# Yandex.Metrica
+YANDEX_METRIKA_ID = "112359122" 

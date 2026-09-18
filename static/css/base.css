@@ -717,6 +717,43 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
     word-break: break-word;
 }
+.auth-consent {
+    margin: 4px 0;
+}
+
+.auth-consent__label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.auth-consent__label input[type="checkbox"] {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--accent, #0f766e);
+    cursor: pointer;
+}
+
+.auth-consent__text {
+    min-width: 0;
+}
+
+.auth-consent__text a {
+    color: var(--accent, #0f766e);
+    text-decoration: underline;
+    text-decoration-color: rgba(15, 118, 110, 0.3);
+    text-underline-offset: 2px;
+}
+
+.auth-consent__text a:hover {
+    text-decoration-color: var(--accent, #0f766e);
+}
 
 .header-user-email {
     display: block;

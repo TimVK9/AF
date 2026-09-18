@@ -42,6 +42,8 @@ urlpatterns = [
     # ---------------------------------------------------------
     path('', include('events.urls')),
     path('', include('pages.urls')),
+    path("", include("django_consent_152fz.urls")),
+    path("cookies/", include("django_cookies_152fz.urls")),
 
 ]
 

@@ -132,3 +132,15 @@ def _send_otp_email(user, otp):
         html_message=html_body,
         fail_silently=False,
     )
+from django.shortcuts import get_object_or_404, render
+
+from .models import LegalDocument
+
+
+def legal_document_view(request, doc_type):
+    doc = get_object_or_404(
+        LegalDocument,
+        doc_type=doc_type,
+        is_active=True
+    )
+    return render(request, 'accounts/legal/document.html', {'doc': doc})

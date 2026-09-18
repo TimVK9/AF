@@ -1,41 +1,51 @@
 {% load thumbnail %}
 {% load placeholders %}
+{% load image_utils %}
 
-{% comment %}
-Изображение события на странице детали.
-
-Приоритет:
-  1. event.main_image;
-  2. event.place.main_image (фото площадки);
-  3. SVG-заглушка, стабильная для этого события (seed=event.pk).
-
-Бейдж даты — слева внизу, как в карточке.
-Бейджи цены/возраста — справа сверху.
-{% endcomment %}
 <div class="event-detail__image-wrapper">
 
     {% if event.main_image %}
-        {% thumbnail event.main_image "detail" crop="smart" quality=85 as thumb %}
-        <img src="{{ thumb.url }}"
-             alt="{{ event.title }}"
-             class="event-detail__image"
-             loading="eager"
-             width="{{ thumb.width }}"
-             height="{{ thumb.height }}">
+        {% if event.main_image|is_portrait %}
+            {% thumbnail event.main_image "600x900" crop="smart" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.title }}"
+                 class="event-detail__image event-detail__image--portrait"
+                 loading="eager"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% else %}
+            {% thumbnail event.main_image "1200x675" crop="smart" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.title }}"
+                 class="event-detail__image event-detail__image--landscape"
+                 loading="eager"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% endif %}
 
     {% elif event.place.main_image %}
-        {% thumbnail event.place.main_image "detail" crop="smart" quality=85 as thumb %}
-        <img src="{{ thumb.url }}"
-             alt="{{ event.place.name }}"
-             class="event-detail__image"
-             loading="eager"
-             width="{{ thumb.width }}"
-             height="{{ thumb.height }}">
+        {% if event.place.main_image|is_portrait %}
+            {% thumbnail event.place.main_image "600x900" crop="smart" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.place.name }}"
+                 class="event-detail__image event-detail__image--portrait"
+                 loading="eager"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% else %}
+            {% thumbnail event.place.main_image "1200x675" crop="smart" quality=85 as thumb %}
+            <img src="{{ thumb.url }}"
+                 alt="{{ event.place.name }}"
+                 class="event-detail__image event-detail__image--landscape"
+                 loading="eager"
+                 width="{{ thumb.width }}"
+                 height="{{ thumb.height }}">
+        {% endif %}
 
     {% else %}
         <img src="{% random_placeholder event.pk %}"
              alt="{{ event.title }}"
-             class="event-detail__image"
+             class="event-detail__image event-detail__image--landscape"
              loading="eager"
              width="1200"
              height="675">

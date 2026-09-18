@@ -1,4 +1,5 @@
 {% load static %}
+{% load cookies_tags %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -105,8 +106,6 @@
 
 
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'pages/css/cookie_banner.css' %}">
-
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -319,10 +318,39 @@
     })();
     </script>
 
-    {% include "pages/includes/cookie_banner.html" %}
-    <script src="{% static 'pages/js/cookie_banner.js' %}" defer></script>
+    {# ===================================================== #}
+    {# ЯНДЕКС.МЕТРИКА                                       #}
+    {#                                                      #}
+    {# Stub-очередь ставится всегда, но данные НЕ           #}
+    {# отправляются, пока пакет django_cookies_152fz не     #}
+    {# загрузит tag.js после согласия на категорию          #}
+    {# analytics. Init-вызов попадает в очередь ym.a и      #}
+    {# обрабатывается только когда tag.js загрузится.       #}
+    {# ===================================================== #}
+    {% if YANDEX_METRIKA_ID %}
+    <script>
+    window.ym = window.ym || function() {
+        (window.ym.a = window.ym.a || []).push(arguments);
+    };
+    window.ym.l = 1 * new Date();
+    ym({{ YANDEX_METRIKA_ID }}, "init", {
+        clickmap: true,
+        trackLinks: true,
+        accurateTrackBounce: true,
+        webvisor: true
+    });
+    </script>
+    {% endif %}
 
     {% block extra_js %}{% endblock %}
 
+    {# ===================================================== #}
+    {# COOKIE-БАННЕР (пакет django_cookies_152fz)          #}
+    {#                                                      #}
+    {# Тег render_cookie_banner выводит баннер, JS-runtime  #}
+    {# и страницу настроек. Скрипты из реестра загружаются   #}
+    {# только после согласия по категориям.                  #}
+    {# ===================================================== #}
+    {% render_cookie_banner %}
 </body>
 </html>

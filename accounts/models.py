@@ -11,6 +11,74 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
+from django.db import models
+
+
+class LegalDocument(models.Model):
+    """Редакция юридического документа."""
+    DOC_TYPE_CHOICES = [
+        ('privacy', 'Политика конфиденциальности'),
+        ('terms', 'Пользовательское соглашение (оферта)'),
+    ]
+
+    doc_type = models.CharField(max_length=20, choices=DOC_TYPE_CHOICES)
+    version = models.CharField(max_length=20, help_text='Напр. 1.0, 1.1...')
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    effective_date = models.DateTimeField()
+    is_active = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-effective_date']
+        unique_together = ['doc_type', 'version']
+
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            LegalDocument.objects.filter(
+                doc_type=self.doc_type, is_active=True
+            ).exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.title} (v{self.version})'
+
+
+class ConsentRecord(models.Model):
+    """Факт согласия пользователя с конкретной редакцией документа."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='consents'
+    )
+    document = models.ForeignKey(
+        LegalDocument,
+        on_delete=models.PROTECT,
+        related_name='consents'
+    )
+    purpose = models.CharField(
+        max_length=100,
+        help_text='Цель: registration, newsletter, order и т.д.'
+    )
+    channel = models.CharField(
+        max_length=100,
+        default='web',
+        help_text='Канал: signup-form, vk-login, profile и т.д.'
+    )
+    granted_at = models.DateTimeField(auto_now_add=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-granted_at']
+        indexes = [
+            models.Index(fields=['user', 'document', 'purpose']),
+        ]
+
+    def __str__(self):
+        status = 'отозвано' if self.revoked_at else 'действует'
+        return f'{self.user} → {self.document} [{status}]'
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
