@@ -36,7 +36,7 @@
 
                     <div class="header-user-menu__dropdown" hidden>
                         <div class="header-user-info">
-                            <span class="header-user-name">{{ user.get_short_name|default:user.username }}</span>
+                            <span class="header-user-name">{{ user.username|default:user.username }}</span>
                             <span class="header-user-email">{{ user.email }}</span>
                         </div>
 
