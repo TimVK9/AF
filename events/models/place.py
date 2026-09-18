@@ -42,6 +42,19 @@ class Place(TimestampedModel):
     floor = models.CharField(max_length=20, blank=True, verbose_name='Этаж')
     postal_code = models.CharField(max_length=20, blank=True, verbose_name='Почтовый индекс')
 
+
+
+    latitude = models.FloatField(
+        null=True, blank=True,
+        verbose_name='Широта',
+        help_text='Например: 54.6333',
+    )
+    longitude = models.FloatField(
+        null=True, blank=True,
+        verbose_name='Долгота',
+        help_text='Например: 83.3000',
+    )
+
     main_image = models.ImageField(
         upload_to='places/%Y/%m/',
         null=True,
@@ -76,6 +89,17 @@ class Place(TimestampedModel):
             self.slug = slug
         super().save(*args, **kwargs)
 
+    @property
+    def lat_str(self):
+        """Координата с точкой, независимо от локали."""
+        return f"{self.latitude:.6f}" if self.latitude else ""
+
+    @property
+    def lng_str(self):
+        """Координата с точкой, независимо от локали."""
+        return f"{self.longitude:.6f}" if self.longitude else ""
+
+        
     @property
     def short_address(self):
         """Короткий адрес: 'Город, Улица, дом'."""

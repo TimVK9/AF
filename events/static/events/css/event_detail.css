@@ -372,11 +372,12 @@
 
 .event-detail__fact-value--link {
     text-decoration: none;
-    color: var(--text-primary);
+    color: var(--accent);
     transition: color 0.2s;
 }
 
-.event-detail__fact-value--link:hover { color: var(--accent); }
+.event-detail__fact-value--link:hover { color: var(--accent-light); }
+
 
 .event-detail__fact-sub {
     font-size: 0.8rem;

@@ -59,7 +59,19 @@
                 {{ event.place.name }}
             </a>
             {% if event.place.short_address %}
-                <span class="event-detail__fact-sub">{{ event.place.short_address }}</span>
+                {% if event.place.lat_str and event.place.lng_str %}
+                    <a class="event-detail__fact-sub event-detail__map-link"
+                       href="https://yandex.ru/maps/?ll={{ event.place.lng_str }},{{ event.place.lat_str }}&z=17&pt={{ event.place.lng_str }},{{ event.place.lat_str }},pm2rdm"
+                       target="_blank" rel="noopener">
+                        {{ event.place.short_address }}
+                    </a>
+                {% else %}
+                    <a class="event-detail__fact-sub event-detail__map-link"
+                       href="https://yandex.ru/maps/?text=Искитим, {{ event.place.name|urlencode }}, {{ event.place.street|urlencode }} {{ event.place.house_number|urlencode }}"
+                       target="_blank" rel="noopener">
+                        {{ event.place.short_address }}
+                    </a>
+                {% endif %}
             {% endif %}
         </div>
     </li>

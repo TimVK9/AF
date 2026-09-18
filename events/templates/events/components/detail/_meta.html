@@ -4,7 +4,7 @@
 {% comment %}
 OpenGraph / Twitter / Canonical для страницы события.
 Canonical и og:url — фиксированные, без GET-параметров.
-og:image — уменьшенный thumbnail 1200×630 (не оригинал).
+og:image — уменьшенный thumbnail 1200×800 (не оригинал).
 {% endcomment %}
 
 <meta property="og:type" content="article">
@@ -14,29 +14,31 @@ og:image — уменьшенный thumbnail 1200×630 (не оригинал).
 <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}">
 
 {% if event.main_image %}
-    {% thumbnail event.main_image "og" crop="smart" quality=85 as og_img %}
+    {% thumbnail event.main_image "1200x800" crop="center" quality=85 as og_img %}
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
     <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="800">
     <meta property="og:image:alt" content="{{ event.title }}">
 {% elif event.place.main_image %}
-    {% thumbnail event.place.main_image "og" crop="smart" quality=85 as og_img %}
+    {% thumbnail event.place.main_image "1200x800" crop="center" quality=85 as og_img %}
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
     <meta property="og:image:secure_url" content="https://{{ request.get_host }}{{ og_img.url }}">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="800">
     <meta property="og:image:alt" content="{{ event.place.name }}">
 {% else %}
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
     <meta property="og:image:secure_url" content="https://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="800">
     <meta property="og:image:alt" content="{{ event.title }}">
 {% endif %}
 
 {% if event.place and event.place.short_address %}
     <meta property="og:street-address" content="{{ event.place.short_address }}">
+    <meta property="og:locality" content="Искитим">
+    <meta property="og:region" content="Новосибирская область">
 {% endif %}
 
 <meta property="article:published_time" content="{{ event.created_at|date:'c' }}">
@@ -49,17 +51,19 @@ og:image — уменьшенный thumbnail 1200×630 (не оригинал).
 <meta name="twitter:title" content="{{ event.title }}">
 <meta name="twitter:description" content="{{ event.description_short|default:event.title|truncatechars:180 }}">
 {% if event.main_image %}
-    {% thumbnail event.main_image "og" crop="smart" quality=85 as tw_img %}
+    {% thumbnail event.main_image "1200x800" crop="center" quality=85 as tw_img %}
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ tw_img.url }}">
     <meta name="twitter:image:alt" content="{{ event.title }}">
 {% elif event.place.main_image %}
-    {% thumbnail event.place.main_image "og" crop="smart" quality=85 as tw_img %}
+    {% thumbnail event.place.main_image "1200x800" crop="center" quality=85 as tw_img %}
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ tw_img.url }}">
     <meta name="twitter:image:alt" content="{{ event.place.name }}">
 {% else %}
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-default.jpg' %}">
     <meta name="twitter:image:alt" content="{{ event.title }}">
 {% endif %}
+
+<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}">
 
 {# RSS-фиды, связанные с этим событием #}
 {% if event.category %}

@@ -4,6 +4,7 @@ Schema.org Event (JSON-LD) — расширенные rich results Google/Янд
 url — фиксированный, без GET-параметров.
 image — массив (несколько размеров).
 eventStatus — берётся из статуса модели.
+geo — координаты площадки (если есть).
 {% endcomment %}
 <script type="application/ld+json">
 {
@@ -37,11 +38,19 @@ eventStatus — берётся из статуса модели.
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "{{ event.place.street|escapejs }}{% if event.place.house_number %}, {{ event.place.house_number }}{% endif %}",
-            "addressLocality": "{{ event.place.city|escapejs }}",
+            "addressLocality": "Искитим",
+            "addressRegion": "Новосибирская область",
             {% if event.place.postal_code %}"postalCode": "{{ event.place.postal_code|escapejs }}",{% endif %}
             "addressCountry": "RU"
         },
         "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:place_detail' event.place.slug %}"
+        {% if event.place.lat_str and event.place.lng_str %}
+        ,"geo": {
+            "@type": "GeoCoordinates",
+            "latitude": {{ event.place.lat_str }},
+            "longitude": {{ event.place.lng_str }}
+        }
+        {% endif %}
     },
     {% endif %}
     {% if event.category %}
@@ -62,7 +71,7 @@ eventStatus — берётся из статуса модели.
     {% elif event.price %}
     "offers": {
         "@type": "Offer",
-        "price": "{{ event.price|floatformat:0 }}",
+        "price": {{ event.price|floatformat:0 }},
         "priceCurrency": "RUB",
         "availability": "https://schema.org/InStock",
         "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'events:event_detail' event.slug %}"
@@ -74,9 +83,11 @@ eventStatus — берётся из статуса модели.
         {% if event.organizer_vk %}"url": "{{ event.organizer_vk|escapejs }}",{% else %}"url": "{{ request.scheme }}://{{ request.get_host }}",{% endif %}
         {% if event.organizer_email %}"email": "{{ event.organizer_email|escapejs }}",{% endif %}
         {% if event.organizer_phone %}"telephone": "{{ event.organizer_phone|escapejs }}",{% endif %}
-        "sameAs": [
-            {% if event.organizer_vk %}"{{ event.organizer_vk|escapejs }}"{% endif %}
-        ]
+        {% if event.organizer_vk %}
+        "sameAs": ["{{ event.organizer_vk|escapejs }}"]
+        {% else %}
+        "sameAs": []
+        {% endif %}
     },
     "performer": {
         "@type": "PerformingGroup",

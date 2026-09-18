@@ -47,43 +47,62 @@
     {% endblock %}
 
     {% block schema %}
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Афиша Искитим",
-        "alternateName": "АФИША ИСКИТИМ",
-        "url": "{{ request.scheme }}://{{ request.get_host }}",
-        "inLanguage": "ru-RU",
-        "publisher": {
-            "@type": "Organization",
-            "name": "Афиша Искитим",
-            "url": "{{ request.scheme }}://{{ request.get_host }}",
-            "logo": {
-                "@type": "ImageObject",
-                "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/favicon/favicon-96x96.png' %}"
-            }
-        },
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-                "@type": "EntryPoint",
-                "urlTemplate": "{{ request.scheme }}://{{ request.get_host }}/?search={search_term_string}"
-            },
-            "query-input": "required name=search_term_string"
-        }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
+{# WebSite — поиск по сайту #}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Афиша Искитим",
+    "alternateName": "АФИША ИСКИТИМ",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "inLanguage": "ru-RU",
+    "publisher": {
         "@type": "Organization",
         "name": "Афиша Искитим",
-        "url": "{{ request.scheme }}://{{ request.get_host }}",
-        "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/favicon/favicon-96x96.png' %}"
+        "url": "{{ request.scheme }}://{{ request.get_host }}"
+    },
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "{{ request.scheme }}://{{ request.get_host }}/?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
     }
-    </script>
-    {% endblock %}
+}
+</script>
+
+{# Organization с адресом — главный локальный сигнал #}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Афиша Искитим",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "logo": {
+        "@type": "ImageObject",
+        "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/favicon/favicon-96x96.png' %}",
+        "width": 96,
+        "height": 96
+    },
+    "description": "Афиша событий города Искитим: концерты, спектакли, выставки, фестивали. Актуальное расписание городских мероприятий.",
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Искитим",
+        "addressRegion": "Новосибирская область",
+        "addressCountry": "RU"
+    },
+    "areaServed": {
+        "@type": "City",
+        "name": "Искитим"
+    },
+    "sameAs": [
+        {% if settings.SITE_VK_URL %}"{{ settings.SITE_VK_URL|escapejs }}"{% endif %}
+    ]
+}
+</script>
+{% endblock %}
+
 
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'pages/css/cookie_banner.css' %}">

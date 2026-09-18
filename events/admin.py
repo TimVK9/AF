@@ -43,7 +43,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'street', 'house_number', 'status', 'created_at')
+    list_display = ('name', 'city', 'street', 'house_number', 'latitude', 'longitude', 'status', 'created_at')
     list_filter = ('city', 'status', 'created_at')
     search_fields = ('name', 'city', 'street', 'house_number', 'phone', 'email')
     prepopulated_fields = {'slug': ('name',)}
@@ -60,7 +60,7 @@ class PlaceAdmin(admin.ModelAdmin):
         ('Адрес', {
             'fields': (
                 'city', 'street', 'house_number', 'building',
-                'office', 'floor', 'postal_code',
+                'office', 'floor', 'postal_code',  'latitude', 'longitude',
             ),
         }),
         ('Служебное', {

@@ -8,6 +8,20 @@ from django.utils.text import slugify
 from .category import Category
 from .place import Place
 from .servis_models import TimestampedModel
+import os
+
+
+
+def event_image_path(instance, filename):
+    slug = slugify(instance.slug) if hasattr(instance, 'slug') else str(instance.id)
+    event_date = instance.start_date  # поле даты события
+    return os.path.join(
+        'events', slug,
+        event_date.strftime('%Y'),
+        event_date.strftime('%m'),
+        filename
+    )
+
 
 
 class Event(TimestampedModel):
@@ -30,7 +44,7 @@ class Event(TimestampedModel):
     start_time = models.TimeField(null=True, blank=True, verbose_name='Время начала')
     end_time = models.TimeField(null=True, blank=True, verbose_name='Время окончания')
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(Decimal('0'))], verbose_name='Цена')
-    main_image = models.ImageField(upload_to='events/%Y/%m/', null=True, blank=True, verbose_name='Главное изображение')
+    main_image = models.ImageField(upload_to=event_image_path, null=True, blank=True, verbose_name='Главное изображение')
     organizer_name = models.CharField(max_length=255,  blank=True, verbose_name='Организатор', help_text='Название организации или имя. Необязательно.')
     organizer_email = models.EmailField(blank=True, verbose_name='Email организатора')
     organizer_phone = models.CharField(max_length=30, blank=True, verbose_name='Телефон организатора')
