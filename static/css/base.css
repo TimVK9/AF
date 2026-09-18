@@ -151,6 +151,67 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--accent);
     flex-shrink: 0;
 }
+/* ===== СТИЛИ ДЛЯ АВАТАРА В ХЕДЕРЕ ===== */
+
+/* Контейнер для картинки внутри кнопки */
+.header-user-menu__toggle img.header-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Заглушка (SVG внутри div), если нет аватара */
+.header-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+/* Стрелочка в кнопке меню */
+.header-arrow {
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-left: 6px;
+    transition: transform var(--transition);
+}
+
+/* Поворот стрелочки при открытом меню (нужно добавить класс .open к кнопке через JS) */
+.header-user-menu__toggle.open .header-arrow {
+    transform: rotate(180deg);
+}
+
+/* --- Адаптив для мобильных: убираем стрелочку на очень маленьких экранах --- */
+@media (max-width: 900px) {
+    .header-user-menu__toggle {
+        padding: 4px;
+        border-radius: 50%;
+        gap: 0;
+    }
+    
+    .header-user-menu__toggle .header-arrow {
+        display: none; /* На мобильном в круглой кнопке стрелочка не нужна */
+    }
+    
+    .header-user-menu__toggle img.header-avatar-img,
+    .header-avatar-placeholder {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* --- Исправление для твоего существующего стиля toggle --- */
+/* Твой старый стиль делал круглую иконку через padding и background. 
+   Теперь мы делаем круглую картинку. Убираем лишние отступы, если они ломают верстку */
+.header-user-menu__toggle > svg:first-child {
+    display: none; /* Скрываем старый SVG-аватар, который был у тебя в коде */
+}
 
 .logo-text { letter-spacing: -0.04em; }
 .logo-accent { color: var(--accent); }
@@ -600,4 +661,75 @@ h1, h2, h3, h4, h5, h6 {
 @supports (-webkit-backdrop-filter: blur(1px)) {
     .site-header,
     .mobile-bottom-nav { background: rgba(255, 255, 255, 0.88); }
+}
+
+
+/* ===== АВАТАР В ХЕДЕРЕ ===== */
+
+/* Кнопка-аватар: круглый контейнер */
+.header-user-menu__toggle {
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: box-shadow var(--transition);
+}
+
+.header-user-menu__toggle:hover {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Картинка-аватар */
+.header-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+}
+
+/* Заглушка */
+.header-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+}
+
+/* Блок с именем и email в выпадающем меню */
+.header-user-info {
+    padding: 10px 14px 6px;
+}
+
+.header-user-name {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.header-user-email {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    word-break: break-all;
+}
+
+/* Убираем старый стиль для SVG внутри toggle */
+.header-user-menu__toggle > svg:first-child {
+    width: auto;
+    height: auto;
+    padding: 0;
+    background: transparent;
 }

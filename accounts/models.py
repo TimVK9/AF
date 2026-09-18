@@ -7,6 +7,32 @@ from django.conf import settings
 from django.db import models, transaction
 from django.utils import timezone
 
+from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    
+    # Поля, которые мы хотим хранить отдельно
+    date_of_birth = models.DateField(null=True, blank=True, verbose_name="Дата рождения")
+    gender = models.IntegerField(null=True, blank=True, verbose_name="Пол (VK: 1-жен, 2-муж)")
+    avatar_url = models.URLField(max_length=500, null=True, blank=True, verbose_name="Ссылка на аватар")
+
+    def __str__(self):
+        return f"Профиль {self.user.username}"
+
+# Автоматически создаем профиль при создании пользователя
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
 
 class EmailOTP(models.Model):
     """Код подтверждения входа по email."""
