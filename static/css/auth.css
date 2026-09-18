@@ -229,3 +229,8 @@
     .auth-card__title { font-size: 1.25rem; }
     .auth-input { font-size: 0.88rem; }
 }
+
+.auth-message--error {
+    background: rgba(220, 38, 38, 0.08);
+    color: #b91c1c;
+}

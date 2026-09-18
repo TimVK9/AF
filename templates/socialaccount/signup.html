@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Регистрация — Афиша Искитим{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-card__header">
+            <h1 class="auth-card__title">Завершение регистрации</h1>
+            <p class="auth-card__subtitle">Подтвердите данные для создания аккаунта</p>
+        </div>
+
+        {% if form.errors %}
+            <div class="auth-message auth-message--error">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'socialaccount_signup' %}" class="auth-form">
+            {% csrf_token %}
+
+            <div class="auth-field">
+                <label class="auth-label" for="id_username">Имя пользователя</label>
+                <input type="text" name="username" id="id_username"
+                       value="{{ form.username.value|default:'' }}"
+                       class="auth-input"
+                       autocomplete="username">
+            </div>
+
+            <div class="auth-field">
+                <label class="auth-label" for="id_email">Email</label>
+                <input type="email" name="email" id="id_email"
+                       value="{{ form.email.value|default:'' }}"
+                       class="auth-input"
+                       autocomplete="email">
+            </div>
+
+            <button type="submit" class="auth-btn">Создать аккаунт</button>
+        </form>
+
+        <p class="auth-card__footer">
+            <a href="{% url 'accounts:login' %}">← Отмена</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
