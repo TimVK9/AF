@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from .models import EmailOTP
@@ -72,7 +73,7 @@ def verify_view(request):
             otp.is_used = True
             otp.save(update_fields=['is_used'])
 
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
             if not request.session.get(SESSION_KEY_REMEMBER):
                 request.session.set_expiry(0)
@@ -109,22 +110,25 @@ def logout_view(request):
 
 
 def _send_otp_email(user, otp):
-    """Отправка кода на email пользователя."""
+    """Отправка кода на email пользователя — HTML + текстовый fallback."""
     email = (user.email or '').strip()
     if not email:
-        # Для разработки: пишем код в консоль, если email не задан.
         print(f'[2FA] Пользователь {user.username} без email. Код: {otp.code}')
         return
 
+    context = {
+        'code': otp.code,
+        'name': user.get_short_name() or user.username,
+    }
+
+    html_body = render_to_string('accounts/emails/otp.html', context)
+    text_body = render_to_string('accounts/emails/otp.txt', context)
+
     send_mail(
-        subject='Код подтверждения входа — АФИША ИСКИТИМ',
-        message=(
-            f'Здравствуйте!\n\n'
-            f'Ваш код для входа: {otp.code}\n\n'
-            f'Код действует 10 минут.\n'
-            f'Если вы не запрашивали вход, просто проигнорируйте это письмо.'
-        ),
+        subject='Код подтверждения входа — Афиша Искитим',
+        message=text_body,
         from_email=None,
         recipient_list=[email],
+        html_message=html_body,
         fail_silently=False,
     )
