@@ -6,49 +6,39 @@
 
     {% if event.main_image %}
         {% if event.main_image|is_portrait %}
-            {% thumbnail event.main_image "600x900" crop="smart" quality=85 as thumb %}
+            {% thumbnail event.main_image "detail" as thumb %}
             <img src="{{ thumb.url }}"
                  alt="{{ event.title }}"
                  class="event-detail__image event-detail__image--portrait"
-                 loading="eager"
-                 width="{{ thumb.width }}"
-                 height="{{ thumb.height }}">
+                 loading="eager">
         {% else %}
-            {% thumbnail event.main_image "1200x675" crop="smart" quality=85 as thumb %}
+            {% thumbnail event.main_image "detail" as thumb %}
             <img src="{{ thumb.url }}"
                  alt="{{ event.title }}"
                  class="event-detail__image event-detail__image--landscape"
-                 loading="eager"
-                 width="{{ thumb.width }}"
-                 height="{{ thumb.height }}">
+                 loading="eager">
         {% endif %}
 
     {% elif event.place.main_image %}
         {% if event.place.main_image|is_portrait %}
-            {% thumbnail event.place.main_image "600x900" crop="smart" quality=85 as thumb %}
+            {% thumbnail event.place.main_image "detail" as thumb %}
             <img src="{{ thumb.url }}"
                  alt="{{ event.place.name }}"
                  class="event-detail__image event-detail__image--portrait"
-                 loading="eager"
-                 width="{{ thumb.width }}"
-                 height="{{ thumb.height }}">
+                 loading="eager">
         {% else %}
-            {% thumbnail event.place.main_image "1200x675" crop="smart" quality=85 as thumb %}
+            {% thumbnail event.place.main_image "detail" as thumb %}
             <img src="{{ thumb.url }}"
                  alt="{{ event.place.name }}"
                  class="event-detail__image event-detail__image--landscape"
-                 loading="eager"
-                 width="{{ thumb.width }}"
-                 height="{{ thumb.height }}">
+                 loading="eager">
         {% endif %}
 
     {% else %}
         <img src="{% random_placeholder event.pk %}"
              alt="{{ event.title }}"
              class="event-detail__image event-detail__image--landscape"
-             loading="eager"
-             width="1200"
-             height="675">
+             loading="eager">
     {% endif %}
 
     {# Бейдж с датой — слева внизу #}

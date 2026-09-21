@@ -93,7 +93,6 @@ INSTALLED_APPS = [
 
     'accounts',
     "events",
-    "pages",
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -102,7 +101,16 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 DJANGO_CONSENT_152FZ = {"enable_core": True}
-DJANGO_COOKIES_152FZ = {"enable_cookies": COOKIES_ENABLED}
+
+DJANGO_COOKIES_152FZ = {
+    "enable_cookies": COOKIES_ENABLED,
+    "metrika_id": "112359122" if METRIKA_ENABLED else None,
+    "consent_ttl_days": 180,
+    "privacy_url": "/privacy/",
+    "consent_url": "/consent/",
+    "anonymize_ip": True,
+    "webvisor": True,
+}
 
 SITE_ID = 1
 
@@ -375,8 +383,8 @@ THUMBNAIL_ALIASES = {
     "": {
         "card":    {"size": (600, 800),   "crop": "50%,25%", "quality": 85},
         "card_2x": {"size": (1200, 1600), "crop": "50%,25%", "quality": 80},
-        "detail":    {"size": (1200, 1600), "crop": "50%,25%", "quality": 85},
-        "detail_2x": {"size": (1800, 2400), "crop": "50%,25%", "quality": 80},
+        "detail":      {"size": (1200, 1600), "crop": False, "quality": 90},
+        "detail_2x":   {"size": (1800, 2400), "crop": False, "quality": 85},
         "gallery":       {"size": (1200, 1200), "crop": "50%,25%", "quality": 85},
         "gallery_2x":    {"size": (1800, 1800), "crop": "50%,25%", "quality": 80},
         "gallery_thumb": {"size": (200, 200),   "crop": "50%,25%", "quality": 80},
@@ -384,6 +392,7 @@ THUMBNAIL_ALIASES = {
         "admin_thumb": {"size": (80, 60), "crop": "center", "quality": 80},
     },
 }
+
 
 THUMBNAIL_OPTIMIZE = True
 THUMBNAIL_QUALITY = 85
