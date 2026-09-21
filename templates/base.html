@@ -27,6 +27,7 @@
           href="{% url 'events:rss' %}">
 
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
+<link rel="stylesheet" href="{% static '/pages/css/legal.css' %}">
 
     {% block meta %}
     <meta property="og:type" content="website">
@@ -48,7 +49,11 @@
     {% endblock %}
 
     {% block schema %}
-{# WebSite — поиск по сайту #}
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<script>
+  vkBridge.send('VKWebAppInit');
+</script>
+
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
@@ -337,7 +342,8 @@
         clickmap: true,
         trackLinks: true,
         accurateTrackBounce: true,
-        webvisor: true
+        webvisor: true,
+        params: { anonymizeIp: true }
     });
     </script>
     {% endif %}
