@@ -19,26 +19,14 @@
                  loading="eager">
         {% endif %}
 
-    {% elif event.place.main_image %}
-        {% if event.place.main_image|is_portrait %}
-            {% thumbnail event.place.main_image "detail" as thumb %}
-            <img src="{{ thumb.url }}"
-                 alt="{{ event.place.name }}"
-                 class="event-detail__image event-detail__image--portrait"
-                 loading="eager">
         {% else %}
-            {% thumbnail event.place.main_image "detail" as thumb %}
-            <img src="{{ thumb.url }}"
-                 alt="{{ event.place.name }}"
-                 class="event-detail__image event-detail__image--landscape"
-                 loading="eager">
-        {% endif %}
-
-    {% else %}
         <img src="{% random_placeholder event.pk %}"
              alt="{{ event.title }}"
              class="event-detail__image event-detail__image--landscape"
-             loading="eager">
+             loading="eager"
+            width="1200"
+             height="675">
+
     {% endif %}
 
     {# Бейдж с датой — слева внизу #}
