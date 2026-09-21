@@ -400,6 +400,7 @@ THUMBNAIL_PRESERVE_EXTENSIONS = ("png",)
 THUMBNAIL_HIGH_RESOLUTION = True
 THUMBNAIL_EXTENSION = "jpg"
 
+X_FRAME_OPTIONS = "DENY"
 
 # =========================================================
 # СОЦСЕТИ (allauth)
